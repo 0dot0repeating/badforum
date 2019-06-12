@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.1.5.RELEASE'
+}
+
+apply plugin: 'io.spring.dependency-management'
+apply from: 'getcommit.gradle'
+
+group 'very.confused'
+version getGitCommit()
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-web",
+            "org.springframework.boot:spring-boot-starter-thymeleaf",
+            "org.springframework.boot:spring-boot-starter-data-jpa",
+            "org.hsqldb:hsqldb",
+            "org.mindrot:jbcrypt:0.4")
+    testCompile("junit:junit")
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'main.Main',
+            'Built-By': System.properties['user.name'],
+            'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ").format(new Date()),
+            'Build-Version': getGitCommit(),
+            'Created-By': "Gradle ${gradle.gradleVersion}",
+            'Build-JDK': "${System.properties['java.version']} ${System.properties['java.vendor']} ${System.properties['java.vm.version']}",
+            'Build-OS': "${System.properties['os.name']} ${System.properties['os.arch']} ${System.properties['os.version']}"
+        )
+    }
+}
+
+compileJava
+{
+    options.compilerArgs << "-Xlint:all"
+}
