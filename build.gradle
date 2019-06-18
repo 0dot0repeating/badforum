@@ -22,9 +22,10 @@ dependencies {
     compile("org.mindrot:jbcrypt:0.4",  // password encryption library
             "org.hsqldb:hsqldb:2.4.0",  // SQL database implementation
             "org.springframework:spring-webmvc:5.1.1.RELEASE",  // web framework
-            "org.apache.tomcat.embed:tomcat-embed-jasper:9.0.21", // web server
+            "org.apache.tomcat.embed:tomcat-embed-jasper:8.5.42", // web server
             "org.thymeleaf:thymeleaf:3.0.11.RELEASE",   // view templates
             "org.slf4j:slf4j-simple:1.7.26",    // logger
+            "org.slf4j:jul-to-slf4j:1.7.26",    // to get tomcat to use said logger
             "javax.servlet:javax.servlet-api:3.1.0")
     testCompile("junit:junit")
 }
@@ -32,7 +33,7 @@ dependencies {
 jar {
     manifest {
         attributes(
-            'Main-Class': 'main.Bootstrapper',
+            'Main-Class': 'com.jinotrain.badforum.main.Bootstrapper',
             'Built-By': System.properties['user.name'],
             'Build-Timestamp': new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSZ").format(new Date()),
             'Build-Version': getGitCommit(),
@@ -46,4 +47,9 @@ jar {
 compileJava
 {
     options.compilerArgs << "-Xlint:all"
+}
+
+task copyDependencies(type: Copy) {
+    from configurations.compile
+    into 'dependencies'
 }

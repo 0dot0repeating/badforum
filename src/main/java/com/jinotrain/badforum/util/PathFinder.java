@@ -1,4 +1,4 @@
-package util;
+package com.jinotrain.badforum.util;
 
 import java.io.File;
 import java.net.URISyntaxException;

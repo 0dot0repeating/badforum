@@ -1,12 +1,18 @@
-package main;
+package com.jinotrain.badforum.main;
 
-import beans.ServerData;
-import configs.ServerConfig;
+import com.jinotrain.badforum.beans.ServerData;
+import com.jinotrain.badforum.configs.ServerConfig;
+import com.jinotrain.badforum.util.PathFinder;
+
+import org.apache.catalina.Context;
 import org.apache.catalina.startup.Tomcat;
+import org.apache.tomcat.JarScanFilter;
+import org.apache.tomcat.JarScanType;
+import org.apache.tomcat.util.scan.StandardJarScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import util.PathFinder;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +38,9 @@ public class Bootstrapper
 
     public void run()
     {
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+
         try
         {
             Properties prop = System.getProperties();
@@ -61,7 +70,9 @@ public class Bootstrapper
                 tomcat.setBaseDir(tmppath);
 
                 tomcat.getHost().setAppBase(".");
-                tomcat.addContext("", ".");
+                Context ctx = tomcat.addWebapp("", ".");
+
+                ctx.getJarScanner().setJarScanFilter((jarScanType, jarName) -> jarName.startsWith("badforum"));
 
                 // necessary for the server to actually bind to anything
                 tomcat.getConnector();
