@@ -80,25 +80,4 @@ public class MVCConfig
     {
         return makeViewResolver("text/html", "html", TemplateMode.HTML);
     }
-
-
-    @Bean
-    public ViewResolver jsResolver()
-    {
-        return makeViewResolver("application/javascript", "js", TemplateMode.JAVASCRIPT);
-    }
-
-
-    @Bean
-    public ViewResolver cssResolver()
-    {
-        return makeViewResolver("text/css", "css", TemplateMode.CSS);
-    }
-
-
-    @Bean
-    public ViewResolver txtResolver()
-    {
-        return makeViewResolver("text/plain", "txt", TemplateMode.TEXT);
-    }
 }
