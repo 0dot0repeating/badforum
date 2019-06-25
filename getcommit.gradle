@@ -2,9 +2,16 @@ ext.getGitCommit = { ->
     try
     {
         def stdout = new ByteArrayOutputStream()
+        
+        def noOutput = new OutputStream() {
+            @Override
+            public void write(int b) {}
+        }
+        
         exec {
             commandLine 'git', 'describe', '--tags'
             standardOutput = stdout
+            errorOutput    = noOutput
         }
 
         return stdout.toString().trim()

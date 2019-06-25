@@ -20,7 +20,7 @@ import java.util.Properties;
 
 public class Bootstrapper
 {
-    private Logger logger;
+    private static Logger logger = LoggerFactory.getLogger(Bootstrapper.class);
 
     public static void main(String[] argv)
     {
@@ -28,10 +28,7 @@ public class Bootstrapper
         main.run();
     }
 
-    public Bootstrapper()
-    {
-        logger = LoggerFactory.getLogger(Bootstrapper.class);
-    }
+    public Bootstrapper() {}
 
     public void run()
     {
