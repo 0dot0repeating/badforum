@@ -20,14 +20,22 @@ repositories {
 
 dependencies {
     compile("org.mindrot:jbcrypt:0.4",  // password encryption library
-            "org.hsqldb:hsqldb:2.4.0",  // SQL database implementation
-            "org.springframework:spring-webmvc:5.1.1.RELEASE",  // web framework
-            "org.apache.tomcat.embed:tomcat-embed-jasper:8.5.42", // web server
-            "org.thymeleaf:thymeleaf:3.0.11.RELEASE",   // view templates
-            "org.thymeleaf:thymeleaf-spring5:3.0.11.RELEASE",   // view templates
+            "javax.servlet:javax.servlet-api:3.1.0",
+            
+            "org.hsqldb:hsqldb:2.4.0",                      // SQL database drivers
+            "org.hibernate:hibernate-core:5.4.3.Final",     // JPA implementation
+            "org.apache.commons:commons-dbcp2:2.6.0",       // connection pooling for hibernate
+            
+            "org.springframework:spring-webmvc:5.1.1.RELEASE",      // web framework
+            "org.springframework:spring-orm:5.1.1.RELEASE",         // JPA framework
+            "org.apache.tomcat.embed:tomcat-embed-jasper:8.5.42",   // web server
+            
+            "org.thymeleaf:thymeleaf:3.0.11.RELEASE",           // view templates
+            "org.thymeleaf:thymeleaf-spring5:3.0.11.RELEASE",   // integration with spring
+            
             "org.slf4j:slf4j-simple:1.7.26",    // logger
             "org.slf4j:jul-to-slf4j:1.7.26",    // to get tomcat to use said logger
-            "javax.servlet:javax.servlet-api:3.1.0")
+            )
     testCompile("junit:junit")
 }
 

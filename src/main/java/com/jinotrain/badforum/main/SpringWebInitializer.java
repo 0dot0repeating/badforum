@@ -1,5 +1,6 @@
 package com.jinotrain.badforum.main;
 
+import com.jinotrain.badforum.configs.HibernateConfig;
 import com.jinotrain.badforum.configs.MVCConfig;
 import com.jinotrain.badforum.configs.ServerConfig;
 
@@ -21,8 +22,6 @@ public class SpringWebInitializer implements WebApplicationInitializer
     @Override
     public void onStartup(ServletContext container) throws ServletException
     {
-        log.info("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-
         // boy i sure love java class names
         AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
         rootContext.register(ServerConfig.class);
@@ -32,6 +31,7 @@ public class SpringWebInitializer implements WebApplicationInitializer
         // really love em
         AnnotationConfigWebApplicationContext mainContext = new AnnotationConfigWebApplicationContext();
         mainContext.register(MVCConfig.class);
+        mainContext.register(HibernateConfig.class);
 
         ServletRegistration.Dynamic dispatcher =
                 container.addServlet("dispatcher", new DispatcherServlet(mainContext));

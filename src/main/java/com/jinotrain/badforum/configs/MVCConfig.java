@@ -17,11 +17,7 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 
 @Configuration
 @EnableWebMvc
-@PropertySources({
-                         @PropertySource("classpath:badforum.properties"),
-                         @PropertySource(value = "file:${badforum.jarpath}/badforum.properties", ignoreResourceNotFound = true),
-                         @PropertySource(value = "file:badforum.properties", ignoreResourceNotFound = true),
-                 })
+@ForumPropertySources
 @ComponentScan(basePackageClasses = {
         com.jinotrain.badforum.controllers.ControllerSearchDummy.class,
 })

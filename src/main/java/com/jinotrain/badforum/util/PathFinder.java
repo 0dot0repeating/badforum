@@ -11,8 +11,9 @@ import java.util.regex.Pattern;
 public class PathFinder
 {
     private static Logger logger = LoggerFactory.getLogger(PathFinder.class);
+    private static String exePath;
 
-    public static String getExecutablePath()
+    static
     {
         File f;
         String jarPath;
@@ -33,7 +34,11 @@ public class PathFinder
             jarPath = f.getAbsolutePath();
         }
 
+        exePath = jarPath;
+    }
 
-        return jarPath;
+    public static String getExecutablePath()
+    {
+        return exePath;
     }
 }
