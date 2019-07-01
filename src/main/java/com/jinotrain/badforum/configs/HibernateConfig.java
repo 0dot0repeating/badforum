@@ -8,19 +8,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PropertiesLoaderUtils;
+import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 import java.util.Properties;
 
 @Configuration
-@EnableTransactionManagement
 @ForumPropertySources
+@EnableTransactionManagement
 public class HibernateConfig
 {
     private static Logger logger = LoggerFactory.getLogger(HibernateConfig.class);
@@ -43,8 +41,6 @@ public class HibernateConfig
                            @Value("${badforum.db.password}")   String password,
                            @Value("${badforum.db.autoschema}") Boolean autoschema)
     {
-        logger.debug("!@#$% yes the hibernate config loaded %$#@!");
-
         this.dbURL      = dbURL;
         this.dbDriver   = dbDriver;
         this.dialect    = dialect;
@@ -53,21 +49,24 @@ public class HibernateConfig
         this.autoschema = autoschema;
     }
 
+    // I tried to use the standard entity manager stuff, but as far as I can tell,
+    //  it's completely bugged out for reasons I don't understand and aren't my fault
     @Bean
-    public LocalSessionFactoryBean sessionFactory() throws IOException
+    public LocalSessionFactoryBean sessionFactory()
     {
-        LocalSessionFactoryBean sessionFactory = new LocalSessionFactoryBean();
-        sessionFactory.setDataSource(jpaDataSource());
-        sessionFactory.setPackagesToScan("com.jinotrain.badforum.beans.db");
-        sessionFactory.setHibernateProperties(hibernateProperties());
+        LocalSessionFactoryBean sf = new LocalSessionFactoryBean();
+        sf.setDataSource(jpaDataSource());
+        sf.setPackagesToScan("com.jinotrain.badforum.beans");
+        sf.setHibernateProperties(hibernateProperties());
 
-        return sessionFactory;
+        return sf;
     }
 
 
     @Bean
     public DataSource jpaDataSource()
     {
+        logger.info("Creating JPA data source for URL \"{}\"", dbURL);
         BasicDataSource dataSource = new BasicDataSource();
 
         dataSource.setDriverClassName(dbDriver);
@@ -79,13 +78,20 @@ public class HibernateConfig
     }
 
 
-    private Properties hibernateProperties() throws IOException
+    @Bean
+    public PlatformTransactionManager transactionManager()
+    {
+        HibernateTransactionManager manager = new HibernateTransactionManager();
+        manager.setSessionFactory(sessionFactory().getObject());
+        return manager;
+    }
+
+
+    private Properties hibernateProperties()
     {
         Properties outProps = new Properties();
-
-        outProps.setProperty("hibernate.hbm2ddl.auto", autoschema ? "update" : "create-only");
         outProps.setProperty("hibernate.dialect", dialect);
-
+        outProps.setProperty("hibernate.hbm2ddl.auto", autoschema ? "update" : "create-only");
         return outProps;
     }
 }
