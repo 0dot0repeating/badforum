@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.*;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -18,6 +19,9 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 @Configuration
 @EnableWebMvc
 @ForumPropertySources
+@EnableJpaRepositories(basePackageClasses = {
+    com.jinotrain.badforum.db.repositories.ForumPostRepository.class
+})
 @ComponentScan(basePackageClasses = {
         com.jinotrain.badforum.controllers.ControllerSearchDummy.class,
 })

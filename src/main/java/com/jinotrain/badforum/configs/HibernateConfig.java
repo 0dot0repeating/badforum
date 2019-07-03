@@ -8,11 +8,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.orm.hibernate5.HibernateTransactionManager;
-import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.util.Properties;
 
@@ -49,17 +51,17 @@ public class HibernateConfig
         this.autoschema = autoschema;
     }
 
-    // I tried to use the standard entity manager stuff, but as far as I can tell,
-    //  it's completely bugged out for reasons I don't understand and aren't my fault
     @Bean
-    public LocalSessionFactoryBean sessionFactory()
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory()
     {
-        LocalSessionFactoryBean sf = new LocalSessionFactoryBean();
-        sf.setDataSource(jpaDataSource());
-        sf.setPackagesToScan("com.jinotrain.badforum.beans");
-        sf.setHibernateProperties(hibernateProperties());
+        LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
+        em.setDataSource(jpaDataSource());
+        em.setPackagesToScan("com.jinotrain.badforum.db.entities");
 
-        return sf;
+        em.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+        em.setJpaProperties(jpaProperties());
+
+        return em;
     }
 
 
@@ -79,19 +81,19 @@ public class HibernateConfig
 
 
     @Bean
-    public PlatformTransactionManager transactionManager()
+    public PlatformTransactionManager transactionManager(EntityManagerFactory emf)
     {
-        HibernateTransactionManager manager = new HibernateTransactionManager();
-        manager.setSessionFactory(sessionFactory().getObject());
+        JpaTransactionManager manager = new JpaTransactionManager();
+        manager.setEntityManagerFactory(emf);
         return manager;
     }
 
 
-    private Properties hibernateProperties()
+    private Properties jpaProperties()
     {
         Properties outProps = new Properties();
-        outProps.setProperty("hibernate.dialect", dialect);
         outProps.setProperty("hibernate.hbm2ddl.auto", autoschema ? "update" : "create-only");
+        outProps.setProperty("hibernate.dialect", dialect);
         return outProps;
     }
 }

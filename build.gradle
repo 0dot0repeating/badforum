@@ -26,8 +26,10 @@ dependencies {
             "org.hibernate:hibernate-core:5.4.3.Final",     // JPA implementation
             "org.apache.commons:commons-dbcp2:2.6.0",       // connection pooling for hibernate
             
-            "org.springframework:spring-webmvc:5.1.1.RELEASE",      // web framework
-            "org.springframework:spring-orm:5.1.1.RELEASE",         // JPA framework
+            "org.springframework:spring-webmvc:5.1.1.RELEASE",          // web framework
+            "org.springframework:spring-orm:5.1.1.RELEASE",             // JPA framework (middleman between database and... ???)
+            "org.springframework.data:spring-data-jpa:2.1.9.RELEASE",   // seriously why do I need so much stuff for this basic shit
+
             "org.apache.tomcat.embed:tomcat-embed-jasper:8.5.42",   // web server
             
             "org.thymeleaf:thymeleaf:3.0.11.RELEASE",           // view templates
