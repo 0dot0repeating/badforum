@@ -21,9 +21,9 @@ import java.util.Properties;
 @Configuration
 @ForumPropertySources
 @EnableTransactionManagement
-public class HibernateConfig
+public class JPAConfig
 {
-    private static Logger logger = LoggerFactory.getLogger(HibernateConfig.class);
+    private static Logger logger = LoggerFactory.getLogger(JPAConfig.class);
 
     @Autowired
     private ApplicationContext context;
@@ -36,12 +36,12 @@ public class HibernateConfig
     private Boolean autoschema;
 
     @Autowired
-    public HibernateConfig(@Value("${badforum.db.url}")        String dbURL,
-                           @Value("${badforum.db.driver}")     String dbDriver,
-                           @Value("${badforum.db.dialect}")    String dialect,
-                           @Value("${badforum.db.username}")   String username,
-                           @Value("${badforum.db.password}")   String password,
-                           @Value("${badforum.db.autoschema}") Boolean autoschema)
+    public JPAConfig(@Value("${badforum.db.url}")        String dbURL,
+                     @Value("${badforum.db.driver}")     String dbDriver,
+                     @Value("${badforum.db.dialect}")    String dialect,
+                     @Value("${badforum.db.username}")   String username,
+                     @Value("${badforum.db.password}")   String password,
+                     @Value("${badforum.db.autoschema}") Boolean autoschema)
     {
         this.dbURL      = dbURL;
         this.dbDriver   = dbDriver;

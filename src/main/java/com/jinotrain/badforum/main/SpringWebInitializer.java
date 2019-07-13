@@ -1,6 +1,6 @@
 package com.jinotrain.badforum.main;
 
-import com.jinotrain.badforum.configs.HibernateConfig;
+import com.jinotrain.badforum.configs.JPAConfig;
 import com.jinotrain.badforum.configs.MVCConfig;
 import com.jinotrain.badforum.configs.ServerConfig;
 
@@ -31,7 +31,7 @@ public class SpringWebInitializer implements WebApplicationInitializer
         // really love em
         AnnotationConfigWebApplicationContext mainContext = new AnnotationConfigWebApplicationContext();
         mainContext.register(MVCConfig.class);
-        mainContext.register(HibernateConfig.class);
+        mainContext.register(JPAConfig.class);
 
         ServletRegistration.Dynamic dispatcher =
                 container.addServlet("dispatcher", new DispatcherServlet(mainContext));

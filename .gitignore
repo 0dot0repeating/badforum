@@ -5,5 +5,5 @@ gradle
 gradlew
 gradlew.bat
 badforum.properties
-dependencies/
-db/
+/dependencies/
+/db/

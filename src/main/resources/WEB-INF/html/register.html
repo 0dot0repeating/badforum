@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register an account</title>
+</head>
+<body>
+    <h1>Register</h1>
+    <form method="post">
+        <p class="error" th:if="${registerError != null}"></p>
+
+        <p class="bigWarning" th:if="${#request.isSecure() == false}">
+            This connection is not secure! Please, for all that is good in the world, don't use a password you use anywhere else.
+        </p>
+
+        <p class="warning" th:if="${#request.isSecure() == true}">
+            This connection is secure. Still, don't use a password you use anywhere else.
+        </p>
+
+        <p>
+            <span>Username:</span>
+            <input type="text" name="username" placeholder="Username">
+        </p>
+        <p>
+            <span>Email address:</span>
+            <input type="text" name="email" placeholder="Email (optional)">
+        </p>
+        <p>
+            <span>Password:</span>
+            <input type="password" name="password" placeholder="Password">
+        </p>
+        <p>
+            <span>Confirm:</span>
+            <input type="password" name="confirmPassword" placeholder="Confirm">
+        </p>
+
+        <input type="submit" value="Register"></form>
+    </form>
+</body>
+</html>

@@ -19,16 +19,16 @@ repositories {
 }
 
 dependencies {
-    compile("org.mindrot:jbcrypt:0.4",  // password encryption library
-            "javax.servlet:javax.servlet-api:3.1.0",
+    compile("javax.servlet:javax.servlet-api:3.1.0",
             
             "org.hsqldb:hsqldb:2.4.0",                      // SQL database drivers
             "org.hibernate:hibernate-core:5.4.3.Final",     // JPA implementation
             "org.apache.commons:commons-dbcp2:2.6.0",       // connection pooling for hibernate
             
-            "org.springframework:spring-webmvc:5.1.1.RELEASE",          // web framework
-            "org.springframework:spring-orm:5.1.1.RELEASE",             // JPA framework (middleman between database and... ???)
-            "org.springframework.data:spring-data-jpa:2.1.9.RELEASE",   // seriously why do I need so much stuff for this basic shit
+            "org.springframework:spring-webmvc:5.1.1.RELEASE",                  // web framework
+            "org.springframework:spring-orm:5.1.1.RELEASE",                     // JPA framework (middleman between database and... ???)
+            "org.springframework.data:spring-data-jpa:2.1.9.RELEASE",           // seriously why do I need so much stuff for this basic shit
+	    "org.springframework.security:spring-security-core:5.1.5.RELEASE",  // to handle users/hashing/etc
 
             "org.apache.tomcat.embed:tomcat-embed-jasper:8.5.42",   // web server
             
