@@ -2,11 +2,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Register an account</title>
+    <script src="/static/js/registerpage.js"></script>
 </head>
 <body>
     <h1>Register</h1>
     <form method="post">
-        <p class="error" th:if="${registerError != null}"></p>
+        <p class="error" th:if="${errorMessage != null}">
+            <h3>Error encountered during registration:</h3>
+            <p>[[${errorMessage}]]</p>
+        </p>
 
         <p class="bigWarning" th:if="${#request.isSecure() == false}">
             This connection is not secure! Please, for all that is good in the world, don't use a password you use anywhere else.
@@ -18,7 +22,8 @@
 
         <p>
             <span>Username:</span>
-            <input type="text" name="username" placeholder="Username">
+            <input type="text" name="username" oninput="onUsernameInput(this, 'usernote')" placeholder="Username">
+            <span id="usernote"></span>
         </p>
         <p>
             <span>Email address:</span>
@@ -30,7 +35,7 @@
         </p>
         <p>
             <span>Confirm:</span>
-            <input type="password" name="confirmPassword" placeholder="Confirm">
+            <input type="password" name="confirm" placeholder="Confirm">
         </p>
 
         <input type="submit" value="Register"></form>

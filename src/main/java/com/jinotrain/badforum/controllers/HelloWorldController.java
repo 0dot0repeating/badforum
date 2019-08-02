@@ -1,6 +1,6 @@
 package com.jinotrain.badforum.controllers;
 
-import com.jinotrain.badforum.db.repositories.DBTestDummyRepository;
+import com.jinotrain.badforum.db.repositories.ForumUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 public class HelloWorldController
 {
     @Autowired
-    private DBTestDummyRepository testRepo;
+    private ForumUserRepository testRepo;
 
     @RequestMapping(value = "/",
                     method = RequestMethod.GET,

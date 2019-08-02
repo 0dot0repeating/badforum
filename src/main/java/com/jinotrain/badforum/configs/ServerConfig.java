@@ -1,6 +1,6 @@
 package com.jinotrain.badforum.configs;
 
-import com.jinotrain.badforum.beans.ServerData;
+import com.jinotrain.badforum.data.ServerData;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

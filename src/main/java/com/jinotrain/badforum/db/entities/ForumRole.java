@@ -2,61 +2,89 @@ package com.jinotrain.badforum.db.entities;
 
 import javax.persistence.*;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 public class ForumRole
 {
+    protected class PermissionSet
+    {
+        public boolean canView;
+        public boolean canPost;
+    }
+
+
     @Id
     @GeneratedValue
-    private long id;
+    protected Long id;
 
     @Column(unique = true, nullable = false)
-    private String name;
+    protected String name;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "roles")
-    private Collection<ForumUser> users;
+    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "role")
+    protected Collection<UserToRoleLink> users;
 
-    @Enumerated(EnumType.ORDINAL)
-    @ElementCollection(fetch = FetchType.EAGER)
-    @Column(nullable = false)
-    private Collection<ForumPrivilegeType> privileges;
+    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "role")
+    protected Collection<RoleToBoardLink> accessBoards;
+    protected transient Map<ForumBoard, PermissionSet> permissionSets;
 
-    private ForumRole()
+
+    public ForumRole()
     {
         this("");
     }
 
     public ForumRole(String name)
     {
-        this.id   = -1;
         this.name = name;
-        this.privileges = new HashSet<>();
     }
 
     public String getName()         { return name; }
     public void   setName(String n) { name = n; }
 
 
-    public Boolean hasPrivilege(ForumPrivilegeType privilege)
+    private void syncPermissionSets()
     {
-        if (privileges == null) { return false; }
-        return privileges.contains(privilege);
+        if (org.hibernate.Hibernate.isInitialized(accessBoards)) { return; }
+
+        permissionSets = new HashMap<>();
+
+        for (RoleToBoardLink link: accessBoards)
+        {
+            ForumBoard board = link.getBoard();
+            PermissionSet perms = permissionSets.get(board);
+
+            // realistically there should only be one role-board pairing per role and board,
+            //  but dumb things happen sometimes
+            if (perms == null)
+            {
+                perms = new PermissionSet();
+                permissionSets.put(board, perms);
+            }
+
+            perms.canView = perms.canView || link.getCanView();
+            perms.canPost = perms.canPost || link.getCanPost();
+        }
     }
 
 
-    public void modifyPrivilege(ForumPrivilegeType privilege, Boolean onOff)
+    public boolean canViewBoard(ForumBoard board)
     {
-        if (privileges == null) { privileges = new HashSet<>(); }
+        syncPermissionSets();
 
-        if (onOff && !privileges.contains(privilege))
-        {
-            privileges.add(privilege);
-        }
+        PermissionSet perms = permissionSets.get(board);
+        if (perms != null) { return perms.canView; }
+        return false;
+    }
 
-        if (!onOff && privileges.contains(privilege))
-        {
-            privileges.remove(privilege);
-        }
+
+    public boolean canPostInBoard(ForumBoard board)
+    {
+        syncPermissionSets();
+
+        PermissionSet perms = permissionSets.get(board);
+        if (perms != null) { return perms.canPost; }
+        return false;
     }
 }

@@ -9,6 +9,5 @@ import java.util.UUID;
 @Repository
 public interface ForumUserRepository extends JpaRepository<ForumUser, UUID>
 {
-    ForumUser findByUsername(String username);
     ForumUser findByUsernameIgnoreCase(String username);
 }

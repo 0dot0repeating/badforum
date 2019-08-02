@@ -61,7 +61,7 @@ public class StaticFileController
 
             if (mime.startsWith("text/"))
             {
-                mime += "; charset=utf-8";
+                mime += "; charset=UTF-8";
             }
 
             Date date = new Date(mtime);

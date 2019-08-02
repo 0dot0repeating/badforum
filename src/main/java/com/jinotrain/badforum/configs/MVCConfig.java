@@ -24,7 +24,7 @@ import org.thymeleaf.templateresolver.ITemplateResolver;
 })
 @ComponentScan(basePackageClasses = {
         com.jinotrain.badforum.controllers.ControllerSearchDummy.class,
-        com.jinotrain.badforum.services.ServiceSearchDummy.class
+        com.jinotrain.badforum.components.ComponentSearchDummy.class
 })
 public class MVCConfig
 {

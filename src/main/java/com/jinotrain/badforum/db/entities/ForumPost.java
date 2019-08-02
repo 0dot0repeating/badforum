@@ -1,29 +1,48 @@
 package com.jinotrain.badforum.db.entities;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.Date;
 
 @Entity
-public class ForumPost
+public class ForumPost implements Comparable<ForumPost>
 {
     @Id
     @GeneratedValue
-    private long id;
+    protected Long id;
 
-    private long authorID;
-    private String postText;
+    @Column(nullable = false)
+    protected String postText;
+
+    @Column(nullable = false)
+    protected Date postDate;
+
+    protected Date lastEditDate;
+
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    protected ForumUser author;
+
+    @ManyToOne
+    @JoinColumn(name = "thread_id")
+    protected ForumThread thread;
+
 
     public ForumPost()
     {
-        this(-1, "");
+        this("", null);
     }
 
-    public ForumPost(long authorID, String postText)
+    public ForumPost(String postText)
     {
-        this.authorID = authorID;
-        this.postText = postText;
+        this(postText, null);
+    }
+
+    public ForumPost(String postText, ForumUser author)
+    {
+        this.postText     = postText;
+        this.postDate     = new Date();
+        this.lastEditDate = null;
+        this.author       = author;
     }
 
 
@@ -32,15 +51,49 @@ public class ForumPost
         return id;
     }
 
+    public String getPostText()         { return postText; }
+    public void   setPostText(String t) { postText = t; }
 
-    public long getAuthorID()
+    public Date getPostDate()       { return postDate; }
+    public void setPostDate(Date d) { postDate = d; }
+
+    public Date getlastEditDate()       { return lastEditDate; }
+    public void setlastEditDate(Date d) { lastEditDate = d; }
+
+    public ForumUser getAuthor()            { return author; }
+    public void      setAuthor(ForumUser a) { author = a; }
+
+    public ForumThread getThread()            { return thread; }
+    public void        setThread(ForumThread t) { thread = t; }
+
+
+    @Override
+    public int compareTo(ForumPost o)
     {
-        return authorID;
+         int ret = postDate.compareTo(o.postDate);
+         if (ret != 0) { return ret; }
+
+         if (author   == null) { return -1; }
+         if (o.author == null) { return  1; }
+
+         ret = author.getUsername().compareTo(o.author.getUsername());
+         if (ret != 0) { return ret; }
+
+         return postText.compareTo(o.postText);
     }
 
 
-    public String getPostText()
+    @Override
+    public boolean equals(Object o)
     {
-        return postText;
+        if (!(o instanceof ForumPost)) { return false; }
+        return compareTo((ForumPost)o) == 0;
+    }
+
+
+    @Override
+    public int hashCode()
+    {
+        return postText.hashCode();
     }
 }

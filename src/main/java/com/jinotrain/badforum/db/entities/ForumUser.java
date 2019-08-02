@@ -13,33 +13,35 @@ public class ForumUser
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
-    private final UUID id;
+    protected UUID id;
 
     @Column(unique = true, nullable = false)
-    private final String username;
+    protected final String username;
 
     @Column(nullable = false)
-    private String passhash;
+    protected String passhash;
 
-    private String email;
+    protected String email;
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinTable(name = "user_roles",
-                joinColumns = @JoinColumn(name="user_id"),
-                inverseJoinColumns = @JoinColumn(name="role_id"))
-    private Collection<ForumRole> roles;
+    protected Boolean enabled;
+
+    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "user")
+    protected Collection<UserToRoleLink> roleLinks;
 
 
     public String getUsername() { return username; }
 
     public String getPasshash()       { return passhash; }
-    public void setPasshash(String s) { this.passhash = passhash; }
+    public void setPasshash(String s) { this.passhash = s; }
 
     public String getEmail()       { return email; }
-    public void setEmail(String e) { this.email = email; }
+    public void setEmail(String e) { this.email = e; }
+
+    public Boolean getEnabled()       { return enabled; }
+    public void setEnabled(Boolean e) { this.enabled = e; }
 
 
-    private ForumUser()
+    protected ForumUser()
     {
         this("user", "{noop}password");
     }
@@ -47,36 +49,44 @@ public class ForumUser
 
     public ForumUser(String name, String passhash)
     {
-        this.id = UUID.randomUUID();
-        this.username = name;
-        this.passhash = passhash;
-        this.roles    = new HashSet<>();
+        this.username  = name;
+        this.passhash  = passhash;
+        this.roleLinks = new HashSet<>();
+        this.enabled   = true;
     }
 
 
-    public Boolean hasRole(ForumRole role)
+    public Collection<ForumRole> getRoles()
     {
-        return roles.contains(role);
-    }
+        Collection<ForumRole> roles = new HashSet<>();
 
-
-    public void addRole(ForumRole role)
-    {
-        if (!hasRole(role)) { roles.add(role); }
-    }
-
-
-    public void removeRole(ForumRole role)
-    {
-        roles.remove(role);
-    }
-
-
-    public Boolean hasPrivilege(ForumPrivilegeType privilege)
-    {
-        for (ForumRole role: roles)
+        for (UserToRoleLink link: roleLinks)
         {
-            if (role.hasPrivilege(privilege)) { return true; }
+            roles.add(link.getRole());
+        }
+
+        return roles;
+    }
+
+
+    public boolean canViewBoard(ForumBoard board)
+    {
+        for (UserToRoleLink roleLink: roleLinks)
+        {
+            ForumRole role = roleLink.getRole();
+            if (role.canViewBoard(board)) { return true; }
+        }
+
+        return false;
+    }
+
+
+    public boolean canPostInBoard(ForumBoard board)
+    {
+        for (UserToRoleLink roleLink: roleLinks)
+        {
+            ForumRole role = roleLink.getRole();
+            if (role.canPostInBoard(board)) { return true; }
         }
 
         return false;

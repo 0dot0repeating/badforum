@@ -1,6 +1,6 @@
 package com.jinotrain.badforum.main;
 
-import com.jinotrain.badforum.beans.ServerData;
+import com.jinotrain.badforum.data.ServerData;
 import com.jinotrain.badforum.configs.ServerConfig;
 import com.jinotrain.badforum.util.PathFinder;
 

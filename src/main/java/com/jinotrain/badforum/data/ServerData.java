@@ -1,4 +1,4 @@
-package com.jinotrain.badforum.beans;
+package com.jinotrain.badforum.data;
 
 import org.springframework.beans.factory.annotation.Value;
 
