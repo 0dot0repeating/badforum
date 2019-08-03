@@ -4,6 +4,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.UUID;
 
@@ -25,6 +26,9 @@ public class ForumUser
 
     protected Boolean enabled;
 
+    protected Date creationDate;
+    protected Date lastLoginDate;
+
     @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "user")
     protected Collection<UserToRoleLink> roleLinks;
 
@@ -32,27 +36,41 @@ public class ForumUser
     public String getUsername() { return username; }
 
     public String getPasshash()       { return passhash; }
-    public void setPasshash(String s) { this.passhash = s; }
+    public void setPasshash(String s) { passhash = s; }
 
     public String getEmail()       { return email; }
-    public void setEmail(String e) { this.email = e; }
+    public void setEmail(String e) { email = e; }
 
     public Boolean getEnabled()       { return enabled; }
-    public void setEnabled(Boolean e) { this.enabled = e; }
+    public void setEnabled(Boolean e) { enabled = e; }
+
+    public Date getCreationDate() { return creationDate; }
+
+    public Date getLastLoginDate() { return lastLoginDate; }
+    public void setLastLoginDate(Date d) { lastLoginDate = d; }
 
 
     protected ForumUser()
     {
-        this("user", "{noop}password");
+        this("user", "{noop}password", null);
     }
 
 
     public ForumUser(String name, String passhash)
     {
-        this.username  = name;
-        this.passhash  = passhash;
-        this.roleLinks = new HashSet<>();
-        this.enabled   = true;
+        this(name, passhash, null);
+    }
+
+
+    public ForumUser(String name, String passhash, String email)
+    {
+        this.username      = name;
+        this.passhash      = passhash;
+        this.email         = email;
+        this.roleLinks     = new HashSet<>();
+        this.creationDate  = new Date();
+        this.lastLoginDate = new Date();
+        this.enabled       = true;
     }
 
 

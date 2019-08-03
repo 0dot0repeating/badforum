@@ -33,13 +33,32 @@ public class StaticFileController
         "image/svg+xml",
     };
 
+
     @RequestMapping(value = "/static/**",
                     method = {RequestMethod.GET, RequestMethod.HEAD})
     public void getStaticFile(HttpServletRequest request,
                               HttpServletResponse response) throws IOException
     {
         String requestUrl = request.getServletPath().substring("/static/".length());
-        URL    inUrl      = getClass().getResource("/WEB-INF/static/" + requestUrl);
+        respondWithFile("/static/" + requestUrl, response, null);
+    }
+
+
+    @RequestMapping(value = "/favicon.*",
+                    method = {RequestMethod.GET, RequestMethod.HEAD})
+    public void getFavicon(HttpServletRequest request,
+                              HttpServletResponse response) throws IOException
+    {
+        respondWithFile("/static/favicon.png", response, "image/png");
+    }
+
+
+    private void respondWithFile(String requestUrl, HttpServletResponse response, String forceMime) throws IOException
+    {
+        requestUrl = requestUrl.replaceAll("//+", "/");
+        if (requestUrl.startsWith("/")) { requestUrl = requestUrl.substring(1); }
+
+        URL inUrl = getClass().getResource("/WEB-INF/" + requestUrl);
 
         if (inUrl == null)
         {
@@ -56,7 +75,7 @@ public class StaticFileController
             URLConnection inConnection = inUrl.openConnection();
             long mtime = inConnection.getLastModified();
 
-            String  mime   = guessMimeType(requestUrl);
+            String  mime   = forceMime == null ? guessMimeType(requestUrl) : forceMime;
             Boolean inline = ArrayUtils.contains(INLINE_MIMES, mime);
 
             if (mime.startsWith("text/"))

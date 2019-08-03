@@ -3,18 +3,24 @@ package com.jinotrain.badforum.configs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.*;
+import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.thymeleaf.spring5.ISpringTemplateEngine;
 import org.thymeleaf.spring5.SpringTemplateEngine;
 import org.thymeleaf.spring5.templateresolver.SpringResourceTemplateResolver;
 import org.thymeleaf.spring5.view.ThymeleafViewResolver;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ITemplateResolver;
+
+import java.util.Locale;
 
 @Configuration
 @EnableWebMvc
@@ -30,15 +36,15 @@ public class MVCConfig
 {
     private Logger logger = LoggerFactory.getLogger(MVCConfig.class);
 
+    @Autowired
     private WebApplicationContext webContext;
-    private Boolean cacheTemplates;
 
     @Autowired
-    public MVCConfig(WebApplicationContext webContext,
-                     @Value("${badforum.cachetemplates:false}") Boolean cacheTemplates)
+    private Environment environment;
+
+
+    public MVCConfig()
     {
-        this.cacheTemplates = cacheTemplates;
-        this.webContext     = webContext;
     }
 
 
@@ -46,6 +52,7 @@ public class MVCConfig
     {
         SpringTemplateEngine engine = new SpringTemplateEngine();
         engine.setTemplateResolver(resolver);
+        engine.setTemplateEngineMessageSource(messageSource());
         return engine;
     }
 
@@ -71,14 +78,39 @@ public class MVCConfig
         resolver.setPrefix("classpath:/WEB-INF/" + extension + "/");
         resolver.setSuffix("." + extension);
         resolver.setTemplateMode(tmode);
+
+        boolean cacheTemplates = Boolean.parseBoolean(environment.getProperty("badforum.cachetemplates", "true"));
         resolver.setCacheable(cacheTemplates);
+
         return resolver;
     }
 
 
     @Bean
-    public ViewResolver htmlResolver()
+    public ViewResolver viewResolver()
     {
         return makeViewResolver("text/html", "html", TemplateMode.HTML);
+    }
+
+
+    @Bean
+    public MessageSource messageSource()
+    {
+        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+        messageSource.setBasename("WEB-INF/messages");
+        messageSource.setFallbackToSystemLocale(false);
+        messageSource.setDefaultEncoding("UTF-8");
+
+        return messageSource;
+    }
+
+    @Bean
+    public LocaleResolver localeResolver()
+    {
+        CookieLocaleResolver resolver = new CookieLocaleResolver();
+        resolver.setDefaultLocale(Locale.US);
+        resolver.setCookieName("forumLocale");
+        resolver.setCookieMaxAge(4800);
+        return resolver;
     }
 }

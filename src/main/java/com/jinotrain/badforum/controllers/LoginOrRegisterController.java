@@ -87,14 +87,11 @@ public class LoginOrRegisterController
             return getRegisterPage(request, response, errorKeys);
         }
 
-
         String passhash = passwordService.hashPassword(password);
-        ForumUser user = new ForumUser(username, passhash);
-
-        user.setEmail(email);
+        ForumUser user = new ForumUser(username, passhash, email);
         em.persist(user);
 
-        ModelAndView mav = new ModelAndView("register2.html");
+        ModelAndView mav = new ModelAndView("registered.html");
 
         mav.addObject("username", username);
         mav.addObject("email",    email);
