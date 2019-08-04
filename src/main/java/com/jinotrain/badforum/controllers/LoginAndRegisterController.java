@@ -3,7 +3,10 @@ package com.jinotrain.badforum.controllers;
 import com.jinotrain.badforum.components.ForumPasswordService;
 import com.jinotrain.badforum.db.entities.ForumUser;
 import com.jinotrain.badforum.db.repositories.ForumUserRepository;
+import com.jinotrain.badforum.util.LogHelper;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,8 @@ import java.util.List;
 @Controller
 public class LoginAndRegisterController
 {
+    private static Logger logger = LoggerFactory.getLogger(LoginAndRegisterController.class);
+
     @Autowired
     private ForumPasswordService passwordService;
 
@@ -33,22 +38,26 @@ public class LoginAndRegisterController
     private EntityManager em;
 
 
-    @Transactional
-    public JSONObject registerUser(String username, String email, String password, String pwConfirm)
+    private JSONObject registerUser(String username, String email, String password, String pwConfirm)
     {
         JSONObject ret = new JSONObject();
 
-        if (username == null || password == null || pwConfirm == null)
+        username  = username  != null ? username  : "";
+        email     = email     != null ? email     : "";
+        password  = password  != null ? password  : "";
+        pwConfirm = pwConfirm != null ? pwConfirm : "";
+
+        if (username.equals("") || password.equals("") || pwConfirm.equals(""))
         {
             List<String> missing = new ArrayList<>();
 
-            if (username == null)  { missing.add("username"); }
-            if (password == null)  { missing.add("password"); }
-            if (pwConfirm == null) { missing.add("password confirmation"); }
+            if (username.equals(""))  { missing.add("username"); }
+            if (password.equals(""))  { missing.add("password"); }
+            if (pwConfirm.equals("")) { missing.add("password confirmation"); }
 
             ret.put("registered", false);
             ret.put("errorCode", "INCOMPLETE");
-            ret.put("errorExtra", "Missing (" + String.join(", ", missing) + ")");
+            ret.put("errorExtra", "Missing " + String.join(", ", missing));
             return ret;
         }
 
@@ -68,10 +77,9 @@ public class LoginAndRegisterController
             return ret;
         }
 
-        ForumUser user;
-
         try
         {
+            ForumUser user;
             String passhash = passwordService.hashPassword(password);
             user = new ForumUser(username, passhash, email);
             em.persist(user);
@@ -81,6 +89,7 @@ public class LoginAndRegisterController
             ret.put("registered", false);
             ret.put("errorCode", "INTERNAL_ERROR");
 
+            LogHelper.dumpException(logger, e);
             return ret;
         }
 
@@ -90,6 +99,7 @@ public class LoginAndRegisterController
     }
 
 
+    @Transactional
     @ResponseBody
     @RequestMapping(value = "/api/register", method = {RequestMethod.GET, RequestMethod.HEAD}, produces = "application/json")
     public String registerUserViaJSON(HttpServletRequest request)
@@ -107,6 +117,7 @@ public class LoginAndRegisterController
     }
 
 
+    @Transactional
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public ModelAndView registerUserViaPOST(HttpServletRequest request, HttpServletResponse response)
     {
@@ -147,5 +158,17 @@ public class LoginAndRegisterController
                                         HttpServletResponse response)
     {
         return new ModelAndView("register.html");
+    }
+
+
+    @RequestMapping(value = "/api/checkUsername", method = RequestMethod.GET)
+    @ResponseBody
+    public String checkUsernameAvailable(String username)
+    {
+        ForumUser existingUser = userRepository.findByUsernameIgnoreCase(username);
+
+        JSONObject ret = new JSONObject();
+        ret.put("available", existingUser == null);
+        return ret.toString();
     }
 }

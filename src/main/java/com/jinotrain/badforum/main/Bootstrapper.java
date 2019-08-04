@@ -2,6 +2,7 @@ package com.jinotrain.badforum.main;
 
 import com.jinotrain.badforum.data.ServerData;
 import com.jinotrain.badforum.configs.ServerConfig;
+import com.jinotrain.badforum.util.LogHelper;
 import com.jinotrain.badforum.util.PathFinder;
 
 import org.apache.catalina.Context;
@@ -87,16 +88,7 @@ public class Bootstrapper
         }
         catch (Exception e)
         {
-            logger.error("Uncaught exception {} thrown ({})", e.getClass().getSimpleName(), e.getMessage());
-            logger.error("Stack trace:");
-
-            StringWriter sw = new StringWriter();
-            PrintWriter  pw = new PrintWriter(sw);
-            e.printStackTrace(pw);
-
-            String eStr = sw.toString();
-            Arrays.stream(eStr.split("\\r?\\n")).forEach((String l) -> logger.error(l));
-
+            LogHelper.dumpException(logger, e);
             logger.error("Exiting with status 2");
             System.exit(2);
         }

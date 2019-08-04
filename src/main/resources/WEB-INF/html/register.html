@@ -15,11 +15,11 @@
         This connection is secure. Still, don't use a password you use anywhere else.
     </div>
 
-    <form method="post" action="/register">
+    <form method="post" action="/register" onsubmit="jsonRegister()">
         <div class="error" th:if="${errorCode != null}">
             <h3>Error encountered during registration:</h3>
-            <p>[[#{error.register.__${errorCode}__}]]</p>
-            <p th:text="${errorExtra}"></p>
+            <span class="errorCode">[[#{error.register.__${errorCode}__}]]</span>
+            <span class="errorExtra" th:if="${errorExtra != null}">([[${errorExtra}]])</span>
         </div>
 
         <div>
@@ -33,11 +33,12 @@
         </div>
         <div>
             <span>Password:</span>
-            <input type="password" name="password" placeholder="Password">
+            <input id="passwordInput" type="password" oninput="onPasswordInput()" name="password" placeholder="Password">
+            <span id="passwordnote"></span>
         </div>
         <div>
             <span>Confirm:</span>
-            <input type="password" name="confirm" placeholder="Confirm">
+            <input id="confirmInput" type="password" oninput="onPasswordInput()" name="confirm" placeholder="Confirm">
         </div>
 
         <input type="submit" value="Register">
