@@ -57,7 +57,10 @@ function checkPassword()
     if (passwordElement.value !== confirmElement.value)
     {
         notifyElement.innerHTML = "Passwords don't match";
+        return;
     }
+
+    notifyElement.innerHTML = "👌";
 }
 
 
