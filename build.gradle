@@ -26,6 +26,7 @@ dependencies {
             "org.hibernate:hibernate-core:5.4.3.Final",     // JPA implementation
             "org.apache.commons:commons-dbcp2:2.6.0",       // connection pooling for hibernate
             "org.mindrot:jbcrypt:0.4",                      // password encryption
+            "org.json:json:20180813",                       // curly lists
 
             "org.springframework:spring-webmvc:5.1.1.RELEASE",                  // web framework
             "org.springframework:spring-orm:5.1.1.RELEASE",                     // JPA framework (middleman between database and... ???)

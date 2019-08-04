@@ -6,39 +6,41 @@
 </head>
 <body>
     <h1>Register</h1>
-    <form method="post">
-        <p class="error" th:if="${errorMessage != null}">
+
+    <div class="bigWarning" th:if="${#request.isSecure() == false}">
+        This connection is not secure! Please, for all that is good in the world, don't use a password you use anywhere else.
+    </div>
+
+    <div class="warning" th:if="${#request.isSecure() == true}">
+        This connection is secure. Still, don't use a password you use anywhere else.
+    </div>
+
+    <form method="post" action="/register">
+        <div class="error" th:if="${errorCode != null}">
             <h3>Error encountered during registration:</h3>
-            <p>[[${errorMessage}]]</p>
-        </p>
+            <p>[[#{error.register.__${errorCode}__}]]</p>
+            <p th:text="${errorExtra}"></p>
+        </div>
 
-        <p class="bigWarning" th:if="${#request.isSecure() == false}">
-            This connection is not secure! Please, for all that is good in the world, don't use a password you use anywhere else.
-        </p>
-
-        <p class="warning" th:if="${#request.isSecure() == true}">
-            This connection is secure. Still, don't use a password you use anywhere else.
-        </p>
-
-        <p>
+        <div>
             <span>Username:</span>
-            <input type="text" name="username" oninput="onUsernameInput(this, 'usernote')" placeholder="Username">
+            <input type="text" name="username" oninput="onUsernameInput(this, 'usernote')" placeholder="Username" th:value="${registerUsername}">
             <span id="usernote"></span>
-        </p>
-        <p>
+        </div>
+        <div>
             <span>Email address:</span>
-            <input type="text" name="email" placeholder="Email (optional)">
-        </p>
-        <p>
+            <input type="text" name="email" placeholder="Email (optional)" th:value="${registerEmail}">
+        </div>
+        <div>
             <span>Password:</span>
             <input type="password" name="password" placeholder="Password">
-        </p>
-        <p>
+        </div>
+        <div>
             <span>Confirm:</span>
             <input type="password" name="confirm" placeholder="Confirm">
-        </p>
+        </div>
 
-        <input type="submit" value="Register"></form>
+        <input type="submit" value="Register">
     </form>
 </body>
 </html>
