@@ -6,8 +6,8 @@ import javax.persistence.*;
 public class UserToRoleLink
 {
     @Id
-    @GeneratedValue
-    private Long id;
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    private long id;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "user_id")

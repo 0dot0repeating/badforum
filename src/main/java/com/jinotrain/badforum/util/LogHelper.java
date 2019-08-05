@@ -6,7 +6,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
 
-public class LogHelper
+public final class LogHelper
 {
     public static void dumpException(Logger logger, Exception e)
     {

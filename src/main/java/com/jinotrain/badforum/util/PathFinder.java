@@ -8,10 +8,10 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
-public class PathFinder
+public final class PathFinder
 {
-    private static Logger logger = LoggerFactory.getLogger(PathFinder.class);
-    private static String exePath;
+    private final static Logger logger = LoggerFactory.getLogger(PathFinder.class);
+    private final static String exePath;
 
     static
     {

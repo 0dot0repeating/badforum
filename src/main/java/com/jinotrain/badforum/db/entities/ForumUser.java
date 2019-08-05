@@ -1,23 +1,19 @@
 package com.jinotrain.badforum.db.entities;
 
-import org.hibernate.annotations.GenericGenerator;
-
 import javax.persistence.*;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.UUID;
 
 @Entity
 public class ForumUser
 {
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
-    protected UUID id;
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    protected long id;
 
     @Column(unique = true, nullable = false)
-    protected final String username;
+    protected String username;
 
     @Column(nullable = false)
     protected String passhash;
@@ -50,17 +46,12 @@ public class ForumUser
     public void setLastLoginDate(Date d) { lastLoginDate = d; }
 
 
-    protected ForumUser()
-    {
-        this("user", "{noop}password", null);
-    }
-
+    private ForumUser() {}
 
     public ForumUser(String name, String passhash)
     {
         this(name, passhash, null);
     }
-
 
     public ForumUser(String name, String passhash, String email)
     {

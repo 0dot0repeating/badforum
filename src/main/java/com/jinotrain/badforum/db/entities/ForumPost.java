@@ -7,8 +7,8 @@ import java.util.Date;
 public class ForumPost implements Comparable<ForumPost>
 {
     @Id
-    @GeneratedValue
-    protected Long id;
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    protected long id;
 
     @Column(nullable = false)
     protected String postText;

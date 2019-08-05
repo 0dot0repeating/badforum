@@ -6,8 +6,8 @@ import javax.persistence.*;
 public class RoleToBoardLink
 {
     @Id
-    @GeneratedValue
-    private Long id;
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    private long id;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "role_id")
@@ -20,10 +20,7 @@ public class RoleToBoardLink
     private boolean canView;
     private boolean canPost;
 
-    public RoleToBoardLink()
-    {
-        this(null, null);
-    }
+    public RoleToBoardLink() { this(null, null); }
 
     public RoleToBoardLink(ForumRole role, ForumBoard board)
     {

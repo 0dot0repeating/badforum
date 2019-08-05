@@ -9,8 +9,8 @@ import java.util.List;
 public class ForumThread
 {
     @Id
-    @GeneratedValue
-    protected Long id;
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    protected long id;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     protected List<ForumPost> posts;
