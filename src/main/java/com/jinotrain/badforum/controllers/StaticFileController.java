@@ -1,5 +1,8 @@
 package com.jinotrain.badforum.controllers;
 
+import com.jinotrain.badforum.util.PathFinder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -8,6 +11,7 @@ import org.thymeleaf.util.ArrayUtils;
 import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,6 +25,8 @@ import java.util.TimeZone;
 @Controller
 public class StaticFileController
 {
+    private static Logger logger = LoggerFactory.getLogger(StaticFileController.class);
+
     private static final int CHUNKSIZE = 8192;
 
     private static final String[] INLINE_MIMES =
@@ -34,13 +40,21 @@ public class StaticFileController
     };
 
 
-    @RequestMapping(value = "/static/**",
-                    method = {RequestMethod.GET, RequestMethod.HEAD})
+    @RequestMapping(value = "/static/**", method = RequestMethod.GET)
     public void getStaticFile(HttpServletRequest request,
                               HttpServletResponse response) throws IOException
     {
         String requestUrl = request.getServletPath().substring("/static/".length());
-        respondWithFile("/static/" + requestUrl, response, null);
+        respondWithFile("/static/" + requestUrl, response, null, false);
+    }
+
+
+    @RequestMapping(value = "/static/**", method = RequestMethod.HEAD)
+    public void getStaticFileHead(HttpServletRequest request,
+                                  HttpServletResponse response) throws IOException
+    {
+        String requestUrl = request.getServletPath().substring("/static/".length());
+        respondWithFile("/static/" + requestUrl, response, null, true);
     }
 
 
@@ -49,16 +63,32 @@ public class StaticFileController
     public void getFavicon(HttpServletRequest request,
                               HttpServletResponse response) throws IOException
     {
-        respondWithFile("/static/favicon.png", response, "image/png");
+        respondWithFile("/static/img/favicon.png", response, "image/png", false);
     }
 
 
-    private void respondWithFile(String requestUrl, HttpServletResponse response, String forceMime) throws IOException
+    private void respondWithFile(String requestUrl, HttpServletResponse response, String forceMime, boolean headersOnly) throws IOException
     {
         requestUrl = requestUrl.replaceAll("//+", "/");
         if (requestUrl.startsWith("/")) { requestUrl = requestUrl.substring(1); }
 
-        URL inUrl = getClass().getResource("/WEB-INF/" + requestUrl);
+        File inFile = new File("./external/" + requestUrl);
+
+        if (!inFile.isFile())
+        {
+            inFile = new File(PathFinder.getExecutablePath() + "/external/" + requestUrl);
+        }
+
+        URL inUrl;
+
+        if (inFile.isFile())
+        {
+            inUrl = inFile.toURI().toURL();
+        }
+        else
+        {
+            inUrl = getClass().getResource("/WEB-INF/" + requestUrl);
+        }
 
         if (inUrl == null)
         {
@@ -92,22 +122,26 @@ public class StaticFileController
             response.setHeader("Pragma", "no-cache");
             response.setHeader("Cache-Control", "public, max-age=360");
             response.setHeader("Last-Modified", dateFormat.format(date));
+            response.setHeader("Content-length", String.valueOf(inConnection.getContentLengthLong()));
 
-            InputStream inFile = inConnection.getInputStream();
-            byte[] b = new byte[CHUNKSIZE];
-
-            OutputStream out = response.getOutputStream();
-
-            while (true)
+            if (!headersOnly)
             {
-                int readBytes = inFile.read(b);
-                if (readBytes <= 0) { break; }
+                InputStream inStream = inConnection.getInputStream();
+                byte[] b = new byte[CHUNKSIZE];
 
-                if (readBytes == CHUNKSIZE) { out.write(b); }
-                else { out.write(Arrays.copyOfRange(b, 0, readBytes)); }
+                OutputStream out = response.getOutputStream();
+
+                while (true)
+                {
+                    int readBytes = inStream.read(b);
+                    if (readBytes <= 0) { break; }
+
+                    if (readBytes == CHUNKSIZE) { out.write(b); }
+                    else { out.write(Arrays.copyOfRange(b, 0, readBytes)); }
+                }
+
+                inStream.close();
             }
-
-            inFile.close();
         }
     }
 

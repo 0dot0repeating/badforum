@@ -60,6 +60,6 @@ public abstract class PasswordHasher
         PrefixAndHash prefixAndHash = prefixCheck.get();
         if (!prefixAndHash.prefix.equals(getPrefix())) { return false; }
 
-        return checkHash(prefixAndHash.hash, password);
+        return checkHash(password, prefixAndHash.hash);
     }
 }

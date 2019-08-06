@@ -31,6 +31,7 @@ public class ForumSession
     }
 
 
+    public String    getId()           { return id; }
     public ForumUser getUser()         { return user; }
     public Date      getCreationDate() { return creationDate; }
     public Date      getLastUseDate()  { return lastUseDate; }

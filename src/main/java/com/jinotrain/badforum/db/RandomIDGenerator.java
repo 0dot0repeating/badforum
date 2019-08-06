@@ -1,5 +1,6 @@
 package com.jinotrain.badforum.db;
 
+import com.jinotrain.badforum.util.XToY;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.Configurable;
@@ -24,8 +25,7 @@ public class RandomIDGenerator implements IdentifierGenerator, Configurable
         byte[] randBytes = new byte[idBytes];
 
         rnd.nextBytes(randBytes);
-
-        return null;
+        return XToY.bytesToHex(randBytes);
     }
 
 

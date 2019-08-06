@@ -18,6 +18,6 @@ public final class LogHelper
         e.printStackTrace(pw);
 
         String eStr = sw.toString();
-        Arrays.stream(eStr.split("\\r?\\n")).forEach((String l) -> logger.error(l));
+        Arrays.stream(eStr.split("\\r?\\n")).forEach(logger::error);
     }
 }

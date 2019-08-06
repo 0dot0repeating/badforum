@@ -5,8 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.regex.Pattern;
 
 public final class PathFinder
 {
@@ -21,12 +19,7 @@ public final class PathFinder
         try
         {
             f = new File(PathFinder.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            jarPath = f.getAbsolutePath();
-
-            String[] jarPathParts = jarPath.split(Pattern.quote(File.separator));
-
-            jarPath = String.join(File.separator, Arrays.copyOfRange(jarPathParts, 0, jarPathParts.length - 1));
-
+            jarPath = f.getAbsoluteFile().getParent();
         }
         catch (URISyntaxException e)
         {

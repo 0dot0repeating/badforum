@@ -4,25 +4,25 @@
     <title>[[#{badforum.name}]] - Registration complete</title>
 </head>
 <body>
-<h1>Registration complete</h1>
-<form>
-    <p class="error" th:if="${registerError != null}"></p>
+    <div th:replace="inc/header :: header">
 
-    <p class="bigWarning" th:if="${#request.isSecure() == false}">
-        This connection is not secure! If you submitted a password you use elsewhere, it's your own fault if a third party gets hold of it.
-    </p>
+    </div>
 
-    <p>
-        <strong>Username:</strong> "[[${username}]]"
-    </p>
-    <p>
-        <strong>Email address:</strong> "[[${email}]]"
-    </p>
-    <p>
-        <strong>Password hash:</strong> "[[${passhash}]]"
-    </p>
+    <h1>Registration complete</h1>
+    <form>
+        <div class="bigWarning" th:if="${#request.isSecure() == false}">
+            This connection is not secure! If you submitted a password you use elsewhere,
+            it's your own fault if a third party gets hold of it.
+        </div>
 
-    <p>also nothing actually happened yet</p>
-</form>
+        <p>
+            You've successfully registered on the world's lamest forum, and you should be logged
+            in and ready to throw your messages into the void where no one will ever see them.
+        </p>
+
+        <p>
+            Which, to be fair, is still better than dealing with your average internet user.
+        </p>
+    </form>
 </body>
 </html>
