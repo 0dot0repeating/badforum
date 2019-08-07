@@ -1,6 +1,7 @@
 package com.jinotrain.badforum.db.entities;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.Date;
 
 @Entity
@@ -14,9 +15,9 @@ public class ForumPost implements Comparable<ForumPost>
     protected String postText;
 
     @Column(nullable = false)
-    protected Date postDate;
+    protected Instant postTime;
 
-    protected Date lastEditDate;
+    protected Instant lastEditTime;
 
     @ManyToOne
     @JoinColumn(name = "author_id")
@@ -40,8 +41,8 @@ public class ForumPost implements Comparable<ForumPost>
     public ForumPost(String postText, ForumUser author)
     {
         this.postText     = postText;
-        this.postDate     = new Date();
-        this.lastEditDate = null;
+        this.postTime = Instant.now();
+        this.lastEditTime = null;
         this.author       = author;
     }
 
@@ -54,11 +55,11 @@ public class ForumPost implements Comparable<ForumPost>
     public String getPostText()         { return postText; }
     public void   setPostText(String t) { postText = t; }
 
-    public Date getPostDate()       { return postDate; }
-    public void setPostDate(Date d) { postDate = d; }
+    public Instant getPostTime()          { return postTime; }
+    public void    setPostTime(Instant t) { postTime = t; }
 
-    public Date getlastEditDate()       { return lastEditDate; }
-    public void setlastEditDate(Date d) { lastEditDate = d; }
+    public Instant getlastEditTime()          { return lastEditTime; }
+    public void    setlastEditTime(Instant t) { lastEditTime = t; }
 
     public ForumUser getAuthor()            { return author; }
     public void      setAuthor(ForumUser a) { author = a; }
@@ -70,7 +71,7 @@ public class ForumPost implements Comparable<ForumPost>
     @Override
     public int compareTo(ForumPost o)
     {
-         int ret = postDate.compareTo(o.postDate);
+         int ret = postTime.compareTo(o.postTime);
          if (ret != 0) { return ret; }
 
          if (author   == null) { return -1; }

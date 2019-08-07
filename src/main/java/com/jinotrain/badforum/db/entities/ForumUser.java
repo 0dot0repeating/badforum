@@ -2,8 +2,8 @@ package com.jinotrain.badforum.db.entities;
 
 import javax.persistence.*;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
+import java.time.Instant;
 
 @Entity
 public class ForumUser
@@ -22,8 +22,8 @@ public class ForumUser
 
     protected Boolean enabled;
 
-    protected Date creationDate;
-    protected Date lastLoginDate;
+    protected Instant creationTime;
+    protected Instant lastLoginTime;
 
     @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "user")
     protected Collection<UserToRoleLink> roleLinks;
@@ -40,10 +40,10 @@ public class ForumUser
     public Boolean getEnabled()       { return enabled; }
     public void setEnabled(Boolean e) { enabled = e; }
 
-    public Date getCreationDate() { return creationDate; }
+    public Instant getCreationTime() { return creationTime; }
 
-    public Date getLastLoginDate() { return lastLoginDate; }
-    public void setLastLoginDate(Date d) { lastLoginDate = d; }
+    public Instant getLastLoginTime() { return lastLoginTime; }
+    public void setLastLoginTime(Instant d) { lastLoginTime = d; }
 
 
     private ForumUser() {}
@@ -59,8 +59,8 @@ public class ForumUser
         this.passhash      = passhash;
         this.email         = email;
         this.roleLinks     = new HashSet<>();
-        this.creationDate  = new Date();
-        this.lastLoginDate = new Date();
+        this.creationTime  = Instant.now();
+        this.lastLoginTime = Instant.now();
         this.enabled       = true;
     }
 

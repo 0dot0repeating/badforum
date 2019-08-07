@@ -3,7 +3,8 @@ package com.jinotrain.badforum.db.entities;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 
 @Entity
 public class ForumSession
@@ -17,8 +18,9 @@ public class ForumSession
     @JoinColumn(name="user_id")
     private ForumUser user;
 
-    private Date creationDate;
-    private Date expireDate;
+    private Instant  creationTime;
+    private Instant  expireTime;
+    private Duration refreshDuration;
 
 
     private ForumSession() {}
@@ -26,18 +28,28 @@ public class ForumSession
     public ForumSession(ForumUser user)
     {
         this.user = user;
-        this.creationDate = new Date();
-        this.expireDate   = this.creationDate;
+        this.refreshDuration = Duration.ofHours(1);
+        this.creationTime    = Instant.now();
+        this.expireTime      = this.creationTime.plus(this.refreshDuration);
     }
 
 
     public String    getId()           { return id; }
     public ForumUser getUser()         { return user; }
-    public Date      getCreationDate() { return creationDate; }
-    public Date      getExpireDate()   { return expireDate; }
+    public Instant   getCreationTime() { return creationTime; }
+    public Instant   getExpireTime()   { return expireTime; }
 
-    public void refreshLastUseDate()
+    public Duration getRefreshDuration()           { return refreshDuration; }
+    public void     setRefreshDuration(Duration t) { refreshDuration = t; }
+
+
+    public void refreshExpireTime()
     {
-        expireDate = new Date();
+        refreshExpireTime(refreshDuration);
+    }
+
+    public void refreshExpireTime(Duration delta)
+    {
+        expireTime = Instant.now().plus(delta);
     }
 }

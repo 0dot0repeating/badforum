@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface ForumSessionRepository extends JpaRepository<ForumSession, String>
 {
-    List<ForumSession> findAllByUserOrderByExpireDateDesc(ForumUser user);
+    List<ForumSession> findAllByUserOrderByExpireTimeDesc(ForumUser user);
 }

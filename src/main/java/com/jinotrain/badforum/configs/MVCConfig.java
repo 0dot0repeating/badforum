@@ -1,6 +1,6 @@
 package com.jinotrain.badforum.configs;
 
-import com.jinotrain.badforum.controllers.ForumRequestInterceptor;
+import com.jinotrain.badforum.controllers.ForumSessionInjector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,9 +119,9 @@ public class MVCConfig implements WebMvcConfigurer
 
 
     @Bean
-    public ForumRequestInterceptor forumRequestInterceptor()
+    public ForumSessionInjector forumRequestInterceptor()
     {
-        return new ForumRequestInterceptor();
+        return new ForumSessionInjector();
     }
 
 

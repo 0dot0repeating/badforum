@@ -1,6 +1,7 @@
 package com.jinotrain.badforum.db.entities;
 
 import javax.persistence.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -22,9 +23,9 @@ public class ForumThread
     @Column(nullable = false)
     protected String topic;
 
-    protected Date creationDate;
+    protected Instant creationTime;
 
-    protected Date lastUpdate;
+    protected Instant lastUpdate;
 
 
     public ForumThread()
@@ -36,7 +37,7 @@ public class ForumThread
     {
         this.topic        = topic;
         this.posts        = posts == null ? new ArrayList<>() : new ArrayList<>(posts);
-        this.creationDate = new Date();
-        this.lastUpdate   = this.creationDate;
+        this.creationTime = Instant.now();
+        this.lastUpdate   = this.creationTime;
     }
 }
