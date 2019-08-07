@@ -3,5 +3,6 @@ text/plain      txt
 text/css        css
 image/png       png
 image/jpeg      jpg
+image/svg+xml   svg
 video/webm      webm
 video/mp4       mp4
