@@ -2,7 +2,6 @@ package com.jinotrain.badforum.db.entities;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.Date;
 
 @Entity
 public class ForumPost implements Comparable<ForumPost>

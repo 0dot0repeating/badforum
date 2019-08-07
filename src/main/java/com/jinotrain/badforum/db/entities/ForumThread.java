@@ -3,7 +3,6 @@ package com.jinotrain.badforum.db.entities;
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Entity

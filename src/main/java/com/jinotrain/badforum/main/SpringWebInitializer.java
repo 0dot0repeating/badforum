@@ -20,7 +20,7 @@ public class SpringWebInitializer implements WebApplicationInitializer
     private static Logger log = LoggerFactory.getLogger(SpringWebInitializer.class);
 
     @Override
-    public void onStartup(ServletContext container) throws ServletException
+    public void onStartup(ServletContext container)
     {
         // boy i sure love java class names
         AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();

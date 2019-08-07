@@ -90,6 +90,7 @@ public class LoginAndRegisterController
 
             ForumSession session = new ForumSession(user);
             sessionRepository.saveAndFlush(session);
+            sessionRepository.pruneSessions(user);
 
             ret.put("registered", true);
             ret.put("sessionID", session.getId());
@@ -151,6 +152,7 @@ public class LoginAndRegisterController
         {
             ForumSession session = new ForumSession(user);
             sessionRepository.saveAndFlush(session);
+            sessionRepository.pruneSessions(user);
 
             ret.put("loggedIn", true);
             ret.put("sessionID", session.getId());
@@ -169,19 +171,36 @@ public class LoginAndRegisterController
     }
 
 
+    private Map<String, Object> logout(String sessionID)
+    {
+        Map<String, Object> ret = new HashMap<>();
+
+        Optional<ForumSession> possibleSession = sessionRepository.findById(sessionID);
+
+        if (!possibleSession.isPresent())
+        {
+            ret.put("loggedOut", false);
+            ret.put("errorCode", "INVALID_SESSION_ID");
+            return ret;
+        }
+
+        ForumSession session = possibleSession.get();
+        sessionRepository.delete(session);
+
+        ret.put("loggedOut", true);
+        return ret;
+    }
+
+
 
 
     @Transactional
     @ResponseBody
-    @RequestMapping(value = "/api/register", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/api/register", produces = "application/json")
     public String registerUserViaJSON(String username, String email, String password, String pwConfirm)
     {
         Map<String, Object> retMap = registerUser(username, email, password, pwConfirm);
-
-        if (retMap.containsKey("session"))
-        {
-            retMap.remove("session");
-        }
+        retMap.remove("session");
 
         return new JSONObject(retMap).toString();
     }
@@ -191,9 +210,6 @@ public class LoginAndRegisterController
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public ModelAndView registerUserViaPOST(HttpServletRequest request, HttpServletResponse response)
     {
-        try { request.setCharacterEncoding("UTF-8"); }
-        catch (Exception ignore) {}
-
         String username  = request.getParameter("username");
         String email     = request.getParameter("email");
         String password  = request.getParameter("password");
@@ -209,8 +225,7 @@ public class LoginAndRegisterController
             Cookie sessionCookie = new Cookie("forumSession", (String)result.get("sessionID"));
             response.addCookie(sessionCookie);
 
-            // add object explicitly here, as post-handlers won't have the session ID cookie to read from
-            mav.addObject("forumSession", result.get("session"));
+            request.setAttribute("forumSession", result.get("session"));
         }
         else
         {
@@ -237,27 +252,21 @@ public class LoginAndRegisterController
 
     @Transactional
     @ResponseBody
-    @RequestMapping(value = "/api/login", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/api/login", produces = "application/json")
     public String loginViaJSON(String username, String password)
     {
         Map<String, Object> retMap = loginUser(username, password);
-
-        if (retMap.containsKey("session"))
-        {
-            retMap.remove("session");
-        }
+        retMap.remove("session");
 
         return new JSONObject(retMap).toString();
     }
 
 
+    @ResponseBody
     @Transactional
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ModelAndView loginViaPOST(HttpServletRequest request, HttpServletResponse response)
     {
-        try { request.setCharacterEncoding("UTF-8"); }
-        catch (Exception ignore) {}
-
         String username  = request.getParameter("username");
         String password  = request.getParameter("password");
 
@@ -266,13 +275,15 @@ public class LoginAndRegisterController
 
         if ((boolean)result.get("loggedIn"))
         {
-            mav = new ModelAndView("loggedIn.html");
-
             Cookie sessionCookie = new Cookie("forumSession", (String)result.get("sessionID"));
             response.addCookie(sessionCookie);
 
-            // add object explicitly here, as post-handlers won't have the session ID cookie to read from
-            mav.addObject("forumSession", result.get("session"));
+            request.setAttribute("forumSession", result.get("session"));
+
+            String referer = request.getParameter("previousPage");
+            if (referer == null) { referer = "/"; }
+
+            mav = new ModelAndView("redirect:" + referer);
         }
         else
         {
@@ -293,6 +304,40 @@ public class LoginAndRegisterController
     {
         return new ModelAndView("login.html");
     }
+
+
+
+
+    @Transactional
+    @ResponseBody
+    @RequestMapping(value = "/api/logout", produces = "application/json")
+    public String logoutViaJSON(String sessionID)
+    {
+        Map<String, Object> retMap = logout(sessionID);
+        return new JSONObject(retMap).toString();
+    }
+
+
+    @ResponseBody
+    @Transactional
+    @RequestMapping(value = "/logout", method = {RequestMethod.GET, RequestMethod.POST}, produces = "text/plain")
+    public String logoutViaPOST(HttpServletRequest request, HttpServletResponse response)
+    {
+        ForumSession session = (ForumSession)request.getAttribute("forumSession");
+
+        if (session != null)
+        {
+            logout(session.getId());
+        }
+
+        String referer = request.getHeader("Referer");
+        if (referer == null) { referer = "/"; }
+
+        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+        response.setHeader("Location", referer);
+        return referer;
+    }
+
 
 
 

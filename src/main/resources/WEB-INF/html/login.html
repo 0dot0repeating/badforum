@@ -9,7 +9,7 @@
 
     </div>
 
-    <h1>Log in</h1>
+    <h1>Login</h1>
 
     <div class="bigWarning" th:if="${#request.isSecure() == false}">
         This connection is not secure! The internet goblins will steal your password!
@@ -33,7 +33,9 @@
             <span id="passwordnote"></span>
         </div>
 
-        <input type="submit" value="Register">
+        <input type="hidden" name="previousPage" th:value="${#request.getHeader('Referer')}">
+
+        <input type="submit" value="Login">
     </form>
 </body>
 </html>
