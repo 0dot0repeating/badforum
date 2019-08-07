@@ -119,8 +119,7 @@ public class StaticFileController
 
             response.setContentType(mime);
             response.setHeader("Content-Disposition", inline ?  "inline" : "attachment");
-            response.setHeader("Pragma", "no-cache");
-            response.setHeader("Cache-Control", "public, max-age=360");
+            response.setHeader("Cache-Control", "public, max-age=3600");
             response.setHeader("Last-Modified", dateFormat.format(date));
             response.setHeader("Content-length", String.valueOf(inConnection.getContentLengthLong()));
 
