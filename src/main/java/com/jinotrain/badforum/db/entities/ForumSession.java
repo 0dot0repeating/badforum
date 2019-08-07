@@ -18,7 +18,7 @@ public class ForumSession
     private ForumUser user;
 
     private Date creationDate;
-    private Date lastUseDate;
+    private Date expireDate;
 
 
     private ForumSession() {}
@@ -27,17 +27,17 @@ public class ForumSession
     {
         this.user = user;
         this.creationDate = new Date();
-        this.lastUseDate  = this.creationDate;
+        this.expireDate   = this.creationDate;
     }
 
 
     public String    getId()           { return id; }
     public ForumUser getUser()         { return user; }
     public Date      getCreationDate() { return creationDate; }
-    public Date      getLastUseDate()  { return lastUseDate; }
+    public Date      getExpireDate()   { return expireDate; }
 
     public void refreshLastUseDate()
     {
-        lastUseDate = new Date();
+        expireDate = new Date();
     }
 }

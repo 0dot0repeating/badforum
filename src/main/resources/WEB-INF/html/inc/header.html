@@ -9,9 +9,17 @@
         <div class="forumname">[[#{badforum.name}]]</div>
         <ul>
             <li><a href="/">Home</a></li>
-            <li><a href="/login">Login</a></li>
-            <li><a href="/register">Register</a></li>
         </ul>
+
+        <div class="userinfo">
+            <span th:if="${forumSession != null}">
+                Logged in as [[${forumSession.getUser().getUsername()}]]
+            </span>
+
+            <span th:if="${forumSession == null}">
+                <a href="/login">Login</a> / <a href="/register">Register</a>
+            </span>
+        </div>
     </div>
 </body>
 </html>

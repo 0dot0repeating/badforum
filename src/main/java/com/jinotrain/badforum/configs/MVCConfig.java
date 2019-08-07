@@ -1,5 +1,6 @@
 package com.jinotrain.badforum.configs;
 
+import com.jinotrain.badforum.controllers.ForumRequestInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,8 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.thymeleaf.spring5.ISpringTemplateEngine;
 import org.thymeleaf.spring5.SpringTemplateEngine;
@@ -32,7 +35,7 @@ import java.util.Locale;
         com.jinotrain.badforum.controllers.ControllerSearchDummy.class,
         com.jinotrain.badforum.components.ComponentSearchDummy.class
 })
-public class MVCConfig
+public class MVCConfig implements WebMvcConfigurer
 {
     private Logger logger = LoggerFactory.getLogger(MVCConfig.class);
 
@@ -112,5 +115,19 @@ public class MVCConfig
         resolver.setCookieName("forumLocale");
         resolver.setCookieMaxAge(4800);
         return resolver;
+    }
+
+
+    @Bean
+    public ForumRequestInterceptor forumRequestInterceptor()
+    {
+        return new ForumRequestInterceptor();
+    }
+
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry)
+    {
+        registry.addInterceptor(forumRequestInterceptor());
     }
 }

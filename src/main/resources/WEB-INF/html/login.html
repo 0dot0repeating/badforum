@@ -12,11 +12,7 @@
     <h1>Log in</h1>
 
     <div class="bigWarning" th:if="${#request.isSecure() == false}">
-        This connection is not secure! Please, for all that is good in the world, don't use a password you use anywhere else.
-    </div>
-
-    <div class="warning" th:if="${#request.isSecure() == true}">
-        This connection is secure. Still, don't use a password you use anywhere else.
+        This connection is not secure! The internet goblins will steal your password!
     </div>
 
     <form method="post" action="/login">

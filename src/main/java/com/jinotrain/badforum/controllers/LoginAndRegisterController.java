@@ -23,9 +23,7 @@ import javax.persistence.PersistenceContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 public class LoginAndRegisterController
@@ -45,9 +43,9 @@ public class LoginAndRegisterController
     private EntityManager em;
 
 
-    private JSONObject registerUser(String username, String email, String password, String pwConfirm)
+    private Map<String, Object> registerUser(String username, String email, String password, String pwConfirm)
     {
-        JSONObject ret = new JSONObject();
+        Map<String, Object> ret = new HashMap<>();
 
         username  = username  != null ? username  : "";
         email     = email     != null ? email     : "";
@@ -95,6 +93,7 @@ public class LoginAndRegisterController
 
             ret.put("registered", true);
             ret.put("sessionID", session.getId());
+            ret.put("session", session);
             return ret;
         }
         catch (Exception e)
@@ -109,9 +108,9 @@ public class LoginAndRegisterController
     }
 
 
-    private JSONObject loginUser(String username, String password)
+    private Map<String, Object> loginUser(String username, String password)
     {
-        JSONObject ret = new JSONObject();
+        Map<String, Object> ret = new HashMap<>();
 
         username = username != null ? username : "";
         password = password != null ? password : "";
@@ -155,6 +154,7 @@ public class LoginAndRegisterController
 
             ret.put("loggedIn", true);
             ret.put("sessionID", session.getId());
+            ret.put("session", session);
             return ret;
         }
         catch (Exception e)
@@ -176,7 +176,14 @@ public class LoginAndRegisterController
     @RequestMapping(value = "/api/register", method = RequestMethod.GET, produces = "application/json")
     public String registerUserViaJSON(String username, String email, String password, String pwConfirm)
     {
-        return registerUser(username, email, password, pwConfirm).toString();
+        Map<String, Object> retMap = registerUser(username, email, password, pwConfirm);
+
+        if (retMap.containsKey("session"))
+        {
+            retMap.remove("session");
+        }
+
+        return new JSONObject(retMap).toString();
     }
 
 
@@ -192,22 +199,25 @@ public class LoginAndRegisterController
         String password  = request.getParameter("password");
         String pwConfirm = request.getParameter("confirm");
 
-        JSONObject result = registerUser(username, email, password, pwConfirm);
+        Map<String, Object> result = registerUser(username, email, password, pwConfirm);
         ModelAndView mav;
 
-        if (result.getBoolean("registered"))
+        if ((boolean)result.get("registered"))
         {
             mav = new ModelAndView("registered.html");
 
-            Cookie sessionCookie = new Cookie("forumSession", result.getString("sessionID"));
+            Cookie sessionCookie = new Cookie("forumSession", (String)result.get("sessionID"));
             response.addCookie(sessionCookie);
+
+            // add object explicitly here, as post-handlers won't have the session ID cookie to read from
+            mav.addObject("forumSession", result.get("session"));
         }
         else
         {
             mav = new ModelAndView("register.html");
 
-            mav.addObject("errorCode",  result.getString("errorCode"));
-            mav.addObject("errorExtra", result.optString("errorExtra"));
+            mav.addObject("errorCode",  result.get("errorCode"));
+            mav.addObject("errorExtra", result.getOrDefault("errorExtra", null));
             mav.addObject("username", username);
             mav.addObject("email", email);
         }
@@ -230,7 +240,14 @@ public class LoginAndRegisterController
     @RequestMapping(value = "/api/login", method = RequestMethod.GET, produces = "application/json")
     public String loginViaJSON(String username, String password)
     {
-        return loginUser(username, password).toString();
+        Map<String, Object> retMap = loginUser(username, password);
+
+        if (retMap.containsKey("session"))
+        {
+            retMap.remove("session");
+        }
+
+        return new JSONObject(retMap).toString();
     }
 
 
@@ -244,22 +261,25 @@ public class LoginAndRegisterController
         String username  = request.getParameter("username");
         String password  = request.getParameter("password");
 
-        JSONObject result = loginUser(username, password);
+        Map<String, Object> result = loginUser(username, password);
         ModelAndView mav;
 
-        if (result.getBoolean("loggedIn"))
+        if ((boolean)result.get("loggedIn"))
         {
             mav = new ModelAndView("loggedIn.html");
 
-            Cookie sessionCookie = new Cookie("forumSession", result.getString("sessionID"));
+            Cookie sessionCookie = new Cookie("forumSession", (String)result.get("sessionID"));
             response.addCookie(sessionCookie);
+
+            // add object explicitly here, as post-handlers won't have the session ID cookie to read from
+            mav.addObject("forumSession", result.get("session"));
         }
         else
         {
             mav = new ModelAndView("login.html");
 
-            mav.addObject("errorCode",  result.getString("errorCode"));
-            mav.addObject("errorExtra", result.optString("errorExtra"));
+            mav.addObject("errorCode",  result.get("errorCode"));
+            mav.addObject("errorExtra", result.getOrDefault("errorExtra", null));
             mav.addObject("username", username);
         }
 
