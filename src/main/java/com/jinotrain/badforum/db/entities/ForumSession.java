@@ -19,6 +19,7 @@ public class ForumSession
     private ForumUser user;
 
     private Instant  creationTime;
+    private Instant  lastUseTime;
     private Instant  expireTime;
     private Duration refreshDuration;
 
@@ -35,6 +36,7 @@ public class ForumSession
         this.user = user;
         this.refreshDuration = refreshDuration;
         this.creationTime    = Instant.now();
+        this.lastUseTime     = this.creationTime;
         this.expireTime      = this.creationTime.plus(this.refreshDuration);
     }
 
@@ -42,6 +44,7 @@ public class ForumSession
     public String    getId()           { return id; }
     public ForumUser getUser()         { return user; }
     public Instant   getCreationTime() { return creationTime; }
+    public Instant   getLastUseTime()  { return lastUseTime; }
     public Instant   getExpireTime()   { return expireTime; }
 
     public Duration getRefreshDuration()           { return refreshDuration; }
@@ -55,6 +58,7 @@ public class ForumSession
 
     public void refreshExpireTime(Duration delta)
     {
-        expireTime = Instant.now().plus(delta);
+        lastUseTime = Instant.now();
+        expireTime  = lastUseTime.plus(delta);
     }
 }

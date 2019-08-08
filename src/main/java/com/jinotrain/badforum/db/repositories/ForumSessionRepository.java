@@ -14,14 +14,14 @@ public interface ForumSessionRepository extends JpaRepository<ForumSession, Stri
 {
     int MAX_SESSIONS_PER_USER = 16;
 
-    List<ForumSession> findAllByUserOrderByExpireTimeDesc(ForumUser user);
+    List<ForumSession> findAllByUserOrderByLastUseTimeDesc(ForumUser user);
 
 
     default List<String> pruneSessions(ForumUser user)
     {
         List<String> prunedIDs = new ArrayList<>();
 
-        List<ForumSession> userSessions = findAllByUserOrderByExpireTimeDesc(user);
+        List<ForumSession> userSessions = findAllByUserOrderByLastUseTimeDesc(user);
         Instant now = Instant.now();
 
         int sessionCount = 0;
