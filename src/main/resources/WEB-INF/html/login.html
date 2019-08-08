@@ -24,7 +24,7 @@
 
         <div>
             <span>Username:</span>
-            <input type="text" name="username" placeholder="Username" th:value="${registerUsername}">
+            <input type="text" name="username" placeholder="Username" th:value="${username}">
             <span id="usernote"></span>
         </div>
         <div>
@@ -33,7 +33,11 @@
             <span id="passwordnote"></span>
         </div>
 
-        <input type="hidden" name="previousPage" th:value="${#request.getHeader('Referer')}">
+        <div>
+            <input type="checkbox" name="rememberMe" value="true"> Remember me
+        </div>
+
+        <input type="hidden" name="previousPage" th:value="${realReferer != null ? realReferer : #request.getHeader('Referer')}">
 
         <input type="submit" value="Login">
     </form>

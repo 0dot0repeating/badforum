@@ -27,8 +27,13 @@ public class ForumSession
 
     public ForumSession(ForumUser user)
     {
+        this(user, Duration.ofHours(1));
+    }
+
+    public ForumSession(ForumUser user, Duration refreshDuration)
+    {
         this.user = user;
-        this.refreshDuration = Duration.ofHours(1);
+        this.refreshDuration = refreshDuration;
         this.creationTime    = Instant.now();
         this.expireTime      = this.creationTime.plus(this.refreshDuration);
     }

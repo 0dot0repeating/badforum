@@ -23,6 +23,7 @@ import javax.persistence.PersistenceContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.Duration;
 import java.util.*;
 
 @Controller
@@ -109,7 +110,7 @@ public class LoginAndRegisterController
     }
 
 
-    private Map<String, Object> loginUser(String username, String password)
+    private Map<String, Object> loginUser(String username, String password, boolean rememberMe)
     {
         Map<String, Object> ret = new HashMap<>();
 
@@ -150,7 +151,7 @@ public class LoginAndRegisterController
 
         try
         {
-            ForumSession session = new ForumSession(user);
+            ForumSession session = new ForumSession(user, rememberMe ? Duration.ofDays(365*10) : Duration.ofMinutes(30));
             sessionRepository.saveAndFlush(session);
             sessionRepository.pruneSessions(user);
 
@@ -253,9 +254,9 @@ public class LoginAndRegisterController
     @Transactional
     @ResponseBody
     @RequestMapping(value = "/api/login", produces = "application/json")
-    public String loginViaJSON(String username, String password)
+    public String loginViaJSON(String username, String password, String rememberMe)
     {
-        Map<String, Object> retMap = loginUser(username, password);
+        Map<String, Object> retMap = loginUser(username, password, Boolean.parseBoolean(rememberMe));
         retMap.remove("session");
 
         return new JSONObject(retMap).toString();
@@ -267,23 +268,25 @@ public class LoginAndRegisterController
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ModelAndView loginViaPOST(HttpServletRequest request, HttpServletResponse response)
     {
-        String username  = request.getParameter("username");
-        String password  = request.getParameter("password");
+        String username    = request.getParameter("username");
+        String password    = request.getParameter("password");
+        boolean rememberMe = Boolean.parseBoolean(request.getParameter("rememberMe"));
 
-        Map<String, Object> result = loginUser(username, password);
+        String referer = request.getParameter("previousPage");
+        if (referer == null) { referer = request.getHeader("Referer"); }
+        if (referer == null) { referer = "/"; }
+
+        Map<String, Object> result = loginUser(username, password, rememberMe);
         ModelAndView mav;
 
         if ((boolean)result.get("loggedIn"))
         {
+            mav = new ModelAndView("redirect:" + referer);
+
             Cookie sessionCookie = new Cookie("forumSession", (String)result.get("sessionID"));
             response.addCookie(sessionCookie);
 
             request.setAttribute("forumSession", result.get("session"));
-
-            String referer = request.getParameter("previousPage");
-            if (referer == null) { referer = "/"; }
-
-            mav = new ModelAndView("redirect:" + referer);
         }
         else
         {
@@ -292,6 +295,7 @@ public class LoginAndRegisterController
             mav.addObject("errorCode",  result.get("errorCode"));
             mav.addObject("errorExtra", result.getOrDefault("errorExtra", null));
             mav.addObject("username", username);
+            mav.addObject("realReferer", referer);
         }
 
         return mav;
@@ -337,7 +341,6 @@ public class LoginAndRegisterController
         response.setHeader("Location", referer);
         return referer;
     }
-
 
 
 

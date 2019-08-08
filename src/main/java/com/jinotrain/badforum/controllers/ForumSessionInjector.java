@@ -64,6 +64,7 @@ public class ForumSessionInjector extends HandlerInterceptorAdapter
         else
         {
             session.refreshExpireTime();
+            sessionRepository.saveAndFlush(session);
             request.setAttribute("forumSession", session);
         }
 
