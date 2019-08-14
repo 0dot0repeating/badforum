@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Rate Limited</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>You have been rate limited</h1>
+
+    <p>[[#{error.flooding(${floodType}, ${floodWindow})}]]</p>
+</body>
+</html>

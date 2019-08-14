@@ -1,10 +1,13 @@
 package com.jinotrain.badforum.controllers;
 
+import com.jinotrain.badforum.components.flooding.FloodCategory;
+import com.jinotrain.badforum.components.flooding.FloodProtectionService;
 import com.jinotrain.badforum.components.passwords.ForumPasswordService;
 import com.jinotrain.badforum.db.entities.ForumSession;
 import com.jinotrain.badforum.db.entities.ForumUser;
 import com.jinotrain.badforum.db.repositories.ForumSessionRepository;
 import com.jinotrain.badforum.db.repositories.ForumUserRepository;
+import com.jinotrain.badforum.util.DurationFormat;
 import com.jinotrain.badforum.util.LogHelper;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -30,6 +33,9 @@ import java.util.*;
 public class LoginAndRegisterController
 {
     private static Logger logger = LoggerFactory.getLogger(LoginAndRegisterController.class);
+
+    @Autowired
+    FloodProtectionService floodProtectionService;
 
     @Autowired
     private ForumPasswordService passwordService;
@@ -198,12 +204,28 @@ public class LoginAndRegisterController
     @Transactional
     @ResponseBody
     @RequestMapping(value = "/api/register", produces = "application/json")
-    public String registerUserViaJSON(String username, String email, String password, String pwConfirm)
+    public String registerUserViaJSON(HttpServletRequest request)
     {
-        Map<String, Object> retMap = registerUser(username, email, password, pwConfirm);
-        retMap.remove("session");
+        String username  = request.getParameter("username");
+        String email     = request.getParameter("email");
+        String password  = request.getParameter("password");
+        String pwConfirm = request.getParameter("confirm");
+        String address   = request.getRemoteAddr();
 
-        return new JSONObject(retMap).toString();
+        boolean notFlooding = floodProtectionService.updateIfNotFlooding(FloodCategory.REGISTER, address);
+
+        if (notFlooding)
+        {
+            Map<String, Object> retMap = registerUser(username, email, password, pwConfirm);
+            retMap.remove("session");
+
+            return new JSONObject(retMap).toString();
+        }
+
+        JSONObject ret = new JSONObject();
+        ret.put("registered", false);
+        ret.put("flooding", true);
+        return ret.toString();
     }
 
 
@@ -215,9 +237,23 @@ public class LoginAndRegisterController
         String email     = request.getParameter("email");
         String password  = request.getParameter("password");
         String pwConfirm = request.getParameter("confirm");
+        String address   = request.getRemoteAddr();
+
+        ModelAndView mav;
+        boolean flooding = !floodProtectionService.updateIfNotFlooding(FloodCategory.REGISTER, address);
+
+        if (flooding)
+        {
+            mav = new ModelAndView("flooding.html");
+            Duration floodWindow = floodProtectionService.getFloodWindow(FloodCategory.REGISTER);
+
+            response.setStatus(429); // too many requests
+            mav.addObject("floodType", "login");
+            mav.addObject("floodWindow", DurationFormat.format(floodWindow));
+            return mav;
+        }
 
         Map<String, Object> result = registerUser(username, email, password, pwConfirm);
-        ModelAndView mav;
 
         if ((boolean)result.get("registered"))
         {
@@ -254,12 +290,27 @@ public class LoginAndRegisterController
     @Transactional
     @ResponseBody
     @RequestMapping(value = "/api/login", produces = "application/json")
-    public String loginViaJSON(String username, String password, String rememberMe)
+    public String loginViaJSON(HttpServletRequest request)
     {
-        Map<String, Object> retMap = loginUser(username, password, Boolean.parseBoolean(rememberMe));
-        retMap.remove("session");
+        String username   = request.getParameter("username");
+        String password   = request.getParameter("password");
+        String rememberMe = request.getParameter("rememberMe");
+        String address    = request.getRemoteAddr();
 
-        return new JSONObject(retMap).toString();
+        boolean notFlooding = floodProtectionService.updateIfNotFlooding(FloodCategory.LOGIN, address);
+
+        if (notFlooding)
+        {
+            Map<String, Object> retMap = loginUser(username, password, Boolean.parseBoolean(rememberMe));
+            retMap.remove("session");
+
+            return new JSONObject(retMap).toString();
+        }
+
+        JSONObject ret = new JSONObject();
+        ret.put("loggedIn", false);
+        ret.put("flooding", true);
+        return ret.toString();
     }
 
 
@@ -271,13 +322,27 @@ public class LoginAndRegisterController
         String username    = request.getParameter("username");
         String password    = request.getParameter("password");
         boolean rememberMe = Boolean.parseBoolean(request.getParameter("rememberMe"));
+        String address     = request.getRemoteAddr();
+
+        ModelAndView mav;
+        boolean flooding = !floodProtectionService.updateIfNotFlooding(FloodCategory.LOGIN, address);
+
+        if (flooding)
+        {
+            mav = new ModelAndView("flooding.html");
+            Duration floodWindow = floodProtectionService.getFloodWindow(FloodCategory.LOGIN);
+
+            response.setStatus(429); // too many requests
+            mav.addObject("floodType", "login");
+            mav.addObject("floodWindow", DurationFormat.format(floodWindow));
+            return mav;
+        }
 
         String referer = request.getParameter("previousPage");
         if (referer == null) { referer = request.getHeader("Referer"); }
         if (referer == null) { referer = "/"; }
 
         Map<String, Object> result = loginUser(username, password, rememberMe);
-        ModelAndView mav;
 
         if ((boolean)result.get("loggedIn"))
         {
