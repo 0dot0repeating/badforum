@@ -1,6 +1,6 @@
 package com.jinotrain.badforum.controllers;
 
-import com.jinotrain.badforum.components.ForumPasswordService;
+import com.jinotrain.badforum.components.passwords.ForumPasswordService;
 import com.jinotrain.badforum.db.entities.ForumSession;
 import com.jinotrain.badforum.db.entities.ForumUser;
 import com.jinotrain.badforum.db.repositories.ForumSessionRepository;

@@ -1,4 +1,4 @@
-package com.jinotrain.badforum.components.hashers;
+package com.jinotrain.badforum.components.passwords;
 
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
