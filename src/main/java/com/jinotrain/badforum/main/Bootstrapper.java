@@ -26,9 +26,9 @@ public class Bootstrapper
         main.run();
     }
 
-    public Bootstrapper() {}
+    private Bootstrapper() {}
 
-    public void run()
+    private void run()
     {
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();

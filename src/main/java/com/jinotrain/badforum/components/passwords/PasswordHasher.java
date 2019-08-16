@@ -6,10 +6,10 @@ public abstract class PasswordHasher
 {
     protected class PrefixAndHash
     {
-        public String prefix;
-        public String hash;
+        String prefix;
+        String hash;
 
-        public PrefixAndHash(String p, String h)
+        PrefixAndHash(String p, String h)
         {
             prefix = p;
             hash   = h;
@@ -22,7 +22,7 @@ public abstract class PasswordHasher
     protected abstract boolean checkHash(String password, String hash);
 
 
-    protected Optional<PrefixAndHash> splitPrefixedHash(String prefixedHash)
+    private Optional<PrefixAndHash> splitPrefixedHash(String prefixedHash)
     {
         int leftBracketPos  = prefixedHash.indexOf('{');
         int rightBracketPos = prefixedHash.indexOf('}', leftBracketPos);
@@ -46,13 +46,13 @@ public abstract class PasswordHasher
     }
 
 
-    public final String hashAndPrefix(String password)
+    final String hashAndPrefix(String password)
     {
         return String.format("{%s}%s", getPrefix(), hash(password));
     }
 
 
-    public final boolean hashMatches(String password, String passhash)
+    final boolean hashMatches(String password, String passhash)
     {
         Optional<PrefixAndHash> prefixCheck = splitPrefixedHash(passhash);
         if (!prefixCheck.isPresent()) { return false; }

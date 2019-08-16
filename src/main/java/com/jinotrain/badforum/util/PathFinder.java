@@ -1,14 +1,10 @@
 package com.jinotrain.badforum.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.net.URISyntaxException;
 
 public final class PathFinder
 {
-    private final static Logger logger = LoggerFactory.getLogger(PathFinder.class);
     private final static String exePath;
 
     static
