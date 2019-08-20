@@ -17,7 +17,7 @@ public class ForumRole
 
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
-    protected long id;
+    protected String id;
 
     @Column(unique = true, nullable = false)
     protected String name;

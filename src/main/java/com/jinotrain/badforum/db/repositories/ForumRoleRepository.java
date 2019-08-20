@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ForumRoleRepository extends JpaRepository<ForumRole, Long>
 {
+    ForumRole findByNameIgnoreCase(String name);
 }

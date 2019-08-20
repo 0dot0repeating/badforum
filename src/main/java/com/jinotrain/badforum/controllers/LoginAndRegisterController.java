@@ -80,9 +80,9 @@ public class LoginAndRegisterController
             return ret;
         }
 
-        Optional<ForumUser> existingUser = userRepository.findByUsernameIgnoreCase(username);
+        ForumUser existingUser = userRepository.findByUsernameIgnoreCase(username);
 
-        if (existingUser.isPresent())
+        if (existingUser != null)
         {
             ret.put("registered", false);
             ret.put("errorCode", "USERNAME_TAKEN");
@@ -137,16 +137,14 @@ public class LoginAndRegisterController
             return ret;
         }
 
-        Optional<ForumUser> possibleUser = userRepository.findByUsernameIgnoreCase(username);
+        ForumUser user = userRepository.findByUsernameIgnoreCase(username);
 
-        if (!possibleUser.isPresent())
+        if (user == null)
         {
             ret.put("loggedIn", false);
             ret.put("errorCode", "USER_NOT_FOUND");
             return ret;
         }
-
-        ForumUser user = possibleUser.get();
 
         if (!passwordService.passwordMatches(password, user.getPasshash()))
         {
@@ -414,10 +412,10 @@ public class LoginAndRegisterController
     @RequestMapping(value = "/api/checkUsername", method = RequestMethod.GET, produces = "application/json")
     public String checkUsernameAvailable(String username)
     {
-        Optional<ForumUser> existingUser = userRepository.findByUsernameIgnoreCase(username);
+        ForumUser existingUser = userRepository.findByUsernameIgnoreCase(username);
 
         JSONObject ret = new JSONObject();
-        ret.put("available", !existingUser.isPresent());
+        ret.put("available", existingUser == null);
         return ret.toString();
     }
 }
