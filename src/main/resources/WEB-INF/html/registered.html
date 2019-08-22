@@ -15,12 +15,17 @@
             it's your own fault if a third party gets hold of it.
         </div>
 
-        <p>
+        <p th:if="${createdAdmin == true}">
+            You've successfully registered an administrator account. Change the password to this
+            account as soon as possible.
+        </p>
+
+        <p th:unless="${createdAdmin == true}">
             You've successfully registered on the world's lamest forum, and you should be logged
             in and ready to throw your messages into the void where no one will ever see them.
         </p>
 
-        <p>
+        <p th:unless="${createdAdmin == true}">
             Which, to be fair, is still better than dealing with your average internet user.
         </p>
     </form>

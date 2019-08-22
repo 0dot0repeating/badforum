@@ -62,7 +62,7 @@ public class ForumUser
         this.email         = email;
         this.roleLinks     = new HashSet<>();
         this.creationTime  = Instant.now();
-        this.lastLoginTime = Instant.MIN;
+        this.lastLoginTime = this.creationTime;
         this.enabled       = true;
     }
 

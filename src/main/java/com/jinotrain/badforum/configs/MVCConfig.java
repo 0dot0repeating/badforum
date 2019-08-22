@@ -1,6 +1,7 @@
 package com.jinotrain.badforum.configs;
 
 import com.jinotrain.badforum.controllers.ForumSessionInjector;
+import com.jinotrain.badforum.data.PreAdminKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -122,6 +123,13 @@ public class MVCConfig implements WebMvcConfigurer
     public ForumSessionInjector forumRequestInterceptor()
     {
         return new ForumSessionInjector();
+    }
+
+
+    @Bean
+    public PreAdminKey preAdminKey()
+    {
+        return new PreAdminKey();
     }
 
 

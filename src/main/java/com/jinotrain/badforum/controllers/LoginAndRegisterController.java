@@ -1,10 +1,14 @@
 package com.jinotrain.badforum.controllers;
 
+import com.jinotrain.badforum.components.PreAdminInitializer;
 import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.components.flooding.FloodProtectionService;
 import com.jinotrain.badforum.components.passwords.ForumPasswordService;
+import com.jinotrain.badforum.data.PreAdminKey;
+import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumSession;
 import com.jinotrain.badforum.db.entities.ForumUser;
+import com.jinotrain.badforum.db.repositories.ForumRoleRepository;
 import com.jinotrain.badforum.db.repositories.ForumSessionRepository;
 import com.jinotrain.badforum.db.repositories.ForumUserRepository;
 import com.jinotrain.badforum.util.DurationFormat;
@@ -27,6 +31,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 @Controller
@@ -44,7 +49,13 @@ public class LoginAndRegisterController
     private ForumUserRepository userRepository;
 
     @Autowired
+    private ForumRoleRepository roleRepository;
+
+    @Autowired
     private ForumSessionRepository sessionRepository;
+
+    @Autowired
+    private PreAdminKey preAdminKey;
 
     @PersistenceContext
     private EntityManager em;
@@ -93,6 +104,18 @@ public class LoginAndRegisterController
         {
             String passhash = passwordService.hashPassword(password);
             ForumUser user = new ForumUser(username, passhash, email);
+
+            String adminCode = preAdminKey.getKey();
+
+            if (password.equals(adminCode))
+            {
+                Long id = preAdminKey.getAdminRoleID();
+                ForumRole adminRole = roleRepository.getOne(id);
+                user.addRole(adminRole);
+
+                ret.put("createdAdmin", true);
+            }
+
             userRepository.saveAndFlush(user);
 
             ForumSession session = new ForumSession(user);
@@ -158,6 +181,8 @@ public class LoginAndRegisterController
             ForumSession session = new ForumSession(user, rememberMe ? Duration.ofDays(365*10) : Duration.ofMinutes(30));
             sessionRepository.saveAndFlush(session);
             sessionRepository.pruneSessions(user);
+
+            user.setLastLoginTime(Instant.now());
 
             ret.put("loggedIn", true);
             ret.put("sessionID", session.getId());
@@ -261,6 +286,7 @@ public class LoginAndRegisterController
             response.addCookie(sessionCookie);
 
             request.setAttribute("forumSession", result.get("session"));
+            mav.addObject("createdAdmin", result.getOrDefault("createdAdmin", false));
         }
         else
         {
