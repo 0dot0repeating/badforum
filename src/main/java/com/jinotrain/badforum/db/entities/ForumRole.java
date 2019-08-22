@@ -1,90 +1,102 @@
 package com.jinotrain.badforum.db.entities;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+
 
 @Entity
+@Cacheable
 public class ForumRole
 {
-    protected class PermissionSet
+    public enum Permission
     {
-        public boolean canView;
-        public boolean canPost;
+        VIEW,
+        POST,
     }
-
 
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
-    protected String id;
+    private Long id;
 
     @Column(unique = true, nullable = false)
-    protected String name;
+    private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "role")
-    protected Collection<UserToRoleLink> users;
+    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval = true, mappedBy = "role")
+    private Collection<UserToRoleLink> users;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "role")
-    protected Collection<RoleToBoardLink> accessBoards;
-    protected transient Map<ForumBoard, PermissionSet> permissionSets;
+    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval = true, mappedBy = "role")
+    private Collection<RoleToBoardLink> accessBoards;
+
+    private boolean admin;
 
 
-    public ForumRole()
-    {
-        this("");
-    }
+    public ForumRole() { this(""); }
 
     public ForumRole(String name)
     {
         this.name = name;
+        this.accessBoards   = new ArrayList<>();
+        this.admin = false;
     }
+
+
+    public Long getId() { return id; }
 
     public String getName()         { return name; }
     public void   setName(String n) { name = n; }
 
+    public boolean isAdmin() { return admin; }
+    public void    setAdmin(boolean onOff) { admin = onOff; }
 
-    private void syncPermissionSets()
+
+    private RoleToBoardLink findBoardLink(ForumBoard board)
     {
-        if (org.hibernate.Hibernate.isInitialized(accessBoards)) { return; }
-
-        permissionSets = new HashMap<>();
+        Long boardID = board.getId();
 
         for (RoleToBoardLink link: accessBoards)
         {
-            ForumBoard board = link.getBoard();
-            PermissionSet perms = permissionSets.get(board);
+            ForumBoard linkBoard = link.getBoard();
 
-            // realistically there should only be one role-board pairing per role and board,
-            //  but dumb things happen sometimes
-            if (perms == null)
+            if (board == linkBoard || boardID.equals(linkBoard.getId()))
             {
-                perms = new PermissionSet();
-                permissionSets.put(board, perms);
+                return link;
             }
-
-            perms.canView = perms.canView || link.getCanView();
-            perms.canPost = perms.canPost || link.getCanPost();
         }
+
+        return null;
     }
 
 
-    public boolean canViewBoard(ForumBoard board)
+    public boolean hasPermission(ForumBoard board, Permission type)
     {
-        syncPermissionSets();
-
-        PermissionSet perms = permissionSets.get(board);
-        if (perms != null) { return perms.canView; }
-        return false;
+        RoleToBoardLink link = findBoardLink(board);
+        if (link == null) { return false; }
+        return link.hasPermission(type);
     }
 
 
-    public boolean canPostInBoard(ForumBoard board)
+    public void setPermission(ForumBoard board, Permission type, boolean onOff)
     {
-        syncPermissionSets();
+        RoleToBoardLink link = findBoardLink(board);
 
-        PermissionSet perms = permissionSets.get(board);
-        if (perms != null) { return perms.canPost; }
-        return false;
+        if (link == null)
+        {
+            link = new RoleToBoardLink(this, board);
+            accessBoards.add(link);
+        }
+
+        link.setPermission(type, onOff);
+    }
+
+
+    public void clearPermissions(ForumBoard board)
+    {
+        RoleToBoardLink link = findBoardLink(board);
+
+        if (link != null)
+        {
+            accessBoards.remove(link);
+        }
     }
 }

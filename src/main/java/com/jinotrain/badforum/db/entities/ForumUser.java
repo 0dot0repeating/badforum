@@ -4,29 +4,31 @@ import javax.persistence.*;
 import java.util.Collection;
 import java.util.HashSet;
 import java.time.Instant;
+import java.util.Iterator;
 
 @Entity
+@Cacheable
 public class ForumUser
 {
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
-    protected long id;
+    protected Long id;
 
     @Column(unique = true, nullable = false)
-    protected String username;
+    private String username;
 
     @Column(nullable = false)
-    protected String passhash;
+    private String passhash;
 
-    protected String email;
+    private String email;
 
-    protected Boolean enabled;
+    private Boolean enabled;
 
-    protected Instant creationTime;
-    protected Instant lastLoginTime;
+    private Instant creationTime;
+    private Instant lastLoginTime;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "user")
-    protected Collection<UserToRoleLink> roleLinks;
+    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval = true, mappedBy = "user")
+    private Collection<UserToRoleLink> roleLinks;
 
 
     public String getUsername() { return username; }
@@ -60,7 +62,7 @@ public class ForumUser
         this.email         = email;
         this.roleLinks     = new HashSet<>();
         this.creationTime  = Instant.now();
-        this.lastLoginTime = Instant.now();
+        this.lastLoginTime = Instant.MIN;
         this.enabled       = true;
     }
 
@@ -78,26 +80,46 @@ public class ForumUser
     }
 
 
-    public boolean canViewBoard(ForumBoard board)
+    public boolean hasRole(ForumRole role)
     {
-        for (UserToRoleLink roleLink: roleLinks)
+        Long roleID = role.getId();
+
+        for (UserToRoleLink link: roleLinks)
         {
-            ForumRole role = roleLink.getRole();
-            if (role.canViewBoard(board)) { return true; }
+            ForumRole linkRole = link.getRole();
+            if (role == linkRole || roleID.equals(linkRole.getId())) { return true; }
         }
 
         return false;
     }
 
 
-    public boolean canPostInBoard(ForumBoard board)
+    public void addRole(ForumRole role)
     {
-        for (UserToRoleLink roleLink: roleLinks)
+        if (!hasRole(role))
         {
-            ForumRole role = roleLink.getRole();
-            if (role.canPostInBoard(board)) { return true; }
+            UserToRoleLink newLink = new UserToRoleLink(this, role);
+            roleLinks.add(newLink);
         }
+    }
 
-        return false;
+
+    public void removeRole(ForumRole role)
+    {
+        Long roleID = role.getId();
+
+        Iterator<UserToRoleLink> iter = roleLinks.iterator();
+
+        while (iter.hasNext())
+        {
+            UserToRoleLink link = iter.next();
+            ForumRole linkRole = link.getRole();
+
+            if (role == linkRole || roleID.equals(linkRole.getId()))
+            {
+                iter.remove();
+                return;
+            }
+        }
     }
 }

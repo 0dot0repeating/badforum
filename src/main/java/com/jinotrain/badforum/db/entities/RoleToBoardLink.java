@@ -3,11 +3,12 @@ package com.jinotrain.badforum.db.entities;
 import javax.persistence.*;
 
 @Entity
-public class RoleToBoardLink
+@Cacheable
+class RoleToBoardLink
 {
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
-    private long id;
+    private Long id;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "role_id")
@@ -20,9 +21,9 @@ public class RoleToBoardLink
     private boolean canView;
     private boolean canPost;
 
-    public RoleToBoardLink() { this(null, null); }
+    RoleToBoardLink() { this(null, null); }
 
-    public RoleToBoardLink(ForumRole role, ForumBoard board)
+    RoleToBoardLink(ForumRole role, ForumBoard board)
     {
         this.role  = role;
         this.board = board;
@@ -31,9 +32,26 @@ public class RoleToBoardLink
         canPost = false;
     }
 
-    public ForumRole  getRole()  { return role; }
-    public ForumBoard getBoard() { return board; }
+    ForumRole  getRole()  { return role; }
+    ForumBoard getBoard() { return board; }
 
-    public boolean getCanView() { return canView; }
-    public boolean getCanPost() { return canPost; }
+    boolean hasPermission(ForumRole.Permission type)
+    {
+        switch (type)
+        {
+            case VIEW: return canView;
+            case POST: return canPost;
+            default: return false;
+        }
+    }
+
+
+    void setPermission(ForumRole.Permission type, boolean onOff)
+    {
+        switch (type)
+        {
+            case VIEW: canView = onOff; break;
+            case POST: canPost = onOff; break;
+        }
+    }
 }

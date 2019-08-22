@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.Instant;
 
 @Entity
+@Cacheable
 public class ForumSession
 {
     @Id

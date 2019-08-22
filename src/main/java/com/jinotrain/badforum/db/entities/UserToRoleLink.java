@@ -3,11 +3,12 @@ package com.jinotrain.badforum.db.entities;
 import javax.persistence.*;
 
 @Entity
-public class UserToRoleLink
+@Cacheable
+class UserToRoleLink
 {
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
-    private long id;
+    private Long id;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -22,12 +23,13 @@ public class UserToRoleLink
         this(null, null);
     }
 
-    public UserToRoleLink(ForumUser user, ForumRole role)
+    UserToRoleLink(ForumUser user, ForumRole role)
     {
         this.user = user;
         this.role = role;
     }
 
-    public ForumUser getUser() { return user; }
-    public ForumRole getRole() { return role; }
+    long      getId()   { return id; }
+    ForumUser getUser() { return user; }
+    ForumRole getRole() { return role; }
 }

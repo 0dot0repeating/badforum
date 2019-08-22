@@ -6,25 +6,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Cacheable
 public class ForumThread
 {
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
-    protected long id;
+    protected Long id;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    protected List<ForumPost> posts;
+    private List<ForumPost> posts;
 
     @ManyToOne
     @JoinColumn(name = "board_id")
-    protected ForumBoard board;
+    private ForumBoard board;
 
     @Column(nullable = false)
-    protected String topic;
+    private String topic;
 
-    protected Instant creationTime;
+    private Instant creationTime;
 
-    protected Instant lastUpdate;
+    private Instant lastUpdate;
 
 
     public ForumThread()

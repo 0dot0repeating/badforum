@@ -4,27 +4,28 @@ import javax.persistence.*;
 import java.time.Instant;
 
 @Entity
+@Cacheable
 public class ForumPost implements Comparable<ForumPost>
 {
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
-    protected long id;
+    protected Long id;
 
     @Column(nullable = false)
-    protected String postText;
+    private String postText;
 
     @Column(nullable = false)
-    protected Instant postTime;
+    private Instant postTime;
 
-    protected Instant lastEditTime;
+    private Instant lastEditTime;
 
     @ManyToOne
     @JoinColumn(name = "author_id")
-    protected ForumUser author;
+    private ForumUser author;
 
     @ManyToOne
     @JoinColumn(name = "thread_id")
-    protected ForumThread thread;
+    private ForumThread thread;
 
 
     public ForumPost()
