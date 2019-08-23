@@ -1,5 +1,7 @@
 package com.jinotrain.badforum.db.entities;
 
+import com.jinotrain.badforum.db.BoardPermission;
+
 import javax.persistence.*;
 
 @Entity
@@ -18,8 +20,8 @@ class RoleToBoardLink
     @JoinColumn(name = "board_id")
     private ForumBoard board;
 
-    private boolean canView;
-    private boolean canPost;
+    private byte canView;
+    private byte canPost;
 
     RoleToBoardLink() { this(null, null); }
 
@@ -28,30 +30,30 @@ class RoleToBoardLink
         this.role  = role;
         this.board = board;
 
-        canView = false;
-        canPost = false;
+        canView = 0;
+        canPost = 0;
     }
 
     ForumRole  getRole()  { return role; }
     ForumBoard getBoard() { return board; }
 
-    boolean hasPermission(ForumRole.Permission type)
+    byte hasPermission(BoardPermission type)
     {
         switch (type)
         {
             case VIEW: return canView;
             case POST: return canPost;
-            default: return false;
+            default: return 0;
         }
     }
 
 
-    void setPermission(ForumRole.Permission type, boolean onOff)
+    void setPermission(BoardPermission type, byte state)
     {
         switch (type)
         {
-            case VIEW: canView = onOff; break;
-            case POST: canPost = onOff; break;
+            case VIEW: canView = state; break;
+            case POST: canPost = state; break;
         }
     }
 }

@@ -87,7 +87,7 @@ public class PreAdminInitializer implements ApplicationListener<ContextRefreshed
 
         if (adminRoles.isEmpty())
         {
-            ForumRole newAdminRole = new ForumRole("Global administrator");
+            ForumRole newAdminRole = new ForumRole("Global administrator", 0x7FFFFFFF);
             newAdminRole.setAdmin(true);
             roleRepository.save(newAdminRole);
             adminRoles.add(newAdminRole);

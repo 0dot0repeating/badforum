@@ -1,10 +1,12 @@
 package com.jinotrain.badforum.db.entities;
 
+import com.jinotrain.badforum.db.BoardPermission;
+import com.jinotrain.badforum.db.ForumPermission;
+import com.jinotrain.badforum.db.PermissionState;
+
 import javax.persistence.*;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 import java.time.Instant;
-import java.util.Iterator;
 
 @Entity
 @Cacheable
@@ -67,15 +69,16 @@ public class ForumUser
     }
 
 
-    public Collection<ForumRole> getRoles()
+    public List<ForumRole> getRoles()
     {
-        Collection<ForumRole> roles = new HashSet<>();
+        List<ForumRole> roles = new ArrayList<>();
 
         for (UserToRoleLink link: roleLinks)
         {
             roles.add(link.getRole());
         }
 
+        roles.sort(Comparator.comparing(ForumRole::getPriority).reversed());
         return roles;
     }
 
@@ -121,5 +124,34 @@ public class ForumUser
                 return;
             }
         }
+    }
+
+
+
+    public PermissionState hasPermission(ForumPermission type)
+    {
+        for (ForumRole role: getRoles())
+        {
+            PermissionState state = role.hasPermission(type);
+
+            if (state == PermissionState.OFF) { return PermissionState.OFF; }
+            if (state == PermissionState.ON)  { return PermissionState.ON; }
+        }
+
+        return PermissionState.OFF;
+    }
+
+
+    public PermissionState hasBoardPermission(ForumBoard board, BoardPermission type)
+    {
+        for (ForumRole role: getRoles())
+        {
+            PermissionState state = role.hasBoardPermission(board, type);
+
+            if (state == PermissionState.OFF) { return PermissionState.OFF; }
+            if (state == PermissionState.ON)  { return PermissionState.ON; }
+        }
+
+        return PermissionState.OFF;
     }
 }

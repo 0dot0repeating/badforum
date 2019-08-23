@@ -1,5 +1,9 @@
 package com.jinotrain.badforum.db.entities;
 
+import com.jinotrain.badforum.db.BoardPermission;
+import com.jinotrain.badforum.db.ForumPermission;
+import com.jinotrain.badforum.db.PermissionState;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,12 +13,6 @@ import java.util.Collection;
 @Cacheable
 public class ForumRole
 {
-    public enum Permission
-    {
-        VIEW,
-        POST,
-    }
-
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
     private Long id;
@@ -28,15 +26,20 @@ public class ForumRole
     @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval = true, mappedBy = "role")
     private Collection<RoleToBoardLink> accessBoards;
 
+    private int priority;
+
     private boolean admin;
 
+    private byte canManageUsers;
 
-    public ForumRole() { this(""); }
 
-    public ForumRole(String name)
+    public ForumRole() { this("", 0); }
+
+    public ForumRole(String name, int priority)
     {
         this.name = name;
-        this.accessBoards   = new ArrayList<>();
+        this.accessBoards = new ArrayList<>();
+        this.priority = priority;
         this.admin = false;
     }
 
@@ -46,8 +49,51 @@ public class ForumRole
     public String getName()         { return name; }
     public void   setName(String n) { name = n; }
 
+    public int  getPriority()             { return priority; }
+    public void setPriority(int priority) { this.priority = priority; }
+
     public boolean isAdmin() { return admin; }
     public void    setAdmin(boolean onOff) { admin = onOff; }
+
+
+
+    public PermissionState hasPermission(ForumPermission type)
+    {
+        if (admin) { return PermissionState.ON; }
+
+        byte state = 0;
+
+        switch (type)
+        {
+            case MANAGE_USERS: state = canManageUsers; break;
+        }
+
+        switch (state)
+        {
+            case -1: return PermissionState.OFF;
+            default: return PermissionState.KEEP;
+            case  1: return PermissionState.ON;
+        }
+    }
+
+
+    public void setPermission(ForumPermission type, PermissionState state)
+    {
+        byte internalState;
+
+        switch (state)
+        {
+            case OFF:  internalState = -1; break;
+            default:   internalState =  0; break;
+            case ON:   internalState =  1; break;
+        }
+
+        switch (type)
+        {
+            case MANAGE_USERS: canManageUsers = internalState; break;
+        }
+    }
+
 
 
     private RoleToBoardLink findBoardLink(ForumBoard board)
@@ -68,15 +114,25 @@ public class ForumRole
     }
 
 
-    public boolean hasPermission(ForumBoard board, Permission type)
+    public PermissionState hasBoardPermission(ForumBoard board, BoardPermission type)
     {
+        if (admin) { return PermissionState.ON; }
+
         RoleToBoardLink link = findBoardLink(board);
-        if (link == null) { return false; }
-        return link.hasPermission(type);
+        if (link == null) { return PermissionState.KEEP; }
+
+        byte state = link.hasPermission(type);
+
+        switch (state)
+        {
+            case -1: return PermissionState.OFF;
+            default: return PermissionState.KEEP;
+            case  1: return PermissionState.ON;
+        }
     }
 
 
-    public void setPermission(ForumBoard board, Permission type, boolean onOff)
+    public void setBoardPermission(ForumBoard board, BoardPermission type, PermissionState state)
     {
         RoleToBoardLink link = findBoardLink(board);
 
@@ -86,11 +142,16 @@ public class ForumRole
             accessBoards.add(link);
         }
 
-        link.setPermission(type, onOff);
+        switch (state)
+        {
+            case OFF:  link.setPermission(type, (byte)-1); break;
+            case KEEP: link.setPermission(type, (byte)0);  break;
+            case ON:   link.setPermission(type, (byte)1);  break;
+        }
     }
 
 
-    public void clearPermissions(ForumBoard board)
+    public void clearBoardPermissions(ForumBoard board)
     {
         RoleToBoardLink link = findBoardLink(board);
 

@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
-public class HelloWorldController
+public class HomeController
 {
     @Autowired
     private ForumUserRepository testRepo;
@@ -22,7 +22,7 @@ public class HelloWorldController
     public ModelAndView aeiou(HttpServletRequest request,
                               HttpServletResponse response)
     {
-        ModelAndView mav = new ModelAndView("aeiou.html");
+        ModelAndView mav = new ModelAndView("home.html");
         mav.addObject("testObjs", testRepo.findAll());
         return mav;
     }
