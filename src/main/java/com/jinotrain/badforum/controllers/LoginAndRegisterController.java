@@ -1,6 +1,5 @@
 package com.jinotrain.badforum.controllers;
 
-import com.jinotrain.badforum.components.PreAdminInitializer;
 import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.components.flooding.FloodProtectionService;
 import com.jinotrain.badforum.components.passwords.ForumPasswordService;
@@ -81,6 +80,27 @@ public class LoginAndRegisterController
             ret.put("registered", false);
             ret.put("errorCode", "INCOMPLETE");
             ret.put("errorExtra", "Missing " + String.join(", ", missing));
+            return ret;
+        }
+
+        if (username.length() < ForumUser.MIN_USERNAME_LENGTH)
+        {
+            ret.put("registered", false);
+            ret.put("errorCode", "USERNAME_TOO_SHORT");
+            return ret;
+        }
+
+        if (username.length() > ForumUser.MAX_USERNAME_LENGTH)
+        {
+            ret.put("registered", false);
+            ret.put("errorCode", "USERNAME_TOO_LONG");
+            return ret;
+        }
+
+        if (!username.matches(ForumUser.VALID_USERNAME_REGEX))
+        {
+            ret.put("registered", false);
+            ret.put("errorCode", "USERNAME_INVALID");
             return ret;
         }
 
@@ -436,11 +456,14 @@ public class LoginAndRegisterController
 
     @ResponseBody
     @RequestMapping(value = "/api/checkUsername", method = RequestMethod.GET, produces = "application/json")
-    public String checkUsernameAvailable(String username)
+    public String validateUsername(String username)
     {
         ForumUser existingUser = userRepository.findByUsernameIgnoreCase(username);
 
         JSONObject ret = new JSONObject();
+        ret.put("tooLong",   username.length() > ForumUser.MAX_USERNAME_LENGTH);
+        ret.put("tooShort",  username.length() < ForumUser.MIN_USERNAME_LENGTH);
+        ret.put("valid",     username.matches(ForumUser.VALID_USERNAME_REGEX));
         ret.put("available", existingUser == null);
         return ret.toString();
     }

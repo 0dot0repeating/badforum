@@ -77,10 +77,15 @@ function checkUsername(username, notifyElement)
         if (this.readyState != 4 || this.status != 200) { return; }
 
         var jsonResponse = JSON.parse(this.responseText);
-        notifyElement.innerHTML = jsonResponse.available ? "Available" : "Already taken";
+
+        if      (jsonResponse.tooShort)   { notifyElement.innerHTML = "Username too short"; }
+        else if (jsonResponse.tooLong)    { notifyElement.innerHTML = "Username too long"; }
+        else if (!jsonResponse.valid)     { notifyElement.innerHTML = "Illegal characters"; }
+        else if (!jsonResponse.available) { notifyElement.innerHTML = "Already taken"; }
+        else                              { notifyElement.innerHTML = "Available"; }
     };
 
-    request.open("GET", "/api/checkUsername?username=" + username);
+    request.open("GET", "/api/checkUsername?username=" + encodeURIComponent(username));
     request.send();
 }
 

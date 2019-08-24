@@ -5,6 +5,8 @@ import com.jinotrain.badforum.db.ForumPermission;
 import com.jinotrain.badforum.db.PermissionState;
 
 import javax.persistence.*;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.util.*;
 import java.time.Instant;
 
@@ -12,11 +14,17 @@ import java.time.Instant;
 @Cacheable
 public class ForumUser
 {
+    public static final int    MIN_USERNAME_LENGTH = 4;
+    public static final int    MAX_USERNAME_LENGTH = 32;
+    public static final String VALID_USERNAME_REGEX = "[a-zA-Z0-9_\\-]{" + MIN_USERNAME_LENGTH + "," + MAX_USERNAME_LENGTH + "}";
+
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
     protected Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = MAX_USERNAME_LENGTH)
+    @Size(min = MIN_USERNAME_LENGTH, max = MAX_USERNAME_LENGTH)
+    @Pattern(regexp = VALID_USERNAME_REGEX)
     private String username;
 
     @Column(nullable = false)
