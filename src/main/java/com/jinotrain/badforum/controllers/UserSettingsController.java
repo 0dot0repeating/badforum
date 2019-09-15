@@ -292,16 +292,18 @@ public class UserSettingsController extends ForumController
 
             try
             {
+                boolean changed;
+
                 if (i.needsPasswordHasher())
                 {
-                    i.setWithHasher(settingsUser, paramData, passwordService);
+                    changed = i.setWithHasher(settingsUser, paramData, passwordService);
                 }
                 else
                 {
-                    i.set(settingsUser, paramData);
+                    changed = i.set(settingsUser, paramData);
                 }
 
-                thingsChanged = true;
+                thingsChanged = thingsChanged || changed;
                 settingData.value   = i.get(settingsUser);
                 settingData.message = "Saved";
             }
