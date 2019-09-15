@@ -11,6 +11,7 @@ import java.util.Collection;
 
 @Entity
 @Cacheable
+@Table(name="forum_roles")
 public class ForumRole
 {
     @Id
@@ -114,7 +115,7 @@ public class ForumRole
     }
 
 
-    public PermissionState hasBoardPermission(ForumBoard board, BoardPermission type)
+    public PermissionState getBoardPermission(ForumBoard board, BoardPermission type)
     {
         if (admin) { return PermissionState.ON; }
 

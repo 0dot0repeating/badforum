@@ -4,6 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @Cacheable
+@Table(name="forum_user_role_links")
 class UserToRoleLink
 {
     @Id

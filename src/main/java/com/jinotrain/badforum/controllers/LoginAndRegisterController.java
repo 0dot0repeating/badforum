@@ -34,24 +34,12 @@ import java.time.Instant;
 import java.util.*;
 
 @Controller
-public class LoginAndRegisterController
+public class LoginAndRegisterController extends ForumController
 {
     private static Logger logger = LoggerFactory.getLogger(LoginAndRegisterController.class);
 
     @Autowired
-    FloodProtectionService floodProtectionService;
-
-    @Autowired
     private ForumPasswordService passwordService;
-
-    @Autowired
-    private ForumUserRepository userRepository;
-
-    @Autowired
-    private ForumRoleRepository roleRepository;
-
-    @Autowired
-    private ForumSessionRepository sessionRepository;
 
     @Autowired
     private PreAdminKey preAdminKey;
@@ -80,6 +68,13 @@ public class LoginAndRegisterController
             ret.put("registered", false);
             ret.put("errorCode", "INCOMPLETE");
             ret.put("errorExtra", "Missing " + String.join(", ", missing));
+            return ret;
+        }
+
+        if (username.equals("you"))
+        {
+            ret.put("registered", false);
+            ret.put("errorCode", "USERNAME_CANT_BE_YOU");
             return ret;
         }
 
@@ -134,6 +129,7 @@ public class LoginAndRegisterController
                 user.addRole(adminRole);
 
                 ret.put("createdAdmin", true);
+                preAdminKey.setKey(null);
             }
 
             userRepository.saveAndFlush(user);
@@ -221,22 +217,18 @@ public class LoginAndRegisterController
     }
 
 
-    private Map<String, Object> logout(String sessionID)
+    private Map<String, Object> logout(ForumSession session)
     {
         Map<String, Object> ret = new HashMap<>();
 
-        Optional<ForumSession> possibleSession = sessionRepository.findById(sessionID);
-
-        if (!possibleSession.isPresent())
+        if (session == null)
         {
             ret.put("loggedOut", false);
             ret.put("errorCode", "INVALID_SESSION_ID");
             return ret;
         }
 
-        ForumSession session = possibleSession.get();
         sessionRepository.delete(session);
-
         ret.put("loggedOut", true);
         return ret;
     }
@@ -426,7 +418,8 @@ public class LoginAndRegisterController
     @RequestMapping(value = "/api/logout", produces = "application/json")
     public String logoutViaJSON(String sessionID)
     {
-        Map<String, Object> retMap = logout(sessionID);
+        ForumSession session = sessionRepository.findById(sessionID).orElse(null);
+        Map<String, Object> retMap = logout(session);
         return new JSONObject(retMap).toString();
     }
 
@@ -436,12 +429,8 @@ public class LoginAndRegisterController
     @RequestMapping(value = "/logout", method = {RequestMethod.GET, RequestMethod.POST}, produces = "text/plain")
     public String logoutViaPOST(HttpServletRequest request, HttpServletResponse response)
     {
-        ForumSession session = (ForumSession)request.getAttribute("forumSession");
-
-        if (session != null)
-        {
-            logout(session.getId());
-        }
+        ForumSession session = getForumSession(request, true);
+        if (session != null) { logout(session); }
 
         String referer = request.getHeader("Referer");
         if (referer == null) { referer = "/"; }

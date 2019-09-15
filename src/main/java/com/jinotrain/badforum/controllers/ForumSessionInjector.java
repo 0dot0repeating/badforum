@@ -1,6 +1,7 @@
 package com.jinotrain.badforum.controllers;
 
 import com.jinotrain.badforum.db.entities.ForumSession;
+import com.jinotrain.badforum.db.entities.ForumUser;
 import com.jinotrain.badforum.db.repositories.ForumSessionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,11 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.Instant;
-import java.util.Optional;
 
 public class ForumSessionInjector extends HandlerInterceptorAdapter
 {
@@ -21,6 +23,8 @@ public class ForumSessionInjector extends HandlerInterceptorAdapter
     @Autowired
     private ForumSessionRepository sessionRepository;
 
+    @PersistenceContext
+    private EntityManager em;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
@@ -44,9 +48,9 @@ public class ForumSessionInjector extends HandlerInterceptorAdapter
 
         if (sessionCookie == null) { return true; }
 
-        Optional<ForumSession> possibleSession = sessionRepository.findById(sessionCookie.getValue());
+        ForumSession session = sessionRepository.findById(sessionCookie.getValue()).orElse(null);
 
-        if (!possibleSession.isPresent())
+        if (session == null)
         {
             Cookie deleteCookie = (Cookie)sessionCookie.clone();
             deleteCookie.setMaxAge(0);
@@ -54,8 +58,6 @@ public class ForumSessionInjector extends HandlerInterceptorAdapter
             response.addCookie(deleteCookie);
             return true;
         }
-
-        ForumSession session = possibleSession.get();
 
         if (session.getExpireTime().isBefore(Instant.now()))
         {
@@ -78,6 +80,13 @@ public class ForumSessionInjector extends HandlerInterceptorAdapter
         if (mav == null) { return; }
 
         ForumSession session = (ForumSession)request.getAttribute("forumSession");
-        if (session != null) { mav.addObject("forumSession", session); }
+
+        if (session != null)
+        {
+            mav.addObject("forumSession", session);
+
+            ForumUser user = session.getUser();
+            if (user != null) { mav.addObject("user", user); }
+        }
     }
 }

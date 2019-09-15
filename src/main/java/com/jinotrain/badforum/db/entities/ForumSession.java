@@ -8,6 +8,7 @@ import java.time.Instant;
 
 @Entity
 @Cacheable
+@Table(name="forum_sessions")
 public class ForumSession
 {
     @Id

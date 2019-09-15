@@ -3,6 +3,7 @@ package com.jinotrain.badforum.db.entities;
 import com.jinotrain.badforum.db.BoardPermission;
 import com.jinotrain.badforum.db.ForumPermission;
 import com.jinotrain.badforum.db.PermissionState;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import javax.validation.constraints.Pattern;
@@ -12,6 +13,7 @@ import java.time.Instant;
 
 @Entity
 @Cacheable
+@Table(name="forum_users")
 public class ForumUser
 {
     public static final int    MIN_USERNAME_LENGTH = 4;
@@ -136,30 +138,30 @@ public class ForumUser
 
 
 
-    public PermissionState hasPermission(ForumPermission type)
+    public boolean hasPermission(ForumPermission type)
     {
         for (ForumRole role: getRoles())
         {
             PermissionState state = role.hasPermission(type);
 
-            if (state == PermissionState.OFF) { return PermissionState.OFF; }
-            if (state == PermissionState.ON)  { return PermissionState.ON; }
+            if (state == PermissionState.OFF) { return false; }
+            if (state == PermissionState.ON)  { return true; }
         }
 
-        return PermissionState.OFF;
+        return false;
     }
 
 
-    public PermissionState hasBoardPermission(ForumBoard board, BoardPermission type)
+    public boolean hasBoardPermission(ForumBoard board, BoardPermission type)
     {
         for (ForumRole role: getRoles())
         {
-            PermissionState state = role.hasBoardPermission(board, type);
+            PermissionState state = role.getBoardPermission(board, type);
 
-            if (state == PermissionState.OFF) { return PermissionState.OFF; }
-            if (state == PermissionState.ON)  { return PermissionState.ON; }
+            if (state == PermissionState.OFF) { return false; }
+            if (state == PermissionState.ON)  { return true; }
         }
 
-        return PermissionState.OFF;
+        return false;
     }
 }

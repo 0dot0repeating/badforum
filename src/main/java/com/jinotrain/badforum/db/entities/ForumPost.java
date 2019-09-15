@@ -5,6 +5,7 @@ import java.time.Instant;
 
 @Entity
 @Cacheable
+@Table(name="forum_posts")
 public class ForumPost implements Comparable<ForumPost>
 {
     @Id

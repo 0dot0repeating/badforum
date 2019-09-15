@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - User settings</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Settings for [[${username}]]</h1>
+
+    <th:block th:if="${savingSettings}">
+        <div class="error" th:if="${thingsChanged && errorsOccured}">
+            Some settings failed to save. Check below.
+        </div>
+
+        <div class="error" th:if="${!thingsChanged && errorsOccured}">
+            All of your changes failed to save. Check below.
+        </div>
+
+        <div th:if="${thingsChanged && !errorsOccured}">
+            Settings saved.
+        </div>
+    </th:block>
+
+    <form method="post" action="/savesettings">
+        <th:block th:each="setting: ${protectedSettings}" th:if="${setting.inputType == 'hidden'}">
+        <input type="hidden" th:name="${setting.id}" th:value="${setting.value}">
+        </th:block>
+
+        <div class="settings protectedSettings" th:each="setting: ${protectedSettings}" th:unless="${setting.inputType == 'hidden'}">
+            <label class="settingLabel" th:text="${setting.name}" th:for="${setting.id}"></label>
+            <input class="settingValue" th:unless="${setting.inputType == 'textarea'}" th:id="${setting.id}" th:name="${setting.id}" th:type="${setting.inputType}" th:value="${setting.value}" th:readonly="${setting.readonly}">
+            <span th:class="${setting.error ? 'settingError' : 'settingMessage'}" th:if="${setting.message != null && setting.message.length() > 0}" th:text="${setting.message}"></span>
+            <textarea class="settingValue" th:if="${setting.inputType == 'textarea'}" th:id="${setting.id}" th:readonly="${setting.readonly}" th:name="${setting.id}" th:text="${setting.value}"></textarea>
+            <div class="settingDescription" th:if="${setting.description != null && setting.description.length() > 0}" th:text="${setting.description}"></div>
+        </div>
+
+        <div class="passwordConfirm" th:if="${showConfirmPassword}">
+            <label for="currentPassword">Current password:</label>
+            <input id="currentPassword" name="currentPassword" type="password">
+            <span class="settingError" th:if="${missingConfirm}">Password was missing or incorrect</span>
+
+            <div class="settingDescription">
+                Required if changing any of the above settings
+            </div>
+        </div>
+
+        <th:block th:each="setting: ${normalSettings}" th:if="${setting.inputType == 'hidden'}">
+        <input type="hidden" th:name="${setting.id}" th:value="${setting.value}">
+        </th:block>
+
+        <div class="settings normalSettings" th:each="setting: ${normalSettings}" th:unless="${setting.inputType == 'hidden'}">
+            <label class="settingLabel" th:text="${setting.name}" th:for="${setting.id}"></label>
+            <input class="settingValue" th:unless="${setting.inputType == 'textarea'}" th:id="${setting.id}" th:name="${setting.id}" th:type="${setting.inputType}" th:value="${setting.value}" th:readonly="${setting.readonly}">
+            <span th:class="${setting.error ? 'settingError' : 'settingMessage'}" th:if="${setting.message != null && setting.message.length() > 0}" th:text="${setting.message}"></span>
+            <textarea class="settingValue" th:if="${setting.inputType == 'textarea'}" th:id="${setting.id}" th:readonly="${setting.readonly}" th:name="${setting.id}" th:text="${setting.value}"></textarea>
+            <div class="settingDescription" th:if="${setting.description != null && setting.description.length() > 0}" th:text="${setting.description}"></div>
+        </div>
+
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>

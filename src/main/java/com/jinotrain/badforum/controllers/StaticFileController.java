@@ -44,8 +44,8 @@ public class StaticFileController
     public void getStaticFile(HttpServletRequest request,
                               HttpServletResponse response) throws IOException
     {
-        String requestUrl = request.getServletPath().substring("/static/".length());
-        respondWithFile("/static/" + requestUrl, response, null, false);
+        String requestUrl = request.getServletPath();
+        respondWithFile(requestUrl, response, null, false);
     }
 
 
@@ -53,8 +53,8 @@ public class StaticFileController
     public void getStaticFileHead(HttpServletRequest request,
                                   HttpServletResponse response) throws IOException
     {
-        String requestUrl = request.getServletPath().substring("/static/".length());
-        respondWithFile("/static/" + requestUrl, response, null, true);
+        String requestUrl = request.getServletPath();
+        respondWithFile(requestUrl, response, null, true);
     }
 
 
@@ -106,7 +106,7 @@ public class StaticFileController
             long mtime = inConnection.getLastModified();
 
             String  mime   = forceMime == null ? guessMimeType(requestUrl) : forceMime;
-            Boolean inline = ArrayUtils.contains(INLINE_MIMES, mime);
+            boolean inline = ArrayUtils.contains(INLINE_MIMES, mime);
 
             if (mime.startsWith("text/"))
             {

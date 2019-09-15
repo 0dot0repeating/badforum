@@ -23,18 +23,18 @@
         </div>
 
         <div>
-            <span>Username:</span>
-            <input type="text" name="username" placeholder="Username" th:value="${username}">
+            <label for="username">Username:</label>
+            <input id="username" type="text" name="username" placeholder="Username" th:value="${username}">
             <span id="usernote"></span>
         </div>
         <div>
-            <span>Password:</span>
+            <label for="passwordInput">Password:</label>
             <input id="passwordInput" type="password" name="password" placeholder="Password">
             <span id="passwordnote"></span>
         </div>
 
         <div>
-            <input type="checkbox" name="rememberMe" value="true"> Remember me
+            <input id="rememberMe" type="checkbox" name="rememberMe" value="true"> <label for="rememberMe">Remember me</label>
         </div>
 
         <input type="hidden" name="previousPage" th:value="${realReferer != null ? realReferer : #request.getHeader('Referer')}">

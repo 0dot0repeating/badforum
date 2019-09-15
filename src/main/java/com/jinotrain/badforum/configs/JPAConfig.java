@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -25,15 +24,13 @@ public class JPAConfig
 {
     private static Logger logger = LoggerFactory.getLogger(JPAConfig.class);
 
-    @Autowired
-    private ApplicationContext context;
-
     private String  dbURL;
     private String  dbDriver;
     private String  dialect;
     private String  username;
     private String  password;
     private Boolean autoschema;
+    private Boolean debug;
 
     @Autowired
     public JPAConfig(@Value("${badforum.db.url}")        String dbURL,
@@ -41,7 +38,8 @@ public class JPAConfig
                      @Value("${badforum.db.dialect}")    String dialect,
                      @Value("${badforum.db.username}")   String username,
                      @Value("${badforum.db.password}")   String password,
-                     @Value("${badforum.db.autoschema}") Boolean autoschema)
+                     @Value("${badforum.db.autoschema}") Boolean autoschema,
+                     @Value("${badforum.db.debug}")      Boolean debug)
     {
         this.dbURL      = dbURL;
         this.dbDriver   = dbDriver;
@@ -49,6 +47,7 @@ public class JPAConfig
         this.username   = username;
         this.password   = password;
         this.autoschema = autoschema;
+        this.debug      = debug;
     }
 
     @Bean
@@ -94,6 +93,7 @@ public class JPAConfig
         Properties outProps = new Properties();
         outProps.setProperty("hibernate.hbm2ddl.auto", autoschema ? "update" : "create-only");
         outProps.setProperty("hibernate.dialect", dialect);
+        outProps.setProperty("hibernate.show_sql", debug ? "true" : "false");
         return outProps;
     }
 }

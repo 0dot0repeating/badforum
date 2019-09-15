@@ -13,6 +13,8 @@ public class ForumPasswordService
 
     public boolean passwordMatches(String password, String checkhash)
     {
+        if (password == null || checkhash == null) { return false; }
+
         for (PasswordHasher hasher: passwordHashers)
         {
             if (hasher.hashMatches(password, checkhash)) { return true; }

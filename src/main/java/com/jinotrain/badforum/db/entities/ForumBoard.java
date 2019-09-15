@@ -5,6 +5,7 @@ import java.util.Collection;
 
 @Entity
 @Cacheable
+@Table(name="forum_boards")
 public class ForumBoard
 {
     @Id

@@ -7,6 +7,7 @@ import java.util.List;
 
 @Entity
 @Cacheable
+@Table(name="forum_threads")
 public class ForumThread
 {
     @Id

@@ -15,6 +15,7 @@
             <span th:if="${forumSession != null}">
                 Logged in as [[${forumSession.getUser().getUsername()}]]
                 <a class="logout" href="/logout">Logout</a>
+                <a class="settings" href="/settings">Settings</a>
             </span>
 
             <span th:if="${forumSession == null}">
