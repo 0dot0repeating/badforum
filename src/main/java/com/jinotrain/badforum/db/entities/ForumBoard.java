@@ -9,10 +9,11 @@ import java.util.HashSet;
 @Entity
 @Cacheable
 @Table(name="forum_boards")
+@SequenceGenerator(name="SEQ_BOARDS")
 public class ForumBoard
 {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="SEQ_BOARDS")
     private Long id;
 
     @Column(unique = true, nullable = false)

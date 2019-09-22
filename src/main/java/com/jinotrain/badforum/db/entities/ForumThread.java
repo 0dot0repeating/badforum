@@ -8,10 +8,11 @@ import java.util.List;
 @Entity
 @Cacheable
 @Table(name="forum_threads")
+@SequenceGenerator(name="SEQ_THREADS")
 public class ForumThread
 {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="SEQ_THREADS")
     protected Long id;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})

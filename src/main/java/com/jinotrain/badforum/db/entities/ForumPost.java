@@ -6,10 +6,11 @@ import java.time.Instant;
 @Entity
 @Cacheable
 @Table(name="forum_posts")
+@SequenceGenerator(name="SEQ_POSTS")
 public class ForumPost implements Comparable<ForumPost>
 {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="SEQ_POSTS")
     protected Long id;
 
     @Column(nullable = false)

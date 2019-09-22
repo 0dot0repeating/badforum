@@ -12,10 +12,11 @@ import java.util.Collection;
 @Entity
 @Cacheable
 @Table(name="forum_roles")
+@SequenceGenerator(name="SEQ_ROLES")
 public class ForumRole
 {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="SEQ_ROLES")
     private Long id;
 
     @Column(unique = true, nullable = false)

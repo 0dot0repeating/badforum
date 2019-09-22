@@ -13,6 +13,7 @@ import java.time.Instant;
 @Entity
 @Cacheable
 @Table(name="forum_users")
+@SequenceGenerator(name="SEQ_USERS")
 public class ForumUser
 {
     public static final int    MIN_USERNAME_LENGTH = 4;
@@ -20,7 +21,7 @@ public class ForumUser
     public static final String VALID_USERNAME_REGEX = "[a-zA-Z0-9_\\-]{" + MIN_USERNAME_LENGTH + "," + MAX_USERNAME_LENGTH + "}";
 
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="SEQ_USERS")
     protected Long id;
 
     @Column(unique = true, nullable = false, length = MAX_USERNAME_LENGTH)
