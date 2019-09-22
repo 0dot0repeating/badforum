@@ -19,10 +19,9 @@ class UserToRoleLink
     @JoinColumn(name = "role_id")
     private ForumRole role;
 
-    public UserToRoleLink()
-    {
-        this(null, null);
-    }
+
+    @SuppressWarnings("unused")
+    UserToRoleLink() {}
 
     UserToRoleLink(ForumUser user, ForumRole role)
     {

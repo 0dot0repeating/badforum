@@ -18,7 +18,7 @@ public class ForumPost implements Comparable<ForumPost>
     @Column(nullable = false)
     private Instant postTime;
 
-    private Instant lastEditTime;
+    private Instant lastEditTime = null;
 
     @ManyToOne
     @JoinColumn(name = "author_id")
@@ -41,10 +41,9 @@ public class ForumPost implements Comparable<ForumPost>
 
     public ForumPost(String postText, ForumUser author)
     {
-        this.postText     = postText;
+        this.postText = postText;
         this.postTime = Instant.now();
-        this.lastEditTime = null;
-        this.author       = author;
+        this.author   = author;
     }
 
 

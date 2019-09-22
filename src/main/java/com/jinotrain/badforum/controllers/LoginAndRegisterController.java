@@ -120,6 +120,9 @@ public class LoginAndRegisterController extends ForumController
             String passhash = passwordService.hashPassword(password);
             ForumUser user = new ForumUser(username, passhash, email);
 
+            ForumRole defaultRole = roleRepository.findDefaultRole();
+            user.addRole(defaultRole);
+
             String adminCode = preAdminKey.getKey();
 
             if (password.equals(adminCode))

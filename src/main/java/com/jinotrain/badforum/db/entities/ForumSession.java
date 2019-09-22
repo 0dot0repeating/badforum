@@ -26,7 +26,8 @@ public class ForumSession
     private Duration refreshDuration;
 
 
-    private ForumSession() {}
+    @SuppressWarnings("unused")
+    ForumSession() {}
 
     public ForumSession(ForumUser user)
     {

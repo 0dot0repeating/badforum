@@ -30,18 +30,20 @@ public class ForumRole
     private int priority;
 
     private boolean admin;
+    private boolean defaultRole;
 
     private byte canManageUsers;
 
 
-    public ForumRole() { this("", 0); }
+    @SuppressWarnings("unused")
+    ForumRole() {}
 
     public ForumRole(String name, int priority)
     {
         this.name = name;
+        this.admin = false;
         this.accessBoards = new ArrayList<>();
         this.priority = priority;
-        this.admin = false;
     }
 
 
@@ -52,6 +54,9 @@ public class ForumRole
 
     public int  getPriority()             { return priority; }
     public void setPriority(int priority) { this.priority = priority; }
+
+    public boolean isDefaultRole() { return defaultRole; }
+    public void    setDefaultRole(boolean onOff) { defaultRole = onOff; }
 
     public boolean isAdmin() { return admin; }
     public void    setAdmin(boolean onOff) { admin = onOff; }
@@ -67,6 +72,7 @@ public class ForumRole
         switch (type)
         {
             case MANAGE_USERS: state = canManageUsers; break;
+            default: throw new UnsupportedOperationException("User-level permission " + type.name() + " not implemented in ForumRole");
         }
 
         switch (state)
@@ -92,6 +98,7 @@ public class ForumRole
         switch (type)
         {
             case MANAGE_USERS: canManageUsers = internalState; break;
+            default: throw new UnsupportedOperationException("User-level permission " + type.name() + " not implemented in ForumRole");
         }
     }
 

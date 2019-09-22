@@ -3,7 +3,6 @@ package com.jinotrain.badforum.db.entities;
 import com.jinotrain.badforum.db.BoardPermission;
 import com.jinotrain.badforum.db.ForumPermission;
 import com.jinotrain.badforum.db.PermissionState;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import javax.validation.constraints.Pattern;
@@ -60,7 +59,8 @@ public class ForumUser
     public void setLastLoginTime(Instant d) { lastLoginTime = d; }
 
 
-    private ForumUser() {}
+    @SuppressWarnings("unused")
+    ForumUser() {}
 
     public ForumUser(String name, String passhash)
     {
@@ -162,6 +162,6 @@ public class ForumUser
             if (state == PermissionState.ON)  { return true; }
         }
 
-        return false;
+        return board.getGlobalPermission(type);
     }
 }

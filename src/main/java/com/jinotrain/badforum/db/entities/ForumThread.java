@@ -29,9 +29,12 @@ public class ForumThread
     private Instant lastUpdate;
 
 
-    public ForumThread()
+    @SuppressWarnings("unused")
+    ForumThread() {}
+
+    public ForumThread(String topic)
     {
-        this("", null);
+        this(topic, null);
     }
 
     public ForumThread(String topic, List<ForumPost> posts)

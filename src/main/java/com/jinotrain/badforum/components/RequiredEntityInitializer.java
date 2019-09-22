@@ -1,8 +1,10 @@
 package com.jinotrain.badforum.components;
 
 import com.jinotrain.badforum.data.PreAdminKey;
+import com.jinotrain.badforum.db.entities.ForumBoard;
 import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumUser;
+import com.jinotrain.badforum.db.repositories.ForumBoardRepository;
 import com.jinotrain.badforum.db.repositories.ForumRoleRepository;
 import com.jinotrain.badforum.db.repositories.ForumUserRepository;
 import org.slf4j.Logger;
@@ -19,9 +21,9 @@ import java.security.SecureRandom;
 import java.util.*;
 
 @Component
-public class PreAdminInitializer implements ApplicationListener<ContextRefreshedEvent>
+public class RequiredEntityInitializer implements ApplicationListener<ContextRefreshedEvent>
 {
-    private static Logger logger = LoggerFactory.getLogger(PreAdminInitializer.class);
+    private static Logger logger = LoggerFactory.getLogger(RequiredEntityInitializer.class);
 
     private static char[] ID_CHARS   = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()".toCharArray();
 
@@ -30,6 +32,9 @@ public class PreAdminInitializer implements ApplicationListener<ContextRefreshed
 
     @Autowired
     private ForumRoleRepository roleRepository;
+
+    @Autowired
+    private ForumBoardRepository boardRepository;
 
     @Autowired
     private PreAdminKey preAdminKey;
@@ -41,6 +46,14 @@ public class PreAdminInitializer implements ApplicationListener<ContextRefreshed
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event)
+    {
+        initAdminStuff();
+        initRootBoard();
+        initDefaultRole();
+    }
+
+
+    private void initAdminStuff()
     {
         List<ForumRole> adminRoles = findOrCreateAdminRoles();
 
@@ -118,5 +131,41 @@ public class PreAdminInitializer implements ApplicationListener<ContextRefreshed
         }
 
         return true;
+    }
+
+
+    private void initRootBoard()
+    {
+        ForumBoard currentRoot = boardRepository.findRootBoard();
+
+        if (currentRoot == null)
+        {
+            logger.info("No root board found, creating one");
+
+            currentRoot = new ForumBoard("Root board");
+            currentRoot.setRootBoard(true);
+            boardRepository.saveAndFlush(currentRoot);
+        }
+    }
+
+
+    private void initDefaultRole()
+    {
+        ForumRole currentDefault = roleRepository.findDefaultRole();
+
+        if (currentDefault == null)
+        {
+            logger.info("No default user role found, creating one");
+
+            currentDefault = new ForumRole("All users", 0);
+            currentDefault.setDefaultRole(true);
+            roleRepository.saveAndFlush(currentDefault);
+
+            // the role system needs every user to have this role, or else it'll treat them as anonymous guests
+            for (ForumUser user: userRepository.findAll())
+            {
+                user.addRole(currentDefault);
+            }
+        }
     }
 }
