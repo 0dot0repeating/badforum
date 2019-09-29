@@ -23,9 +23,6 @@ public class ForumSessionInjector extends HandlerInterceptorAdapter
     @Autowired
     private ForumSessionRepository sessionRepository;
 
-    @PersistenceContext
-    private EntityManager em;
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
     {

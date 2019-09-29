@@ -1,15 +1,11 @@
 package com.jinotrain.badforum.controllers;
 
 import com.jinotrain.badforum.components.flooding.FloodCategory;
-import com.jinotrain.badforum.components.flooding.FloodProtectionService;
 import com.jinotrain.badforum.components.passwords.ForumPasswordService;
 import com.jinotrain.badforum.data.PreAdminKey;
 import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumSession;
 import com.jinotrain.badforum.db.entities.ForumUser;
-import com.jinotrain.badforum.db.repositories.ForumRoleRepository;
-import com.jinotrain.badforum.db.repositories.ForumSessionRepository;
-import com.jinotrain.badforum.db.repositories.ForumUserRepository;
 import com.jinotrain.badforum.util.DurationFormat;
 import com.jinotrain.badforum.util.LogHelper;
 import org.json.JSONObject;
@@ -24,8 +20,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,9 +37,6 @@ public class LoginAndRegisterController extends ForumController
 
     @Autowired
     private PreAdminKey preAdminKey;
-
-    @PersistenceContext
-    private EntityManager em;
 
 
     private Map<String, Object> registerUser(String username, String email, String password, String pwConfirm)
@@ -239,8 +230,8 @@ public class LoginAndRegisterController extends ForumController
 
 
 
-    @Transactional
     @ResponseBody
+    @Transactional
     @RequestMapping(value = "/api/register", produces = "application/json")
     public String registerUserViaJSON(HttpServletRequest request)
     {
@@ -326,8 +317,8 @@ public class LoginAndRegisterController extends ForumController
 
 
 
-    @Transactional
     @ResponseBody
+    @Transactional
     @RequestMapping(value = "/api/login", produces = "application/json")
     public String loginViaJSON(HttpServletRequest request)
     {
@@ -353,7 +344,6 @@ public class LoginAndRegisterController extends ForumController
     }
 
 
-    @ResponseBody
     @Transactional
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ModelAndView loginViaPOST(HttpServletRequest request, HttpServletResponse response)
@@ -416,8 +406,8 @@ public class LoginAndRegisterController extends ForumController
 
 
 
-    @Transactional
     @ResponseBody
+    @Transactional
     @RequestMapping(value = "/api/logout", produces = "application/json")
     public String logoutViaJSON(String sessionID)
     {
@@ -427,7 +417,6 @@ public class LoginAndRegisterController extends ForumController
     }
 
 
-    @ResponseBody
     @Transactional
     @RequestMapping(value = "/logout", method = {RequestMethod.GET, RequestMethod.POST}, produces = "text/plain")
     public String logoutViaPOST(HttpServletRequest request, HttpServletResponse response)

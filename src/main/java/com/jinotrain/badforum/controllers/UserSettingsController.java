@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
@@ -29,6 +27,11 @@ public class UserSettingsController extends ForumController
     private static Logger logger = LoggerFactory.getLogger(LoginAndRegisterController.class);
 
     private static List<UserSettingInterface> settingInterfaces;
+
+
+    @Autowired
+    private ForumPasswordService passwordService;
+
 
     static
     {
@@ -115,14 +118,6 @@ public class UserSettingsController extends ForumController
             }
         });
     }
-
-
-
-    @Autowired
-    private ForumPasswordService passwordService;
-
-    @PersistenceContext
-    private EntityManager em;
 
 
     private boolean canEditSettings(ForumUser viewUser, ForumUser settingsUser)

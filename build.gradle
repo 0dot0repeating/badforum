@@ -34,9 +34,10 @@ dependencies {
 
             "org.apache.tomcat.embed:tomcat-embed-jasper:8.5.42",   // web server
             
-            "org.thymeleaf:thymeleaf:3.0.11.RELEASE",           // view templates
-            "org.thymeleaf:thymeleaf-spring5:3.0.11.RELEASE",   // integration with spring
-            
+            "org.thymeleaf:thymeleaf:3.0.11.RELEASE",                           // view templates
+            "org.thymeleaf:thymeleaf-spring5:3.0.11.RELEASE",                   // integration with spring
+            "org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE",   // format times within templates
+
             "org.slf4j:slf4j-simple:1.7.26",    // logger
             "org.slf4j:jul-to-slf4j:1.7.26",    // to get tomcat to use said logger
             )
