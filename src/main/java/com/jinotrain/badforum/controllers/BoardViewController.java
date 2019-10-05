@@ -25,4 +25,37 @@ public class BoardViewController extends ForumController
         mav.addObject("boardViewData", rootBoardViewData);
         return mav;
     }
+
+    @Transactional
+    @RequestMapping(value = "/board/*")
+    public ModelAndView getBoard(HttpServletRequest  request,
+                                 HttpServletResponse response)
+    {
+        String requestUrl = request.getServletPath();
+        long boardID;
+
+        try
+        {
+            boardID = Long.valueOf(requestUrl.substring("/board/".length()));
+        }
+        catch (NumberFormatException e)
+        {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return new ModelAndView("viewboard_notfound.html");
+        }
+
+        ForumBoard rootBoard = boardRepository.findById(boardID).orElse(null);
+
+        if (rootBoard == null)
+        {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return new ModelAndView("viewboard_notfound.html");
+        }
+
+        BoardViewData boardViewData = getBoardViewData(rootBoard, em);
+
+        ModelAndView mav = new ModelAndView("viewboard.html");
+        mav.addObject("boardViewData", boardViewData);
+        return mav;
+    }
 }

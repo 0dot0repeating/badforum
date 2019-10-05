@@ -1,12 +1,8 @@
 package com.jinotrain.badforum.components;
 
 import com.jinotrain.badforum.data.PreAdminKey;
-import com.jinotrain.badforum.db.entities.ForumBoard;
-import com.jinotrain.badforum.db.entities.ForumRole;
-import com.jinotrain.badforum.db.entities.ForumUser;
-import com.jinotrain.badforum.db.repositories.ForumBoardRepository;
-import com.jinotrain.badforum.db.repositories.ForumRoleRepository;
-import com.jinotrain.badforum.db.repositories.ForumUserRepository;
+import com.jinotrain.badforum.db.entities.*;
+import com.jinotrain.badforum.db.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +31,12 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
 
     @Autowired
     private ForumBoardRepository boardRepository;
+
+    @Autowired
+    private ForumThreadRepository threadRepository;
+
+    @Autowired
+    private ForumPostRepository postRepository;
 
     @Autowired
     private PreAdminKey preAdminKey;
@@ -140,11 +142,20 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
 
         if (currentRoot == null)
         {
-            logger.info("No root board found, creating one");
+            logger.info("No root board found, creating one along with test thread");
 
             currentRoot = new ForumBoard("Root board");
             currentRoot.setRootBoard(true);
-            boardRepository.saveAndFlush(currentRoot);
+            boardRepository.save(currentRoot);
+
+            ForumThread testThread = new ForumThread("Test thread");
+            ForumPost testPost = new ForumPost("Test post, please ignore (or delete if you're the admin)");
+
+            testThread.setBoard(currentRoot);
+            threadRepository.save(testThread);
+
+            testPost.setThread(testThread);
+            postRepository.save(testPost);
         }
     }
 

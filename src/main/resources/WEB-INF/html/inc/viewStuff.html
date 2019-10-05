@@ -5,7 +5,6 @@
 </head>
 <body>
     <div class="board" th:fragment="viewBoard(boardViewData)">
-        <h3>Viewing board "[[${boardViewData.name}]]"</h3>
         <ul class="childBoards">
             <li th:each="childBoard: ${boardViewData.childBoards}">
                 <a th:href="${'/board/' + childBoard.id}" class="childBoardLink" th:text="${childBoard.name}"></a>
@@ -17,8 +16,11 @@
         <ul class="threads">
             <li th:each="thread: ${boardViewData.threads}">
                 <a th:href="${'/thread/' + thread.id}" class="threadLink" th:text="${thread.topic}"></a>
-                <span class="threadAuthor">Posted by [[${thread.author.username}]]</span>
-                <span class="threadPostTime">on [[${#temporals.format(thread.creationTime, "yyyy-MM-dd HH:mm:ss")}]]</span>
+                <span class="threadAuthor" th:if="${thread.author.username == null}">Posted by Anonymous</span>
+                <span class="threadAuthor" th:if="${thread.author.username != null}">Posted by [[${thread.author.username}]]</span>
+                <span class="threadPostTime" th:if="${thread.getCreationTime() != null}">on [[${#temporals.format(thread.getCreationTime(), "yyyy-MM-dd HH:mm:ss")}]]</span>
+                <span class="threadPostTime" th:if="${thread.getCreationTime() == null}">from the land before time</span>
+                <span class="threadPostCount">([[${thread.getPostCount()}]] posts)</span>
             </li>
         </ul>
 

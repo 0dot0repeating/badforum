@@ -2,6 +2,7 @@ package com.jinotrain.badforum.controllers;
 
 import com.jinotrain.badforum.components.flooding.FloodProtectionService;
 import com.jinotrain.badforum.data.BoardViewData;
+import com.jinotrain.badforum.data.PostViewData;
 import com.jinotrain.badforum.data.ThreadViewData;
 import com.jinotrain.badforum.data.UserViewData;
 import com.jinotrain.badforum.db.entities.*;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
+import java.time.Instant;
 import java.util.*;
 
 abstract class ForumController
@@ -80,10 +82,14 @@ abstract class ForumController
         Collection<ForumBoard> childBoards    = board.getChildBoards();
         List<BoardViewData>    childBoardData = new ArrayList<>();
 
-        long totalThreads = em.createNamedQuery("ForumBoard.getThreadCount", Long.class)
-                              .setParameter("boardID", boardID)
-                              .getSingleResult();
+        // gather forum threads, along with post count and thread authors
+        // TODO: implement time windows and subranges (will probably require a prodedurally-built query)
+        List<ForumThread> threads = em.createNamedQuery("ForumBoard.threadsInUpdateOrder", ForumThread.class)
+                                            .setParameter("boardID", boardID)
+                                            .setHint("javax.persistence.fetchgraph", em.getEntityGraph("ForumThread.withPosts"))
+                                            .getResultList();
 
+        long totalThreads = threads.size();
         long totalPosts   = em.createNamedQuery("ForumBoard.getPostCount", Long.class)
                               .setParameter("boardID", boardID)
                               .getSingleResult();
@@ -125,37 +131,38 @@ abstract class ForumController
         }
 
         // for display purposes
-        // TODO: implement display ordering in ForumBoard itself
+        // TODO: implement some way to specify order key
         childBoardData.sort(Comparator.comparing(o -> o.id));
-
-        // gather forum threads, along with post count and thread authors
-        // TODO: implement time windows and subranges (will probably require a prodedurally-built query)
-        List<ForumThread> threads = em.createNamedQuery("ForumBoard.threadsInUpdateOrder", ForumThread.class)
-                                      .setParameter("boardID", boardID)
-                                      .setHint("javax.persistence.fetchgraph", em.getEntityGraph("ForumThread.withPosts"))
-                                      .getResultList();
 
         List<ThreadViewData> threadData = new ArrayList<>();
 
         for (ForumThread t: threads)
         {
             List<ForumPost> posts = new ArrayList<>(t.getPosts());
-            long postCount = posts.size();
+            int postCount = posts.size();
 
             UserViewData userdata;
+            Instant creationTime = null;
+            Instant lastUpdate   = null;
 
             if (postCount > 0)
             {
                 posts.sort(Comparator.comparing(ForumPost::getPostTime));
                 ForumPost firstPost = posts.get(0);
-                userdata = new UserViewData(firstPost.getAuthor().getUsername());
+                ForumPost lastPost  = posts.get(postCount-1);
+
+                ForumUser userAuthor = firstPost.getAuthor();
+                userdata = new UserViewData(userAuthor == null ? null : userAuthor.getUsername());
+
+                creationTime = firstPost.getPostTime();
+                lastUpdate   = lastPost.getPostTime();
             }
             else
             {
-                userdata = new UserViewData("??????");
+                userdata = new UserViewData(null);
             }
 
-            ThreadViewData td = new ThreadViewData(t.getId(), t.getTopic(), userdata, postCount);
+            ThreadViewData td = new ThreadViewData(t.getId(), t.getTopic(), userdata, postCount, creationTime, lastUpdate);
             threadData.add(td);
         }
 
@@ -164,5 +171,26 @@ abstract class ForumController
         ret.threads = threadData;
 
         return ret;
+    }
+
+
+
+    ThreadViewData getThreadViewData(ForumThread thread, EntityManager em)
+    {
+        Collection<ForumPost> posts = thread.getPosts();
+        List<PostViewData> postData = new ArrayList<>();
+        UserViewData firstPoster = null;
+
+        for (ForumPost p: posts)
+        {
+            ForumUser user = p.getAuthor();
+            UserViewData userdata = new UserViewData(user == null ? null : user.getUsername());
+            PostViewData pdata = new PostViewData(p.getID(), p.getPostText(), userdata, p.getPostTime(), p.getlastEditTime());
+            postData.add(pdata);
+
+            if (firstPoster == null) { firstPoster = userdata; }
+        }
+
+        return new ThreadViewData(thread.getId(), thread.getTopic(), firstPoster, postData);
     }
 }

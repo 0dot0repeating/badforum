@@ -4,7 +4,6 @@ import javax.persistence.*;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 
 @Entity
 @Cacheable
@@ -31,7 +30,7 @@ public class ForumThread
     @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="SEQ_THREADS")
     protected Long id;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "thread")
     private Collection<ForumPost> posts;
 
     @ManyToOne
@@ -54,7 +53,7 @@ public class ForumThread
         this(topic, null);
     }
 
-    public ForumThread(String topic, List<ForumPost> posts)
+    public ForumThread(String topic, Collection<ForumPost> posts)
     {
         this.topic        = topic;
         this.posts        = posts == null ? new HashSet<>() : new HashSet<>(posts);
