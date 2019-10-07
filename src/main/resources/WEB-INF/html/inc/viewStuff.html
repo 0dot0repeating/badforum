@@ -4,7 +4,7 @@
     <title>w h o m s t</title>
 </head>
 <body>
-    <div class="board" th:fragment="viewBoard(boardViewData)">
+    <section class="board" th:fragment="viewBoard(boardViewData)">
         <ul class="childBoards">
             <li th:each="childBoard: ${boardViewData.childBoards}">
                 <a th:href="${'/board/' + childBoard.id}" class="childBoardLink" th:text="${childBoard.name}"></a>
@@ -24,9 +24,22 @@
             </li>
         </ul>
 
-        <div class="boardThreadCount">
+        <footer class="boardThreadCount">
             Showing 1-[[${boardViewData.threadCount}]] of [[${boardViewData.threadCount}]] threads
-        </div>
-    </div>
+        </footer>
+    </section>
+
+
+    <article class="thread" th:fragment="viewThread(threadViewData)">
+        <section class="post" th:each="post: ${threadViewData.posts}">
+            <header>
+                <span class="author" th:if="${post.author.username != null}">Posted by [[${post.author.username}]]</span>
+                <span class="author" th:if="${post.author.username == null}">Posted anonymously</span>
+                <span>on <time>[[${#temporals.format(post.postTime, "yyyy-MM-dd HH:mm:ss")}]]</time></span>
+            </header>
+
+            <div class="text" th:utext="${post.text}"></div>
+        </section>
+    </article>
 </body>
 </html>

@@ -10,6 +10,7 @@ public class ThreadViewData
     public long   id;
     public String topic;
     public UserViewData author;
+    public BoardViewData board;
 
     private int    postCount;
     private List<PostViewData> posts = null;
@@ -17,21 +18,27 @@ public class ThreadViewData
     private Instant lastUpdate       = null;
 
 
+    // used when displaying boards - individual posts aren't needed then
     public ThreadViewData(long id, String topic, UserViewData author, int postCount, Instant creationTime, Instant lastUpdate)
     {
         this.id           = id;
         this.topic        = topic;
         this.author       = author;
+        this.board        = null;
+
         this.postCount    = postCount;
         this.creationTime = creationTime;
         this.lastUpdate   = lastUpdate;
     }
 
-    public ThreadViewData(long id, String topic, UserViewData author, List<PostViewData> posts)
+    // used when displaying thread contents - the board's just needed for linking back
+    public ThreadViewData(long id, String topic, UserViewData author, BoardViewData board, List<PostViewData> posts)
     {
         this.id           = id;
         this.topic        = topic;
         this.author       = author;
+        this.board        = board;
+
         setPosts(posts);
     }
 

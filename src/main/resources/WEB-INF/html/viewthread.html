@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - aeiou</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+
+    <h1>Viewing thread "[[${threadViewData.topic}]]"</h1>
+    <p>from board "<a th:href="${'/board/' + threadViewData.board.id}">[[${threadViewData.board.name}]]</a>"</p>
+
+    <div th:replace="inc/viewStuff :: viewThread(${threadViewData})">
+
+    </div>
+</body>
+</html>

@@ -7,6 +7,9 @@ import com.jinotrain.badforum.data.ThreadViewData;
 import com.jinotrain.badforum.data.UserViewData;
 import com.jinotrain.badforum.db.entities.*;
 import com.jinotrain.badforum.db.repositories.*;
+import org.commonmark.node.Node;
+import org.commonmark.parser.Parser;
+import org.commonmark.renderer.html.HtmlRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.EntityManager;
@@ -40,6 +43,10 @@ abstract class ForumController
 
     @PersistenceContext
     EntityManager em;
+
+
+    static Parser markdownParser = Parser.builder().build();
+    static HtmlRenderer mdToHTML = HtmlRenderer.builder().escapeHtml(true).build();
 
 
     ForumSession getForumSession(HttpServletRequest request)
@@ -174,7 +181,6 @@ abstract class ForumController
     }
 
 
-
     ThreadViewData getThreadViewData(ForumThread thread, EntityManager em)
     {
         Collection<ForumPost> posts = thread.getPosts();
@@ -185,12 +191,24 @@ abstract class ForumController
         {
             ForumUser user = p.getAuthor();
             UserViewData userdata = new UserViewData(user == null ? null : user.getUsername());
-            PostViewData pdata = new PostViewData(p.getID(), p.getPostText(), userdata, p.getPostTime(), p.getlastEditTime());
+            String postText = formatPostText(p.getPostText());
+
+            PostViewData pdata = new PostViewData(p.getID(), postText, userdata, p.getPostTime(), p.getlastEditTime());
             postData.add(pdata);
 
             if (firstPoster == null) { firstPoster = userdata; }
         }
 
-        return new ThreadViewData(thread.getId(), thread.getTopic(), firstPoster, postData);
+        ForumBoard board = thread.getBoard();
+        BoardViewData boardData = board == null ? new BoardViewData(-1, null) : new BoardViewData(board.getId(), board.getName());
+
+        return new ThreadViewData(thread.getId(), thread.getTopic(), firstPoster, boardData, postData);
+    }
+
+
+    static String formatPostText(String postText)
+    {
+        Node parsedPostText = markdownParser.parse(postText);
+        return mdToHTML.render(parsedPostText);
     }
 }

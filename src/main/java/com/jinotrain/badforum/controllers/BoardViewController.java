@@ -44,15 +44,15 @@ public class BoardViewController extends ForumController
             return new ModelAndView("viewboard_notfound.html");
         }
 
-        ForumBoard rootBoard = boardRepository.findById(boardID).orElse(null);
+        ForumBoard viewBoard = boardRepository.findById(boardID).orElse(null);
 
-        if (rootBoard == null)
+        if (viewBoard == null)
         {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             return new ModelAndView("viewboard_notfound.html");
         }
 
-        BoardViewData boardViewData = getBoardViewData(rootBoard, em);
+        BoardViewData boardViewData = getBoardViewData(viewBoard, em);
 
         ModelAndView mav = new ModelAndView("viewboard.html");
         mav.addObject("boardViewData", boardViewData);
