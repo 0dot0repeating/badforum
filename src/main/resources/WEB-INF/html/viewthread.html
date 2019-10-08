@@ -12,8 +12,8 @@
     <h1>Viewing thread "[[${threadViewData.topic}]]"</h1>
     <p>from board "<a th:href="${'/board/' + threadViewData.board.id}">[[${threadViewData.board.name}]]</a>"</p>
 
-    <div th:replace="inc/viewStuff :: viewThread(${threadViewData})">
+    <div th:replace="inc/viewStuff :: viewThread(${threadViewData})"></div>
 
-    </div>
+    <div th:replace="inc/postStuff :: reply(${threadViewData.id}, ${threadViewData.topic}, ${postError}, ${postText})"></div>
 </body>
 </html>

@@ -8,7 +8,6 @@ import java.util.HashSet;
 @Entity
 @Cacheable
 @Table(name="forum_threads")
-@SequenceGenerator(name="SEQ_THREADS")
 @NamedEntityGraph(name="ForumThread.withPosts",
                     attributeNodes =
                     {
@@ -27,10 +26,13 @@ import java.util.HashSet;
 public class ForumThread
 {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="SEQ_THREADS")
-    protected Long id;
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    private Long id;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "thread")
+    @Column(unique = true)
+    private long index;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "thread", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     private Collection<ForumPost> posts;
 
     @ManyToOne
@@ -48,33 +50,29 @@ public class ForumThread
     @SuppressWarnings("unused")
     ForumThread() {}
 
-    public ForumThread(String topic)
+    public ForumThread(long index, String topic)
     {
-        this(topic, null);
-    }
-
-    public ForumThread(String topic, Collection<ForumPost> posts)
-    {
+        this.index        = index;
         this.topic        = topic;
-        this.posts        = posts == null ? new HashSet<>() : new HashSet<>(posts);
+        this.posts        = new HashSet<>();
         this.creationTime = Instant.now();
         this.lastUpdate   = this.creationTime;
     }
 
-    public Long getId()        { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getID()     { return id; }
+    public long getIndex()  { return index; }
 
-    public Collection<ForumPost> getPosts() { return posts; }
-    public void addPost(ForumPost post)     { posts.add(post); }
-    public void removePost(ForumPost post)  { posts.remove(post); }
+    public Collection<ForumPost> getPosts()      { return posts; }
+    public void addPost(ForumPost post)          { posts.add(post); }
+    public void removePost(ForumPost post)       { posts.remove(post); }
 
     public ForumBoard getBoard()                 { return board; }
     public void       setBoard(ForumBoard board) { this.board = board; }
 
-    public String getTopic()             { return topic; }
-    public void   setTopic(String topic) { this.topic = topic; }
+    public String getTopic()                     { return topic; }
+    public void   setTopic(String topic)         { this.topic = topic; }
 
-    public Instant getCreationTime()                     { return creationTime; }
+    public Instant getCreationTime()             { return creationTime; }
     public void    setCreationTime(Instant creationTime) { this.creationTime = creationTime; }
 
     public Instant getLastUpdate()                   { return lastUpdate; }

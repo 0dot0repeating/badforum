@@ -6,12 +6,14 @@ import java.time.Instant;
 @Entity
 @Cacheable
 @Table(name="forum_posts")
-@SequenceGenerator(name="SEQ_POSTS")
 public class ForumPost implements Comparable<ForumPost>
 {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="SEQ_POSTS")
-    protected Long id;
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
+    private Long id;
+
+    @Column(unique = true)
+    private long index;
 
     @Column(nullable = false)
     private String postText;
@@ -25,45 +27,42 @@ public class ForumPost implements Comparable<ForumPost>
     @JoinColumn(name = "author_id")
     private ForumUser author;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     @JoinColumn(name = "thread_id")
     private ForumThread thread;
 
 
-    public ForumPost()
+    @SuppressWarnings("unused")
+    ForumPost() {}
+
+    public ForumPost(long index, String postText)
     {
-        this("", null);
+        this(index, postText, null);
     }
 
-    public ForumPost(String postText)
+    public ForumPost(long index, String postText, ForumUser author)
     {
-        this(postText, null);
-    }
-
-    public ForumPost(String postText, ForumUser author)
-    {
+        this.index    = index;
         this.postText = postText;
         this.postTime = Instant.now();
         this.author   = author;
     }
 
 
-    public long getID()
-    {
-        return id;
-    }
+    public Long getID()     { return id; }
+    public long getIndex()  { return index; }
 
-    public String getPostText()         { return postText; }
-    public void   setPostText(String t) { postText = t; }
+    public String getPostText()               { return postText; }
+    public void   setPostText(String t)       { postText = t; }
 
-    public Instant getPostTime()          { return postTime; }
-    public void    setPostTime(Instant t) { postTime = t; }
+    public Instant getPostTime()              { return postTime; }
+    public void    setPostTime(Instant t)     { postTime = t; }
 
     public Instant getlastEditTime()          { return lastEditTime; }
     public void    setlastEditTime(Instant t) { lastEditTime = t; }
 
-    public ForumUser getAuthor()            { return author; }
-    public void      setAuthor(ForumUser a) { author = a; }
+    public ForumUser getAuthor()              { return author; }
+    public void      setAuthor(ForumUser a)   { author = a; }
 
     public ForumThread getThread()            { return thread; }
     public void        setThread(ForumThread t) { thread = t; }

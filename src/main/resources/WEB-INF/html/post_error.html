@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Post???</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Post Error - [[#{error.posting.__${errorCode}__.title}]]</h1>
+    
+    <p class="error" th:text="#{error.posting.__${errorCode}__}"></p>
+
+    <div class="errorPostTopic">
+        <h3>Your post topic</h3>
+        <p th:text="${postTopic}"></p>
+    </div>
+
+    <div class="errorPostBody">
+        <h3>Your post body</h3>
+        <pre th:text="${postText}"></pre>
+    </div>
+</body>
+</html>

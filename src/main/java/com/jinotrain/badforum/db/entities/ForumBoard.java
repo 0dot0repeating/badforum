@@ -10,7 +10,6 @@ import java.util.Set;
 @Entity
 @Cacheable
 @Table(name="forum_boards")
-@SequenceGenerator(name="SEQ_BOARDS")
 @NamedQuery(name="ForumBoard.getThreadCount",       query="SELECT COUNT(t) FROM ForumThread t WHERE t.board.id = :boardID")
 @NamedQuery(name="ForumBoard.multipleThreadCount",  query="SELECT COUNT(t) FROM ForumThread t WHERE t.board.id IN :boardIDs")
 @NamedQuery(name="ForumBoard.getPostCount",         query="SELECT COUNT(p) FROM ForumPost p WHERE p.thread.board.id = :boardID")
@@ -19,8 +18,11 @@ import java.util.Set;
 public class ForumBoard
 {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="SEQ_BOARDS")
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
     private Long id;
+
+    @Column(unique = true)
+    private long index;
 
     @Column(unique = true, nullable = false)
     private String name;
@@ -48,8 +50,9 @@ public class ForumBoard
     @SuppressWarnings("unused")
     ForumBoard() {}
 
-    public ForumBoard(String name)
+    public ForumBoard(long index, String name)
     {
+        this.index = index;
         this.name = name;
         this.accessRoles = new HashSet<>();
         this.childBoards = new HashSet<>();
@@ -57,7 +60,8 @@ public class ForumBoard
     }
 
 
-    public Long getId() { return id; }
+    public Long getId()     { return id; }
+    public long getIndex()  { return index; }
 
     public String getName()            { return name; }
     public void   setName(String name) { this.name = name; }
@@ -66,8 +70,12 @@ public class ForumBoard
     public void    setRootBoard(boolean rootBoard) { this.rootBoard = rootBoard; }
 
     public Collection<ForumThread> getThreads()    { return threads; }
-    public Collection<ForumBoard> getChildBoards() { return childBoards; }
+    public void addThread(ForumThread thread)    { this.threads.add(thread); }
+    public void removeThread(ForumThread thread) { this.threads.remove(thread); }
 
+    public Collection<ForumBoard> getChildBoards() { return childBoards; }
+    public void addChildBoard(ForumBoard board)    { this.childBoards.add(board); }
+    public void removeChildBoard(ForumBoard board) { this.childBoards.remove(board); }
 
     public boolean getGlobalPermission(BoardPermission type)
     {
@@ -89,5 +97,4 @@ public class ForumBoard
             default: throw new UnsupportedOperationException("Board-level permission " + type.name() + " not implemented in ForumBoard");
         }
     }
-
 }

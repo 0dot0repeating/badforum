@@ -49,8 +49,17 @@ public class ThreadViewData
         this.posts.sort(Comparator.comparing(p -> p.postTime));
 
         this.postCount    = this.posts.size();
-        this.creationTime = this.posts.get(0).postTime;
-        this.lastUpdate   = this.posts.get(postCount-1).postTime;
+
+        if (this.postCount == 0)
+        {
+            this.creationTime = null;
+            this.lastUpdate   = null;
+        }
+        else
+        {
+            this.creationTime = this.posts.get(0).postTime;
+            this.lastUpdate   = this.posts.get(postCount-1).postTime;
+        }
     }
 
     public int getPostCount() { return postCount; }

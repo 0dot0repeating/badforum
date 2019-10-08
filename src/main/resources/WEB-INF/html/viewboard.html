@@ -10,8 +10,8 @@
 
     <h1>Viewing board "[[${boardViewData.name}]]"</h1>
 
-    <div th:replace="inc/viewStuff :: viewBoard(${boardViewData})">
+    <div th:replace="inc/viewStuff :: viewBoard(${boardViewData})"></div>
 
-    </div>
+    <div th:replace="inc/postStuff :: newThread(${boardViewData.id}, ${boardViewData.name}, ${postError}, ${postTopic}, ${postText})"></div>
 </body>
 </html>

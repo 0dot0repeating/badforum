@@ -130,7 +130,7 @@ abstract class ForumController
                                     .setParameter("boardID", childBoardIDs)
                                     .getSingleResult();
 
-            BoardViewData childData = new BoardViewData(childBoardID, cb.getName(), childThreadCount, childPostCount);
+            BoardViewData childData = new BoardViewData(cb.getIndex(), cb.getName(), childThreadCount, childPostCount);
             childBoardData.add(childData);
 
             totalThreads += childThreadCount;
@@ -169,7 +169,7 @@ abstract class ForumController
                 userdata = new UserViewData(null);
             }
 
-            ThreadViewData td = new ThreadViewData(t.getId(), t.getTopic(), userdata, postCount, creationTime, lastUpdate);
+            ThreadViewData td = new ThreadViewData(t.getIndex(), t.getTopic(), userdata, postCount, creationTime, lastUpdate);
             threadData.add(td);
         }
 
@@ -193,16 +193,16 @@ abstract class ForumController
             UserViewData userdata = new UserViewData(user == null ? null : user.getUsername());
             String postText = formatPostText(p.getPostText());
 
-            PostViewData pdata = new PostViewData(p.getID(), postText, userdata, p.getPostTime(), p.getlastEditTime());
+            PostViewData pdata = new PostViewData(p.getIndex(), postText, userdata, p.getPostTime(), p.getlastEditTime());
             postData.add(pdata);
 
             if (firstPoster == null) { firstPoster = userdata; }
         }
 
         ForumBoard board = thread.getBoard();
-        BoardViewData boardData = board == null ? new BoardViewData(-1, null) : new BoardViewData(board.getId(), board.getName());
+        BoardViewData boardData = board == null ? new BoardViewData(-1, null) : new BoardViewData(board.getIndex(), board.getName());
 
-        return new ThreadViewData(thread.getId(), thread.getTopic(), firstPoster, boardData, postData);
+        return new ThreadViewData(thread.getID(), thread.getTopic(), firstPoster, boardData, postData);
     }
 
 

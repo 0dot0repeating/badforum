@@ -425,7 +425,7 @@ public class LoginAndRegisterController extends ForumController
         if (session != null) { logout(session); }
 
         String referer = request.getHeader("Referer");
-        if (referer == null) { referer = "/"; }
+        if (referer == null) { referer = ""; }
 
         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
         response.setHeader("Location", referer);

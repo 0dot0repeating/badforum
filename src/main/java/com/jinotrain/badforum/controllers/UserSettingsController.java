@@ -233,6 +233,7 @@ public class UserSettingsController extends ForumController
     @RequestMapping(value = "/savesettings", method = RequestMethod.GET)
     public ModelAndView waitWhyAreYouTryingToSaveSettingsWithAGETRequestThatIsWrongAndBad(HttpServletRequest request, HttpServletResponse response)
     {
+        response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
         return viewOwnSettings(request, response);
     }
 

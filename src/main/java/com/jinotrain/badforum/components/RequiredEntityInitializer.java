@@ -144,12 +144,12 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
         {
             logger.info("No root board found, creating one along with test thread");
 
-            currentRoot = new ForumBoard("Root board");
+            currentRoot = new ForumBoard(boardRepository.getHighestIndex() + 1, "Root board");
             currentRoot.setRootBoard(true);
             boardRepository.save(currentRoot);
 
-            ForumThread testThread = new ForumThread("Test thread");
-            ForumPost testPost = new ForumPost("Test post, please ignore (or delete if you're the admin)");
+            ForumThread testThread = new ForumThread(threadRepository.getHighestIndex() + 1,"Test thread");
+            ForumPost testPost = new ForumPost(postRepository.getHighestIndex() + 1, "Test post, please ignore (or delete if you're the admin)");
 
             testThread.setBoard(currentRoot);
             threadRepository.save(testThread);

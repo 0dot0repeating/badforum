@@ -5,11 +5,10 @@ import javax.persistence.*;
 @Entity
 @Cacheable
 @Table(name="forum_user_role_links")
-@SequenceGenerator(name="SEQ_USERROLELINKS")
 class UserToRoleLink
 {
     @Id
-    @GeneratedValue(strategy=GenerationType.SEQUENCE, generator="SEQ_USERROLELINKS")
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
     private Long id;
 
     @ManyToOne(fetch=FetchType.LAZY)

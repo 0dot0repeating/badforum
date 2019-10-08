@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>w   h   o   m   s   t</title>
+</head>
+<body>
+    <form class="post" method="post" action="/post" th:fragment="newThread(boardID, boardName, postError, postTopic, postText)">
+        <h2>Post new thread in "[[${boardName}]]"</h2>
+        <div class="postError" th:if="${postError != null}" th:text="${postError}"></div>
+
+        <input type="hidden" name="boardID" th:value="${boardID}">
+        <div class="topicField">
+            Topic:
+            <input type="text" name="topic" th:value="${postTopic}" placeholder="Insert topic here">
+        </div>
+        <div class="textField">
+            <textarea name="text" th:value="${postText}" placeholder="Type your post here"></textarea>
+        </div>
+        <input type="submit" value="Create topic">
+    </form>
+
+    <form class="post reply" method="post" action="/post" th:fragment="reply(threadID, threadName, postError, postText)">
+        <h2>Replying to thread "[[${threadName}]]"</h2>
+        <div class="postError" th:if="${postError != null}" th:text="${postError}"></div>
+
+        <input type="hidden" name="threadID" th:value="${threadID}">
+        <div class="textField">
+            <textarea name="text" th:value="${postText}" placeholder="Type your reply here"></textarea>
+        </div>
+        <input type="submit" value="Reply">
+    </form>
+</body>
+</html>
