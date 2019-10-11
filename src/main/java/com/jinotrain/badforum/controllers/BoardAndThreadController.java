@@ -2,6 +2,7 @@ package com.jinotrain.badforum.controllers;
 
 import com.jinotrain.badforum.data.BoardViewData;
 import com.jinotrain.badforum.data.ThreadViewData;
+import com.jinotrain.badforum.db.BoardPermission;
 import com.jinotrain.badforum.db.entities.ForumBoard;
 import com.jinotrain.badforum.db.entities.ForumPost;
 import com.jinotrain.badforum.db.entities.ForumThread;
@@ -23,20 +24,46 @@ public class BoardAndThreadController extends ForumController
     private static Logger logger = LoggerFactory.getLogger(BoardAndThreadController.class);
 
 
-    private ModelAndView getThread(ForumThread thread)
+    private ModelAndView getBoard(ForumBoard board, ForumUser viewer)
     {
-        ThreadViewData viewData = getThreadViewData(thread, em);
-        ModelAndView ret = new ModelAndView("viewthread.html");
-        ret.addObject("threadViewData", viewData);
+        BoardViewData viewData;
+
+        try
+        {
+            viewData = getBoardViewData(board, viewer, em);
+        }
+        catch (SecurityException e)
+        {
+            ModelAndView notAllowed = new ModelAndView("viewboard_error.html");
+            notAllowed.addObject("errorCode", "NOT_ALLOWED_TO_VIEW");
+            return notAllowed;
+        }
+
+        ModelAndView ret = new ModelAndView("viewboard.html");
+        ret.addObject("boardViewData", viewData);
+        ret.addObject("allowedToPost", userHasBoardPermission(viewer, board, BoardPermission.POST));
         return ret;
     }
 
 
-    private ModelAndView getBoard(ForumBoard board)
+    private ModelAndView getThread(ForumThread thread, ForumUser viewer)
     {
-        BoardViewData viewData = getBoardViewData(board, em);
-        ModelAndView ret = new ModelAndView("viewboard.html");
-        ret.addObject("boardViewData", viewData);
+        ThreadViewData viewData;
+
+        try
+        {
+            viewData = getThreadViewData(thread, viewer, em);
+        }
+        catch (SecurityException e)
+        {
+            ModelAndView notAllowed = new ModelAndView("viewthread_error.html");
+            notAllowed.addObject("errorCode", "NOT_ALLOWED_TO_VIEW");
+            return notAllowed;
+        }
+
+        ModelAndView ret = new ModelAndView("viewthread.html");
+        ret.addObject("threadViewData", viewData);
+        ret.addObject("allowedToPost", userHasBoardPermission(viewer, thread.getBoard(), BoardPermission.POST));
         return ret;
     }
 
@@ -46,7 +73,7 @@ public class BoardAndThreadController extends ForumController
     public ModelAndView viewTopLevelBoard(HttpServletRequest request, HttpServletResponse response)
     {
         ForumBoard rootBoard = boardRepository.findRootBoard();
-        return getBoard(rootBoard);
+        return getBoard(rootBoard, getUserFromRequest(request));
     }
 
 
@@ -65,16 +92,20 @@ public class BoardAndThreadController extends ForumController
         catch (NumberFormatException e)
         {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return new ModelAndView("viewboard_notfound.html");
+            ModelAndView notFound = new ModelAndView("viewboard_error.html");
+            notFound.addObject("errorCode", "NOT_FOUND");
+            return notFound;
         }
 
         if (viewBoard == null)
         {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return new ModelAndView("viewboard_notfound.html");
+            ModelAndView notFound = new ModelAndView("viewboard_error.html");
+            notFound.addObject("errorCode", "NOT_FOUND");
+            return notFound;
         }
 
-        return getBoard(viewBoard);
+        return getBoard(viewBoard, getUserFromRequest(request));
     }
 
 
@@ -93,16 +124,20 @@ public class BoardAndThreadController extends ForumController
         catch (NumberFormatException e)
         {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return new ModelAndView("viewthread_notfound.html");
+            ModelAndView notFound = new ModelAndView("viewthread_error.html");
+            notFound.addObject("errorCode", "NOT_FOUND");
+            return notFound;
         }
 
         if (viewThread == null)
         {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return new ModelAndView("viewthread_notfound.html");
+            ModelAndView notFound = new ModelAndView("viewthread_error.html");
+            notFound.addObject("errorCode", "NOT_FOUND");
+            return notFound;
         }
 
-        return getThread(viewThread);
+        return getThread(viewThread, getUserFromRequest(request));
     }
 
 
@@ -157,13 +192,34 @@ public class BoardAndThreadController extends ForumController
             return mav;
         }
 
+        ForumUser poster = getUserFromRequest(request);
+
+        if (!userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
+        {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            ModelAndView mav = new ModelAndView("post_error.html");
+            mav.addObject("errorCode", "NOT_ALLOWED_TO_VIEW");
+            mav.addObject("postTopic", postTopic);
+            mav.addObject("postText",  postText);
+            return mav;
+        }
+
+        if (!userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
+        {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            ModelAndView mav = getBoard(targetBoard, poster);
+            mav.addObject("postError", "You aren't allowed to post on this board");
+            mav.addObject("postText", postText);
+            return mav;
+        }
+
         Boolean noTopic = postTopic == null || postTopic.isEmpty();
         Boolean noText  = postText  == null || postText.isEmpty();
 
         if (noTopic || noText)
         {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            ModelAndView mav = getBoard(targetBoard);
+            ModelAndView mav = getBoard(targetBoard, poster);
 
             if (noTopic && noText)
             {
@@ -182,8 +238,6 @@ public class BoardAndThreadController extends ForumController
 
             return mav;
         }
-
-        ForumUser poster = getUserFromRequest(request);
 
         long threadIndex = threadRepository.getHighestIndex() + 1;
 
@@ -222,20 +276,39 @@ public class BoardAndThreadController extends ForumController
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             ModelAndView mav = new ModelAndView("post_error.html");
             mav.addObject("errorCode", "THREAD_NOT_FOUND");
-            mav.addObject("postTopic", request.getParameter(null));
-            mav.addObject("postText",  request.getParameter(postText));
+            mav.addObject("postText",  postText);
             return mav;
         }
+
+        ForumUser  poster      = getUserFromRequest(request);
+        ForumBoard targetBoard = targetThread.getBoard();
+
+        if (!userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
+        {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            ModelAndView mav = new ModelAndView("post_error.html");
+            mav.addObject("errorCode", "NOT_ALLOWED_TO_VIEW");
+            mav.addObject("postText",  postText);
+            return mav;
+        }
+
+        if (!userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
+        {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            ModelAndView mav = getThread(targetThread, poster);
+            mav.addObject("postError", "You aren't allowed to post on this board");
+            mav.addObject("postText", postText);
+            return mav;
+        }
+
 
         if (postText == null || postText.isEmpty())
         {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            ModelAndView mav = getThread(targetThread);
+            ModelAndView mav = getThread(targetThread, poster);
             mav.addObject("postError", "Post is empty");
             return mav;
         }
-
-        ForumUser poster = getUserFromRequest(request);
 
         ForumPost reply = new ForumPost(postRepository.getHighestIndex() + 1, postText, poster);
 

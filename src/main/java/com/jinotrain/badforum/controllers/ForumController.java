@@ -5,6 +5,7 @@ import com.jinotrain.badforum.data.BoardViewData;
 import com.jinotrain.badforum.data.PostViewData;
 import com.jinotrain.badforum.data.ThreadViewData;
 import com.jinotrain.badforum.data.UserViewData;
+import com.jinotrain.badforum.db.BoardPermission;
 import com.jinotrain.badforum.db.entities.*;
 import com.jinotrain.badforum.db.repositories.*;
 import org.commonmark.node.Node;
@@ -80,8 +81,13 @@ abstract class ForumController
     }
 
 
-    BoardViewData getBoardViewData(ForumBoard board, EntityManager em)
+    BoardViewData getBoardViewData(ForumBoard board, ForumUser viewer, EntityManager em)
     {
+        if (!userHasBoardPermission(viewer, board, BoardPermission.VIEW))
+        {
+            throw new SecurityException("Viewer is not allowed to view board");
+        }
+
         long boardID = board.getId();
 
         // get thread and post count, including all child boards
@@ -103,6 +109,8 @@ abstract class ForumController
 
         for (ForumBoard cb: childBoards)
         {
+            if (!userHasBoardPermission(viewer, cb, BoardPermission.VIEW)) { continue; }
+
             long childBoardID = cb.getId();
             Collection<Long> childBoardIDs = new HashSet<>();
             childBoardIDs.add(childBoardID);
@@ -115,8 +123,11 @@ abstract class ForumController
 
                 for (ForumBoard b: curChildBoards)
                 {
-                    childBoardIDs.add(b.getId());
-                    newBoards.addAll(b.getChildBoards());
+                    if (userHasBoardPermission(viewer, b, BoardPermission.VIEW))
+                    {
+                        childBoardIDs.add(b.getId());
+                        newBoards.addAll(b.getChildBoards());
+                    }
                 }
 
                 curChildBoards = newBoards;
@@ -181,8 +192,15 @@ abstract class ForumController
     }
 
 
-    ThreadViewData getThreadViewData(ForumThread thread, EntityManager em)
+    ThreadViewData getThreadViewData(ForumThread thread, ForumUser viewer, EntityManager em)
     {
+        ForumBoard board = thread.getBoard();
+
+        if (!userHasBoardPermission(viewer, board, BoardPermission.VIEW))
+        {
+            throw new SecurityException("Viewer is not allowed to view thread's board");
+        }
+
         Collection<ForumPost> posts = thread.getPosts();
         List<PostViewData> postData = new ArrayList<>();
         UserViewData firstPoster = null;
@@ -199,7 +217,6 @@ abstract class ForumController
             if (firstPoster == null) { firstPoster = userdata; }
         }
 
-        ForumBoard board = thread.getBoard();
         BoardViewData boardData = board == null ? new BoardViewData(-1, null) : new BoardViewData(board.getIndex(), board.getName());
 
         return new ThreadViewData(thread.getID(), thread.getTopic(), firstPoster, boardData, postData);
@@ -210,5 +227,12 @@ abstract class ForumController
     {
         Node parsedPostText = markdownParser.parse(postText);
         return mdToHTML.render(parsedPostText);
+    }
+
+
+    boolean userHasBoardPermission(ForumUser user, ForumBoard board, BoardPermission permission)
+    {
+        if (user == null) { return board.getGlobalPermission(permission); }
+        return user.hasBoardPermission(board, permission);
     }
 }
