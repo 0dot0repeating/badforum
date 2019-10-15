@@ -19,9 +19,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Controller
-public class BoardAndThreadController extends ForumController
+public class BrowseAndPostController extends ForumController
 {
-    private static Logger logger = LoggerFactory.getLogger(BoardAndThreadController.class);
+    private static Logger logger = LoggerFactory.getLogger(BrowseAndPostController.class);
 
 
     private ModelAndView getBoard(ForumBoard board, ForumUser viewer)
@@ -35,7 +35,7 @@ public class BoardAndThreadController extends ForumController
         catch (SecurityException e)
         {
             ModelAndView notAllowed = new ModelAndView("viewboard_error.html");
-            notAllowed.addObject("errorCode", "NOT_ALLOWED_TO_VIEW");
+            notAllowed.addObject("errorCode", "NOT_ALLOWED");
             return notAllowed;
         }
 
@@ -57,7 +57,7 @@ public class BoardAndThreadController extends ForumController
         catch (SecurityException e)
         {
             ModelAndView notAllowed = new ModelAndView("viewthread_error.html");
-            notAllowed.addObject("errorCode", "NOT_ALLOWED_TO_VIEW");
+            notAllowed.addObject("errorCode", "NOT_ALLOWED");
             return notAllowed;
         }
 

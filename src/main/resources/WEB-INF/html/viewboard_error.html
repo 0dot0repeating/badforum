@@ -8,10 +8,8 @@
 
     </div>
 
-    <h1>View board - Error</h1>
-    
-    <p class="error">
-        No board with the requested ID exists.
-    </p>
+    <h1>View board - [[#{error.board.__${errorCode}__.title}]]</h1>
+
+    <p class="error" th:text="#{error.board.__${errorCode}__}">
 </body>
 </html>
