@@ -23,14 +23,15 @@ class RoleToBoardLink
 
     private byte canView;
     private byte canPost;
+    private byte canModerate;
 
     @SuppressWarnings("unused")
     RoleToBoardLink() {}
 
     RoleToBoardLink(ForumRole role, ForumBoard board)
     {
-        this.role  = role;
-        this.board = board;
+        this.role     = role;
+        this.board    = board;
 
         canView = 0;
         canPost = 0;
@@ -39,12 +40,14 @@ class RoleToBoardLink
     ForumRole  getRole()  { return role; }
     ForumBoard getBoard() { return board; }
 
+
     byte hasPermission(BoardPermission type)
     {
         switch (type)
         {
-            case VIEW: return canView;
-            case POST: return canPost;
+            case VIEW:     return canView;
+            case POST:     return canPost;
+            case MODERATE: return canModerate;
             default: throw new UnsupportedOperationException("Board-level permission " + type.name() + " not implemented in RoleToBoardLink");
 
         }
@@ -55,8 +58,9 @@ class RoleToBoardLink
     {
         switch (type)
         {
-            case VIEW: canView = state; break;
-            case POST: canPost = state; break;
+            case VIEW:     canView     = state; break;
+            case POST:     canPost     = state; break;
+            case MODERATE: canModerate = state; break;
             default: throw new UnsupportedOperationException("Board-level permission " + type.name() + " not implemented in RoleToBoardLink");
         }
     }

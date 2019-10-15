@@ -1,7 +1,7 @@
 package com.jinotrain.badforum.db.entities;
 
 import com.jinotrain.badforum.db.BoardPermission;
-import com.jinotrain.badforum.db.ForumPermission;
+import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.PermissionState;
 
 import javax.persistence.*;
@@ -138,7 +138,7 @@ public class ForumUser
 
 
 
-    public boolean hasPermission(ForumPermission type)
+    public boolean hasPermission(UserPermission type)
     {
         for (ForumRole role: getRoles())
         {

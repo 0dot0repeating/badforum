@@ -1,11 +1,10 @@
 package com.jinotrain.badforum.db.entities;
 
 import com.jinotrain.badforum.db.BoardPermission;
+import com.jinotrain.badforum.db.PermissionState;
 
 import javax.persistence.*;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Cacheable
@@ -43,8 +42,9 @@ public class ForumBoard
 
     private boolean rootBoard = false;
 
-    private boolean anyoneCanView = true;
-    private boolean anyoneCanPost = false;
+    private boolean anyoneCanView     = true;
+    private boolean anyoneCanPost     = false;
+    private boolean anyoneCanModerate = false;
 
 
     @SuppressWarnings("unused")
@@ -77,12 +77,14 @@ public class ForumBoard
     public void addChildBoard(ForumBoard board)    { this.childBoards.add(board); }
     public void removeChildBoard(ForumBoard board) { this.childBoards.remove(board); }
 
+
     public boolean getGlobalPermission(BoardPermission type)
     {
         switch (type)
         {
-            case VIEW: return anyoneCanView;
-            case POST: return anyoneCanPost;
+            case VIEW:     return anyoneCanView;
+            case POST:     return anyoneCanPost;
+            case MODERATE: return anyoneCanModerate;
             default: throw new UnsupportedOperationException("Board-level permission " + type.name() + " not implemented in ForumBoard");
         }
     }
@@ -92,9 +94,23 @@ public class ForumBoard
     {
         switch (type)
         {
-            case VIEW: anyoneCanView = state; break;
-            case POST: anyoneCanPost = state; break;
+            case VIEW:     anyoneCanView     = state; break;
+            case POST:     anyoneCanPost     = state; break;
+            case MODERATE: anyoneCanModerate = state; break;
             default: throw new UnsupportedOperationException("Board-level permission " + type.name() + " not implemented in ForumBoard");
         }
+    }
+
+
+    public Map<BoardPermission, PermissionState> getGlobalPermissions()
+    {
+        Map<BoardPermission, PermissionState> ret = new HashMap<>();
+
+        for (BoardPermission p: BoardPermission.values())
+        {
+            ret.put(p, getGlobalPermission(p) ? PermissionState.ON : PermissionState.OFF);
+        }
+
+        return ret;
     }
 }

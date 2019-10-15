@@ -1,12 +1,14 @@
 package com.jinotrain.badforum.db.entities;
 
 import com.jinotrain.badforum.db.BoardPermission;
-import com.jinotrain.badforum.db.ForumPermission;
+import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.PermissionState;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Entity
@@ -34,6 +36,7 @@ public class ForumRole
     private boolean defaultRole;
 
     private byte canManageUsers;
+    private byte canManageBoards;
 
 
     @SuppressWarnings("unused")
@@ -64,7 +67,7 @@ public class ForumRole
 
 
 
-    public PermissionState hasPermission(ForumPermission type)
+    public PermissionState hasPermission(UserPermission type)
     {
         if (admin) { return PermissionState.ON; }
 
@@ -72,7 +75,8 @@ public class ForumRole
 
         switch (type)
         {
-            case MANAGE_USERS: state = canManageUsers; break;
+            case MANAGE_USERS:  state = canManageUsers;  break;
+            case MANAGE_BOARDS: state = canManageBoards; break;
             default: throw new UnsupportedOperationException("User-level permission " + type.name() + " not implemented in ForumRole");
         }
 
@@ -85,7 +89,7 @@ public class ForumRole
     }
 
 
-    public void setPermission(ForumPermission type, PermissionState state)
+    public void setPermission(UserPermission type, PermissionState state)
     {
         byte internalState;
 
@@ -98,7 +102,8 @@ public class ForumRole
 
         switch (type)
         {
-            case MANAGE_USERS: canManageUsers = internalState; break;
+            case MANAGE_USERS:  canManageUsers  = internalState; break;
+            case MANAGE_BOARDS: canManageBoards = internalState; break;
             default: throw new UnsupportedOperationException("User-level permission " + type.name() + " not implemented in ForumRole");
         }
     }
@@ -168,5 +173,39 @@ public class ForumRole
         {
             accessBoards.remove(link);
         }
+    }
+
+
+    public Map<BoardPermission, PermissionState> getBoardPermissions(ForumBoard board)
+    {
+        Map<BoardPermission, PermissionState> ret = new HashMap<>();
+
+        if (admin)
+        {
+            for (BoardPermission p: BoardPermission.values()) { ret.put(p, PermissionState.ON); }
+            return ret;
+        }
+
+        RoleToBoardLink link = findBoardLink(board);
+
+        if (link == null)
+        {
+            for (BoardPermission p: BoardPermission.values()) { ret.put(p, PermissionState.KEEP); }
+            return ret;
+        }
+
+        for (BoardPermission p: BoardPermission.values())
+        {
+            byte state = link.hasPermission(p);
+
+            switch (state)
+            {
+                case -1: ret.put(p, PermissionState.OFF);   break;
+                default: ret.put(p, PermissionState.KEEP);  break;
+                case  1: ret.put(p, PermissionState.ON);    break;
+            }
+        }
+
+        return ret;
     }
 }

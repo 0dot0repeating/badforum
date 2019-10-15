@@ -2,7 +2,7 @@ package com.jinotrain.badforum.controllers;
 
 import com.jinotrain.badforum.components.passwords.ForumPasswordService;
 import com.jinotrain.badforum.data.UserSettingViewData;
-import com.jinotrain.badforum.db.ForumPermission;
+import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.entities.ForumUser;
 import com.jinotrain.badforum.lambdas.UserSettingInterface;
 import org.slf4j.Logger;
@@ -123,7 +123,7 @@ public class UserSettingsController extends ForumController
     private boolean canEditSettings(ForumUser viewUser, ForumUser settingsUser)
     {
         return viewUser.getUsername().equalsIgnoreCase(settingsUser.getUsername())
-            || viewUser.hasPermission(ForumPermission.MANAGE_USERS);
+            || viewUser.hasPermission(UserPermission.MANAGE_USERS);
     }
 
 
