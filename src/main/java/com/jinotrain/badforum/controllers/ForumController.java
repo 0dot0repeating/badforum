@@ -6,6 +6,7 @@ import com.jinotrain.badforum.data.PostViewData;
 import com.jinotrain.badforum.data.ThreadViewData;
 import com.jinotrain.badforum.data.UserViewData;
 import com.jinotrain.badforum.db.BoardPermission;
+import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.entities.*;
 import com.jinotrain.badforum.db.repositories.*;
 import org.commonmark.node.Node;
@@ -227,6 +228,13 @@ abstract class ForumController
     {
         Node parsedPostText = markdownParser.parse(postText);
         return mdToHTML.render(parsedPostText);
+    }
+
+
+    boolean userHasPermission(ForumUser user, UserPermission permission)
+    {
+        if (user == null) { return false; }
+        return user.hasPermission(permission);
     }
 
 

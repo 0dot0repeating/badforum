@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - User settings</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Permissions for board "[[${boardName}]]"</h1>
+
+    <div th:if="${messageCode}" th:text="#{info.boardperms.__${messageCode}__}"></div>
+
+    <form class="boardPermissions" method="post" action="/board/savepermissions">
+        <input type="hidden" name="boardIndex" th:value="${boardIndex}">
+
+        <div class="role" th:each="viewdata: ${permissionData}">
+            <span class="roleName" th:text="${viewdata.roleName} ?: 'Everyone'"></span>
+            <div class="permission" th:each="permission: ${viewdata.permissions}">
+                <span class="permissionName" th:text="${permission.perm.label}"></span>
+
+                <select th:name="${permission.perm.name() + ':' + viewdata.roleName}" th:if="${viewdata.roleName != null}">
+                    <option value="-1" th:selected="${permission.state.name() == 'OFF'}">Off</option>
+                    <option value="0" th:selected="${permission.state.name() == 'KEEP'}">Pass through</option>
+                    <option value="1" th:selected="${permission.state.name() == 'ON'}">On</option>
+                </select>
+
+                <select th:name="${permission.perm.name()}" th:if="${viewdata.roleName == null}">
+                    <option value="-1" th:selected="${permission.state.name() == 'OFF'}">Off</option>
+                    <option value="1" th:selected="${permission.state.name() == 'ON'}">On</option>
+                </select>
+            </div>
+        </div>
+
+        <input type="submit" value="Save permissions">
+    </form>
+</body>
+</html>
