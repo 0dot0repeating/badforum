@@ -14,6 +14,6 @@
 
     <div th:replace="inc/viewStuff :: viewThread(${threadViewData})"></div>
 
-    <form th:replace="inc/postStuff :: reply(${threadViewData.id}, ${threadViewData.topic}, ${postError}, ${postText})"></form>
+    <form th:replace="inc/postStuff :: reply(${threadViewData.id}, ${threadViewData.topic}, ${postError}, ${postText}, ${canPost})"></form>
 </body>
 </html>

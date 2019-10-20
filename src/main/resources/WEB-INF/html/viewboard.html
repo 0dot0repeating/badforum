@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>[[#{badforum.name}]] - aeiou</title>
+    <title>[[#{badforum.name}]] - [[${boardViewData.name}]]</title>
 </head>
 <body>
     <div th:replace="inc/header :: header">
@@ -10,8 +10,8 @@
 
     <h1>Viewing board "[[${boardViewData.name}]]"</h1>
 
-    <div th:replace="inc/viewStuff :: viewBoard(${boardViewData})"></div>
+    <div th:replace="inc/viewStuff :: viewBoard(${boardViewData}, ${canMakeBoards})"></div>
 
-    <form th:replace="inc/postStuff :: newThread(${boardViewData.id}, ${boardViewData.name}, ${postError}, ${postTopic}, ${postText})"></form>
+    <form th:replace="inc/postStuff :: newThread(${boardViewData.id}, ${boardViewData.name}, ${postError}, ${postTopic}, ${postText}, ${canPost})"></form>
 </body>
 </html>

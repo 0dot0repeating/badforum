@@ -69,9 +69,14 @@ public class ForumBoard
     public boolean isRootBoard() { return rootBoard; }
     public void    setRootBoard(boolean rootBoard) { this.rootBoard = rootBoard; }
 
+
+    public ForumBoard getParentBoard()                       { return parentBoard; }
+    public void       setParentBoard(ForumBoard parentBoard) { this.parentBoard = parentBoard; }
+
+
     public Collection<ForumThread> getThreads()    { return threads; }
-    public void addThread(ForumThread thread)    { this.threads.add(thread); }
-    public void removeThread(ForumThread thread) { this.threads.remove(thread); }
+    public void addThread(ForumThread thread)      { this.threads.add(thread); }
+    public void removeThread(ForumThread thread)   { this.threads.remove(thread); }
 
     public Collection<ForumBoard> getChildBoards() { return childBoards; }
     public void addChildBoard(ForumBoard board)    { this.childBoards.add(board); }

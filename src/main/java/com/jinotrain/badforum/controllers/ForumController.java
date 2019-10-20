@@ -135,11 +135,11 @@ abstract class ForumController
             }
 
             long childThreadCount = em.createNamedQuery("ForumBoard.multipleThreadCount", Long.class)
-                                      .setParameter("boardID", childBoardIDs)
+                                      .setParameter("boardIDs", childBoardIDs)
                                       .getSingleResult();
 
             long childPostCount = em.createNamedQuery("ForumBoard.multiplePostCount", Long.class)
-                                    .setParameter("boardID", childBoardIDs)
+                                    .setParameter("boardIDs", childBoardIDs)
                                     .getSingleResult();
 
             BoardViewData childData = new BoardViewData(cb.getIndex(), cb.getName(), childThreadCount, childPostCount);
@@ -185,7 +185,7 @@ abstract class ForumController
             threadData.add(td);
         }
 
-        BoardViewData ret = new BoardViewData(boardID, board.getName(), totalThreads, totalPosts);
+        BoardViewData ret = new BoardViewData(board.getIndex(), board.getName(), totalThreads, totalPosts);
         ret.childBoards = childBoardData;
         ret.threads = threadData;
 

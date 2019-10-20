@@ -4,8 +4,8 @@
     <title>w   h   o   m   s   t</title>
 </head>
 <body>
-    <form class="post" method="post" action="/post" th:fragment="newThread(boardID, boardName, postError, postTopic, postText)">
-        <th:block th:if="${allowedToPost}">
+    <form class="post" method="post" action="/post" th:fragment="newThread(boardID, boardName, postError, postTopic, postText, canPost)">
+        <th:block th:if="${canPost}">
             <h2>Post new thread in "[[${boardName}]]"</h2>
             <div class="postError" th:if="${postError != null}">Error when posting: [[${postError}]]</div>
 
@@ -19,14 +19,14 @@
             </div>
             <input type="submit" value="Create topic">
         </th:block>
-        <th:block th:if="${allowedToPost != true && postError != null}">
+        <th:block th:if="${canPost != true && postError != null}">
             <h2>Post new thread in "[[${boardName}]]"</h2>
             <div class="postError" th:if="${postError != null}">Error when posting: [[${postError}]]</div>
         </th:block>
     </form>
 
-    <form class="post reply" method="post" action="/post" th:fragment="reply(threadID, threadName, postError, postText)">
-        <th:block th:if="${allowedToPost}">
+    <form class="post reply" method="post" action="/post" th:fragment="reply(threadID, threadName, postError, postText, canPost)">
+        <th:block th:if="${canPost}">
             <h2>Reply to thread "[[${threadName}]]"</h2>
             <div class="postError" th:if="${postError != null}" th:text="Error when posting: ${postError}"></div>
 
@@ -36,7 +36,7 @@
             </div>
             <input type="submit" value="Reply">
         </th:block>
-        <th:block th:if="${allowedToPost != true && postError != null}">
+        <th:block th:if="${canPost != true && postError != null}">
             <h2>Post new thread in "[[${boardName}]]"</h2>
             <div class="postError" th:if="${postError != null}">Error when posting: [[${postError}]]</div>
         </th:block>

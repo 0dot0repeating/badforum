@@ -3,6 +3,7 @@ package com.jinotrain.badforum.controllers;
 import com.jinotrain.badforum.data.BoardViewData;
 import com.jinotrain.badforum.data.ThreadViewData;
 import com.jinotrain.badforum.db.BoardPermission;
+import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.entities.ForumBoard;
 import com.jinotrain.badforum.db.entities.ForumPost;
 import com.jinotrain.badforum.db.entities.ForumThread;
@@ -41,7 +42,8 @@ public class BrowseAndPostController extends ForumController
 
         ModelAndView ret = new ModelAndView("viewboard.html");
         ret.addObject("boardViewData", viewData);
-        ret.addObject("allowedToPost", userHasBoardPermission(viewer, board, BoardPermission.POST));
+        ret.addObject("canMakeBoards", userHasPermission(viewer, UserPermission.MANAGE_BOARDS));
+        ret.addObject("canPost", userHasBoardPermission(viewer, board, BoardPermission.POST));
         return ret;
     }
 
@@ -63,7 +65,7 @@ public class BrowseAndPostController extends ForumController
 
         ModelAndView ret = new ModelAndView("viewthread.html");
         ret.addObject("threadViewData", viewData);
-        ret.addObject("allowedToPost", userHasBoardPermission(viewer, thread.getBoard(), BoardPermission.POST));
+        ret.addObject("canPost", userHasBoardPermission(viewer, thread.getBoard(), BoardPermission.POST));
         return ret;
     }
 
@@ -316,5 +318,65 @@ public class BrowseAndPostController extends ForumController
         postRepository.saveAndFlush(reply);
 
         return new ModelAndView("redirect:/thread/" + targetThread.getIndex());
+    }
+
+
+    @Transactional
+    @RequestMapping(value = "/board/new", method = RequestMethod.POST)
+    public ModelAndView createNewBoard(HttpServletRequest request, HttpServletResponse response)
+    {
+        ForumUser user = getUserFromRequest(request);
+
+        if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
+        {
+            ModelAndView notAllowed = new ModelAndView("newboard_error.html");
+            notAllowed.addObject("errorCode", "NOT_ALLOWED");
+            return notAllowed;
+        }
+
+        String parentIndexRaw = request.getParameter("parentIndex");
+        long parentIndex;
+
+        if (parentIndexRaw == null || parentIndexRaw.isEmpty())
+        {
+            ModelAndView noParent = new ModelAndView("newboard_error.html");
+            noParent.addObject("errorCode", "MISSING_PARENT");
+            return noParent;
+        }
+
+        try
+        {
+            parentIndex = Long.valueOf(parentIndexRaw);
+        }
+        catch (NumberFormatException e)
+        {
+            ModelAndView invalidParent = new ModelAndView("newboard_error.html");
+            invalidParent.addObject("errorCode", "PARENT_INDEX_INVALID");
+            return invalidParent;
+        }
+
+        ForumBoard parentBoard = boardRepository.findByIndex(parentIndex);
+
+        if (parentBoard == null)
+        {
+            ModelAndView noParent = new ModelAndView("newboard_error.html");
+            noParent.addObject("errorCode", "NO_PARENT");
+            return noParent;
+        }
+
+        String newBoardName = request.getParameter("boardName");
+
+        if (newBoardName == null || newBoardName.isEmpty())
+        {
+            ModelAndView noName = new ModelAndView("newboard_error.html");
+            noName.addObject("errorCode", "NO_BOARD_NAME");
+            return noName;
+        }
+
+        ForumBoard newBoard = new ForumBoard(boardRepository.getHighestIndex()+1, newBoardName);
+        newBoard.setParentBoard(parentBoard);
+        boardRepository.saveAndFlush(newBoard);
+
+        return new ModelAndView("redirect:/board/" + newBoard.getIndex());
     }
 }
