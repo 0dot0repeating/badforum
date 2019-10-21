@@ -8,6 +8,7 @@ import com.jinotrain.badforum.lambdas.UserSettingInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -131,23 +132,17 @@ public class UserSettingsController extends ForumController
     {
         if (viewUser == null)
         {
-            ModelAndView mav = new ModelAndView("usersettings_error.html");
-            mav.addObject("errorCode", "NOT_LOGGED_IN");
-            return mav;
+            return errorPage("usersettings_error.html", "NOT_LOGGED_IN", HttpStatus.FORBIDDEN);
         }
 
         if (settingsUser == null)
         {
-            ModelAndView mav = new ModelAndView("usersettings_error.html");
-            mav.addObject("errorCode", "NOT_FOUND");
-            return mav;
+            return errorPage("usersettings_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
         if (!canEditSettings(viewUser, settingsUser))
         {
-            ModelAndView mav = new ModelAndView("usersettings_error.html");
-            mav.addObject("errorCode", "NOT_ALLOWED");
-            return mav;
+            return errorPage("usersettings_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
         }
 
         return null;

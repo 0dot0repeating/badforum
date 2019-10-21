@@ -13,6 +13,8 @@ import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -242,5 +244,14 @@ abstract class ForumController
     {
         if (user == null) { return board.getGlobalPermission(permission); }
         return user.hasBoardPermission(board, permission);
+    }
+
+
+    ModelAndView errorPage(String viewName, String errorCode, HttpStatus status)
+    {
+        ModelAndView errorMAV = new ModelAndView(viewName);
+        errorMAV.setStatus(status);
+        errorMAV.addObject(errorCode);
+        return errorMAV;
     }
 }

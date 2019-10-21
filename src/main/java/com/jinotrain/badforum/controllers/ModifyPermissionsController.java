@@ -8,6 +8,7 @@ import com.jinotrain.badforum.db.PermissionState;
 import com.jinotrain.badforum.db.entities.ForumBoard;
 import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumUser;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -131,9 +132,7 @@ public class ModifyPermissionsController extends ForumController
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
-            ModelAndView notAllowed = new ModelAndView("boardpermissions_error.html");
-            notAllowed.addObject("errorCode", "NOT_ALLOWED");
-            return notAllowed;
+            return errorPage("boardpermissions_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
         }
 
         String requestURL = request.getServletPath();
@@ -149,9 +148,7 @@ public class ModifyPermissionsController extends ForumController
         }
         catch (NumberFormatException e)
         {
-            ModelAndView notFound = new ModelAndView("boardpermissions_error.html");
-            notFound.addObject("errorCode", "NOT_FOUND");
-            return notFound;
+            return errorPage("boardpermissions_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
         List<BoardPermissionData> permissionViewData = getAllBoardPermissions(board);
@@ -229,9 +226,7 @@ public class ModifyPermissionsController extends ForumController
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
-            ModelAndView notAllowed = new ModelAndView("boardpermissions_error.html");
-            notAllowed.addObject("errorCode", "NOT_ALLOWED");
-            return notAllowed;
+            return errorPage("boardpermissions_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
         }
 
         ForumBoard board;
@@ -243,9 +238,7 @@ public class ModifyPermissionsController extends ForumController
         }
         catch (NumberFormatException e)
         {
-            ModelAndView notFound = new ModelAndView("boardpermissions_error.html");
-            notFound.addObject("errorCode", "NOT_FOUND");
-            return notFound;
+            return errorPage("boardpermissions_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
         updateBoardPermissions(board, buildPermissionDataFromRequest(request.getParameterMap()));

@@ -10,6 +10,7 @@ import com.jinotrain.badforum.db.entities.ForumThread;
 import com.jinotrain.badforum.db.entities.ForumUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,9 +36,7 @@ public class BrowseAndPostController extends ForumController
         }
         catch (SecurityException e)
         {
-            ModelAndView notAllowed = new ModelAndView("viewboard_error.html");
-            notAllowed.addObject("errorCode", "NOT_ALLOWED");
-            return notAllowed;
+            return errorPage("viewboard_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
         }
 
         ModelAndView ret = new ModelAndView("viewboard.html");
@@ -58,9 +57,7 @@ public class BrowseAndPostController extends ForumController
         }
         catch (SecurityException e)
         {
-            ModelAndView notAllowed = new ModelAndView("viewthread_error.html");
-            notAllowed.addObject("errorCode", "NOT_ALLOWED");
-            return notAllowed;
+            return errorPage("viewthread_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
         }
 
         ModelAndView ret = new ModelAndView("viewthread.html");
@@ -93,18 +90,12 @@ public class BrowseAndPostController extends ForumController
         }
         catch (NumberFormatException e)
         {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            ModelAndView notFound = new ModelAndView("viewboard_error.html");
-            notFound.addObject("errorCode", "NOT_FOUND");
-            return notFound;
+            return errorPage("viewboard_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
         if (viewBoard == null)
         {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            ModelAndView notFound = new ModelAndView("viewboard_error.html");
-            notFound.addObject("errorCode", "NOT_FOUND");
-            return notFound;
+            return errorPage("viewboard_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
         return getBoard(viewBoard, getUserFromRequest(request));
@@ -125,18 +116,12 @@ public class BrowseAndPostController extends ForumController
         }
         catch (NumberFormatException e)
         {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            ModelAndView notFound = new ModelAndView("viewthread_error.html");
-            notFound.addObject("errorCode", "NOT_FOUND");
-            return notFound;
+            return errorPage("viewthread_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
         if (viewThread == null)
         {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            ModelAndView notFound = new ModelAndView("viewthread_error.html");
-            notFound.addObject("errorCode", "NOT_FOUND");
-            return notFound;
+            return errorPage("viewthread_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
         return getThread(viewThread, getUserFromRequest(request));
@@ -158,9 +143,7 @@ public class BrowseAndPostController extends ForumController
             return postReply(request, response);
         }
 
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        ModelAndView mav = new ModelAndView("post_error.html");
-        mav.addObject("errorCode", "NO_DESTINATION");
+        ModelAndView mav  = errorPage("post_error.html", "NO_DESTINATION", HttpStatus.BAD_REQUEST);
         mav.addObject("postTopic", request.getParameter("topic"));
         mav.addObject("postText",  request.getParameter("text"));
         return mav;
@@ -186,9 +169,7 @@ public class BrowseAndPostController extends ForumController
 
         if (targetBoard == null)
         {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            ModelAndView mav = new ModelAndView("post_error.html");
-            mav.addObject("errorCode", "BOARD_NOT_FOUND");
+            ModelAndView mav = errorPage("post_error.html", "BOARD_NOT_FOUND", HttpStatus.NOT_FOUND);
             mav.addObject("postTopic", postTopic);
             mav.addObject("postText",  postText);
             return mav;
@@ -198,9 +179,7 @@ public class BrowseAndPostController extends ForumController
 
         if (!userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
         {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            ModelAndView mav = new ModelAndView("post_error.html");
-            mav.addObject("errorCode", "NOT_ALLOWED_TO_VIEW");
+            ModelAndView mav = errorPage("post_error.html", "NOT_ALLOWED_TO_VIEW", HttpStatus.FORBIDDEN);
             mav.addObject("postTopic", postTopic);
             mav.addObject("postText",  postText);
             return mav;
@@ -208,8 +187,8 @@ public class BrowseAndPostController extends ForumController
 
         if (!userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
         {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             ModelAndView mav = getBoard(targetBoard, poster);
+            mav.setStatus(HttpStatus.FORBIDDEN);
             mav.addObject("postError", "You aren't allowed to post on this board");
             mav.addObject("postText", postText);
             return mav;
@@ -220,8 +199,8 @@ public class BrowseAndPostController extends ForumController
 
         if (noTopic || noText)
         {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             ModelAndView mav = getBoard(targetBoard, poster);
+            mav.setStatus(HttpStatus.BAD_REQUEST);
 
             if (noTopic && noText)
             {
@@ -275,9 +254,7 @@ public class BrowseAndPostController extends ForumController
 
         if (targetThread == null)
         {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            ModelAndView mav = new ModelAndView("post_error.html");
-            mav.addObject("errorCode", "THREAD_NOT_FOUND");
+            ModelAndView mav = errorPage("post_error.html", "THREAD_NOT_FOUND", HttpStatus.NOT_FOUND);
             mav.addObject("postText",  postText);
             return mav;
         }
@@ -287,17 +264,15 @@ public class BrowseAndPostController extends ForumController
 
         if (!userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
         {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            ModelAndView mav = new ModelAndView("post_error.html");
-            mav.addObject("errorCode", "NOT_ALLOWED_TO_VIEW");
+            ModelAndView mav = errorPage("post_error.html", "NOT_ALLOWED_TO_VIEW", HttpStatus.FORBIDDEN);
             mav.addObject("postText",  postText);
             return mav;
         }
 
         if (!userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
         {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             ModelAndView mav = getThread(targetThread, poster);
+            mav.setStatus(HttpStatus.FORBIDDEN);
             mav.addObject("postError", "You aren't allowed to post on this board");
             mav.addObject("postText", postText);
             return mav;
@@ -306,8 +281,8 @@ public class BrowseAndPostController extends ForumController
 
         if (postText == null || postText.isEmpty())
         {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             ModelAndView mav = getThread(targetThread, poster);
+            mav.setStatus(HttpStatus.BAD_REQUEST);
             mav.addObject("postError", "Post is empty");
             return mav;
         }
@@ -329,9 +304,7 @@ public class BrowseAndPostController extends ForumController
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
-            ModelAndView notAllowed = new ModelAndView("newboard_error.html");
-            notAllowed.addObject("errorCode", "NOT_ALLOWED");
-            return notAllowed;
+            return errorPage("newboard_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
         }
 
         String parentIndexRaw = request.getParameter("parentIndex");
@@ -339,9 +312,7 @@ public class BrowseAndPostController extends ForumController
 
         if (parentIndexRaw == null || parentIndexRaw.isEmpty())
         {
-            ModelAndView noParent = new ModelAndView("newboard_error.html");
-            noParent.addObject("errorCode", "MISSING_PARENT");
-            return noParent;
+            return errorPage("newboard_error.html", "MISSING_PARENT", HttpStatus.BAD_REQUEST);
         }
 
         try
@@ -350,27 +321,21 @@ public class BrowseAndPostController extends ForumController
         }
         catch (NumberFormatException e)
         {
-            ModelAndView invalidParent = new ModelAndView("newboard_error.html");
-            invalidParent.addObject("errorCode", "PARENT_INDEX_INVALID");
-            return invalidParent;
+            return errorPage("newboard_error.html", "PARENT_INDEX_INVALID", HttpStatus.BAD_REQUEST);
         }
 
         ForumBoard parentBoard = boardRepository.findByIndex(parentIndex);
 
         if (parentBoard == null)
         {
-            ModelAndView noParent = new ModelAndView("newboard_error.html");
-            noParent.addObject("errorCode", "NO_PARENT");
-            return noParent;
+            return errorPage("newboard_error.html", "NO_PARENT", HttpStatus.NOT_FOUND);
         }
 
         String newBoardName = request.getParameter("boardName");
 
         if (newBoardName == null || newBoardName.isEmpty())
         {
-            ModelAndView noName = new ModelAndView("newboard_error.html");
-            noName.addObject("errorCode", "NO_BOARD_NAME");
-            return noName;
+            return errorPage("newboard_error.html", "NO_BOARD_NAME", HttpStatus.BAD_REQUEST);
         }
 
         ForumBoard newBoard = new ForumBoard(boardRepository.getHighestIndex()+1, newBoardName);
