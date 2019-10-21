@@ -31,6 +31,8 @@ public class ForumPost implements Comparable<ForumPost>
     @JoinColumn(name = "thread_id")
     private ForumThread thread;
 
+    private boolean deleted = false;
+
 
     @SuppressWarnings("unused")
     ForumPost() {}
@@ -67,6 +69,8 @@ public class ForumPost implements Comparable<ForumPost>
     public ForumThread getThread()            { return thread; }
     public void        setThread(ForumThread t) { thread = t; }
 
+    public boolean isDeleted() { return deleted; }
+
 
     @Override
     public int compareTo(ForumPost o)
@@ -96,5 +100,15 @@ public class ForumPost implements Comparable<ForumPost>
     public int hashCode()
     {
         return postText.hashCode();
+    }
+
+
+    public void deleteContents()
+    {
+        deleted = true;
+
+        author = null;
+        postText = "[deleted]";
+        lastEditTime = Instant.now();
     }
 }

@@ -19,11 +19,12 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.Instant;
 
 @Controller
-public class BrowseAndPostController extends ForumController
+public class BoardThreadPostController extends ForumController
 {
-    private static Logger logger = LoggerFactory.getLogger(BrowseAndPostController.class);
+    private static Logger logger = LoggerFactory.getLogger(BoardThreadPostController.class);
 
 
     private ModelAndView getBoard(ForumBoard board, ForumUser viewer)
@@ -36,13 +37,14 @@ public class BrowseAndPostController extends ForumController
         }
         catch (SecurityException e)
         {
-            return errorPage("viewboard_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
+            return errorPage("viewboard_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
         ModelAndView ret = new ModelAndView("viewboard.html");
         ret.addObject("boardViewData", viewData);
         ret.addObject("canMakeBoards", userHasPermission(viewer, UserPermission.MANAGE_BOARDS));
         ret.addObject("canPost", userHasBoardPermission(viewer, board, BoardPermission.POST));
+        ret.addObject("canModerate", userHasBoardPermission(viewer, board, BoardPermission.MODERATE));
         return ret;
     }
 
@@ -57,12 +59,15 @@ public class BrowseAndPostController extends ForumController
         }
         catch (SecurityException e)
         {
-            return errorPage("viewthread_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
+            return errorPage("viewthread_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
+
+        ForumBoard board = thread.getBoard();
 
         ModelAndView ret = new ModelAndView("viewthread.html");
         ret.addObject("threadViewData", viewData);
-        ret.addObject("canPost", userHasBoardPermission(viewer, thread.getBoard(), BoardPermission.POST));
+        ret.addObject("canPost", userHasBoardPermission(viewer, board, BoardPermission.POST));
+        ret.addObject("canModerate", userHasBoardPermission(viewer, board, BoardPermission.MODERATE));
         return ret;
     }
 
@@ -133,12 +138,12 @@ public class BrowseAndPostController extends ForumController
     @RequestMapping(value = "/post", method = RequestMethod.POST)
     public ModelAndView postOrReply(HttpServletRequest request, HttpServletResponse response)
     {
-        if (request.getParameter("boardID") != null)
+        if (request.getParameter("boardIndex") != null)
         {
             return postNewTopic(request, response);
         }
 
-        if (request.getParameter("threadID") != null)
+        if (request.getParameter("threadIndex") != null)
         {
             return postReply(request, response);
         }
@@ -156,8 +161,8 @@ public class BrowseAndPostController extends ForumController
 
         try
         {
-            long boardID = Long.valueOf(request.getParameter("boardID"));
-            targetBoard = boardRepository.findByIndex(boardID);
+            long boardIndex = Long.valueOf(request.getParameter("boardIndex"));
+            targetBoard = boardRepository.findByIndex(boardIndex);
         }
         catch (NumberFormatException e)
         {
@@ -179,7 +184,7 @@ public class BrowseAndPostController extends ForumController
 
         if (!userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
         {
-            ModelAndView mav = errorPage("post_error.html", "NOT_ALLOWED_TO_VIEW", HttpStatus.FORBIDDEN);
+            ModelAndView mav = errorPage("post_error.html", "NOT_ALLOWED_TO_VIEW", HttpStatus.UNAUTHORIZED);
             mav.addObject("postTopic", postTopic);
             mav.addObject("postText",  postText);
             return mav;
@@ -188,7 +193,7 @@ public class BrowseAndPostController extends ForumController
         if (!userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
         {
             ModelAndView mav = getBoard(targetBoard, poster);
-            mav.setStatus(HttpStatus.FORBIDDEN);
+            mav.setStatus(HttpStatus.UNAUTHORIZED);
             mav.addObject("postError", "You aren't allowed to post on this board");
             mav.addObject("postText", postText);
             return mav;
@@ -237,13 +242,12 @@ public class BrowseAndPostController extends ForumController
 
     private ModelAndView postReply(HttpServletRequest request, HttpServletResponse response)
     {
-        Long threadID = null;
         ForumThread targetThread;
 
         try
         {
-            threadID = Long.valueOf(request.getParameter("threadID"));
-            targetThread = threadRepository.findById(threadID).orElse(null);
+            long threadIndex = Long.valueOf(request.getParameter("threadIndex"));
+            targetThread = threadRepository.findByIndex(threadIndex);
         }
         catch (NumberFormatException e)
         {
@@ -264,7 +268,7 @@ public class BrowseAndPostController extends ForumController
 
         if (!userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
         {
-            ModelAndView mav = errorPage("post_error.html", "NOT_ALLOWED_TO_VIEW", HttpStatus.FORBIDDEN);
+            ModelAndView mav = errorPage("post_error.html", "NOT_ALLOWED_TO_VIEW", HttpStatus.UNAUTHORIZED);
             mav.addObject("postText",  postText);
             return mav;
         }
@@ -272,7 +276,7 @@ public class BrowseAndPostController extends ForumController
         if (!userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
         {
             ModelAndView mav = getThread(targetThread, poster);
-            mav.setStatus(HttpStatus.FORBIDDEN);
+            mav.setStatus(HttpStatus.UNAUTHORIZED);
             mav.addObject("postError", "You aren't allowed to post on this board");
             mav.addObject("postText", postText);
             return mav;
@@ -304,7 +308,7 @@ public class BrowseAndPostController extends ForumController
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
-            return errorPage("newboard_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
+            return errorPage("newboard_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
         String parentIndexRaw = request.getParameter("parentIndex");
@@ -343,5 +347,133 @@ public class BrowseAndPostController extends ForumController
         boardRepository.saveAndFlush(newBoard);
 
         return new ModelAndView("redirect:/board/" + newBoard.getIndex());
+    }
+
+
+    @Transactional
+    @RequestMapping(value = "/thread/delete", method = RequestMethod.POST)
+    public ModelAndView deleteThread(HttpServletRequest request, HttpServletResponse response)
+    {
+        String threadIndexRaw = request.getParameter("threadIndex");
+
+        if (threadIndexRaw == null)
+        {
+            return errorPage("deletethread_error.html", "MISSING_INDEX", HttpStatus.BAD_REQUEST);
+        }
+
+        long threadIndex;
+
+        try
+        {
+            threadIndex = Long.valueOf(threadIndexRaw);
+        }
+        catch (NumberFormatException e)
+        {
+            return errorPage("deletethread_error.html", "INVALID_INDEX", HttpStatus.BAD_REQUEST);
+        }
+
+        ForumThread thread = threadRepository.findByIndex(threadIndex);
+
+        if (thread == null)
+        {
+            return errorPage("deletethread_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        String threadTopic = thread.getTopic();
+
+        ForumBoard board = thread.getBoard();
+        ForumUser user = getUserFromRequest(request);
+
+        if (board == null ? !userHasPermission(user, UserPermission.MANAGE_DETACHED)
+                          : !userHasBoardPermission(user, board, BoardPermission.MODERATE))
+        {
+            return errorPage("deletethread_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
+        }
+
+        String keepPostsRaw = request.getParameter("keepPosts");
+        boolean deletePosts = !("true".equalsIgnoreCase(keepPostsRaw) || "1".equals(keepPostsRaw));
+
+        for (ForumPost post: thread.getPosts())
+        {
+            if (deletePosts) { post.deleteContents(); }
+            post.setThread(null);
+        }
+
+        thread.setBoard(null);
+        threadRepository.delete(thread);
+
+        ModelAndView ret = new ModelAndView("deletethread.html");
+        ret.addObject("boardIndex", board == null ? -1   : board.getIndex());
+        ret.addObject("boardName",  board == null ? null : board.getName());
+        ret.addObject("threadTopic", threadTopic);
+        return ret;
+    }
+
+
+    @Transactional
+    @RequestMapping(value = "/post/delete", method = RequestMethod.POST)
+    public ModelAndView deletePost(HttpServletRequest request, HttpServletResponse response)
+    {
+        String postIndexRaw = request.getParameter("postIndex");
+
+        if (postIndexRaw == null)
+        {
+            return errorPage("deletepost_error.html", "MISSING_INDEX", HttpStatus.BAD_REQUEST);
+        }
+
+        long postIndex;
+
+        try
+        {
+            postIndex = Long.valueOf(postIndexRaw);
+        }
+        catch (NumberFormatException e)
+        {
+            return errorPage("deletepost_error.html", "INVALID_INDEX", HttpStatus.BAD_REQUEST);
+        }
+
+        ForumPost post = postRepository.findByIndex(postIndex);
+
+        if (post == null)
+        {
+            return errorPage("deletepost_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        if (post.isDeleted())
+        {
+            return errorPage("deletepost_error.html", "ALREADY_DELETED", HttpStatus.GONE);
+        }
+
+        ForumThread thread = post.getThread();
+        ForumUser user = getUserFromRequest(request);
+        boolean allowed;
+
+        if (thread == null)
+        {
+            allowed = userHasPermission(user, UserPermission.MANAGE_DETACHED);
+        }
+        else
+        {
+            ForumBoard board = thread.getBoard();
+            allowed = board == null ? userHasPermission(user, UserPermission.MANAGE_DETACHED)
+                                    : userHasBoardPermission(user, board, BoardPermission.MODERATE);
+        }
+
+        if (!allowed)
+        {
+            return errorPage("deletepost_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
+        }
+
+        String  postUsername = post.getAuthor().getUsername();
+        Instant postTime     = post.getPostTime();
+
+        post.deleteContents();
+
+        ModelAndView ret = new ModelAndView("deletepost.html");
+        ret.addObject("postUsername", postUsername);
+        ret.addObject("postTime", postTime);
+        ret.addObject("threadIndex", thread == null ? -1   : thread.getIndex());
+        ret.addObject("threadTopic", thread == null ? null : thread.getTopic());
+        return ret;
     }
 }

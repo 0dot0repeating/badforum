@@ -214,7 +214,7 @@ abstract class ForumController
             UserViewData userdata = new UserViewData(user == null ? null : user.getUsername());
             String postText = formatPostText(p.getPostText());
 
-            PostViewData pdata = new PostViewData(p.getIndex(), postText, userdata, p.getPostTime(), p.getlastEditTime());
+            PostViewData pdata = new PostViewData(p.getIndex(), postText, userdata, p.getPostTime(), p.getlastEditTime(), p.isDeleted());
             postData.add(pdata);
 
             if (firstPoster == null) { firstPoster = userdata; }
@@ -222,7 +222,7 @@ abstract class ForumController
 
         BoardViewData boardData = board == null ? new BoardViewData(-1, null) : new BoardViewData(board.getIndex(), board.getName());
 
-        return new ThreadViewData(thread.getID(), thread.getTopic(), firstPoster, boardData, postData);
+        return new ThreadViewData(thread.getIndex(), thread.getTopic(), firstPoster, boardData, postData);
     }
 
 
@@ -251,7 +251,7 @@ abstract class ForumController
     {
         ModelAndView errorMAV = new ModelAndView(viewName);
         errorMAV.setStatus(status);
-        errorMAV.addObject(errorCode);
+        errorMAV.addObject("errorCode", errorCode);
         return errorMAV;
     }
 }

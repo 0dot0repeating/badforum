@@ -132,7 +132,7 @@ public class ModifyPermissionsController extends ForumController
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
-            return errorPage("boardpermissions_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
+            return errorPage("boardpermissions_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
         String requestURL = request.getServletPath();
@@ -226,7 +226,7 @@ public class ModifyPermissionsController extends ForumController
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
-            return errorPage("boardpermissions_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
+            return errorPage("boardpermissions_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
         ForumBoard board;

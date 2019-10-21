@@ -4,7 +4,7 @@
     <title>w h o m s t</title>
 </head>
 <body>
-    <section class="board" th:fragment="viewBoard(boardViewData, canMakeBoards)">
+    <section class="board" th:fragment="viewBoard(boardViewData, canMakeBoards, canModerate)">
         <th:block th:if="${boardViewData.childBoards.size() > 0}">
             <h2>Boards</h2>
             <ul class="childBoards">
@@ -33,6 +33,11 @@
                     <span class="threadPostTime" th:if="${thread.getCreationTime() != null}">on [[${#temporals.format(thread.getCreationTime(), "yyyy-MM-dd HH:mm:ss")}]]</span>
                     <span class="threadPostTime" th:if="${thread.getCreationTime() == null}">from the land before time</span>
                     <span class="threadPostCount">([[${thread.getPostCount()}]] posts)</span>
+
+                    <form action="/thread/delete" method="post" th:if="${canModerate}">
+                        <input type="hidden" name="threadIndex" th:value="${thread.index}">
+                        <input type="submit" value="Delete thread">
+                    </form>
                 </li>
             </ul>
 
@@ -43,15 +48,21 @@
     </section>
 
 
-    <article class="thread" th:fragment="viewThread(threadViewData)">
+    <article class="thread" th:fragment="viewThread(threadViewData, canModerate)">
         <section class="post" th:each="post: ${threadViewData.posts}">
             <header>
-                <span class="author" th:if="${post.author.username != null}">Posted by [[${post.author.username}]]</span>
-                <span class="author" th:if="${post.author.username == null}">Posted anonymously</span>
+                <span class="author" th:if="${!post.deleted && post.author.username != null}">Posted by [[${post.author.username}]]</span>
+                <span class="author" th:if="${!post.deleted && post.author.username == null}">Posted anonymously</span>
+                <span class="author" th:if="${post.deleted}">Posted by [deleted]</span>
                 <span>on <time>[[${#temporals.format(post.postTime, "yyyy-MM-dd HH:mm:ss")}]]</time></span>
             </header>
 
             <div class="text" th:utext="${post.text}"></div>
+
+            <form action="/post/delete" method="post" th:if="${canModerate && !post.deleted}">
+                <input type="hidden" name="postIndex" th:value="${post.index}">
+                <input type="submit" value="Delete post">
+            </form>
         </section>
     </article>
 </body>

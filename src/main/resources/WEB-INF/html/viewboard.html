@@ -10,7 +10,7 @@
 
     <h1>Viewing board "[[${boardViewData.name}]]"</h1>
 
-    <div th:replace="inc/viewStuff :: viewBoard(${boardViewData}, ${canMakeBoards})"></div>
+    <div th:replace="inc/viewStuff :: viewBoard(${boardViewData}, ${canMakeBoards}, ${canModerate})"></div>
 
     <form th:replace="inc/postStuff :: newThread(${boardViewData.index}, ${boardViewData.name}, ${postError}, ${postTopic}, ${postText}, ${canPost})"></form>
 </body>

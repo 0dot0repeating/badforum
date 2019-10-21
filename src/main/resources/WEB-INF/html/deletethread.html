@@ -8,8 +8,11 @@
 
     </div>
 
-    <h1>New board - [[#{error.newboard.__${errorCode}__.title}]]</h1>
+    <h1>Thread deleted</h1>
 
-    <p class="error" th:text="#{error.newboard.__${errorCode}__}"></p>
+    <p>Successfully deleted thread "[[${threadTopic}]]".</p>
+
+    <a th:if="${boardIndex != -1}" th:href="${'/board/' + boardIndex}">Return to board "[[${boardName}]]"</a>
+    <a href="/">Return to home page</a>
 </body>
 </html>

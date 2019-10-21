@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Error - [[#{error.newboard.__${errorCode}__.title}]]</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Post deleted</h1>
+
+    <p>Successfully deleted the post by [[${postUsername}]] on <time>[[${#temporals.format(postTime, "yyyy-MM-dd HH:mm:ss")}]]</time>.</p>
+
+    <a th:if="${threadIndex != -1}" th:href="${'/thread/' + threadIndex}">Return to thread "[[${threadTopic}]]"</a>
+    <a href="/">Return to home page</a>
+</body>
+</html>

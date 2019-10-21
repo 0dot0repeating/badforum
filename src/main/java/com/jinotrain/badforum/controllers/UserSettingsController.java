@@ -132,7 +132,7 @@ public class UserSettingsController extends ForumController
     {
         if (viewUser == null)
         {
-            return errorPage("usersettings_error.html", "NOT_LOGGED_IN", HttpStatus.FORBIDDEN);
+            return errorPage("usersettings_error.html", "NOT_LOGGED_IN", HttpStatus.UNAUTHORIZED);
         }
 
         if (settingsUser == null)
@@ -142,7 +142,7 @@ public class UserSettingsController extends ForumController
 
         if (!canEditSettings(viewUser, settingsUser))
         {
-            return errorPage("usersettings_error.html", "NOT_ALLOWED", HttpStatus.FORBIDDEN);
+            return errorPage("usersettings_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
         return null;
