@@ -151,7 +151,7 @@ abstract class ForumController
 
         // for display purposes
         // TODO: implement some way to specify order key
-        childBoardData.sort(Comparator.comparing(o -> o.id));
+        childBoardData.sort(Comparator.comparing(o -> o.index));
 
         List<ThreadViewData> threadData = new ArrayList<>();
 

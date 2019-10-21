@@ -12,6 +12,6 @@
 
     <div th:replace="inc/viewStuff :: viewBoard(${boardViewData}, ${canMakeBoards})"></div>
 
-    <form th:replace="inc/postStuff :: newThread(${boardViewData.id}, ${boardViewData.name}, ${postError}, ${postTopic}, ${postText}, ${canPost})"></form>
+    <form th:replace="inc/postStuff :: newThread(${boardViewData.index}, ${boardViewData.name}, ${postError}, ${postTopic}, ${postText}, ${canPost})"></form>
 </body>
 </html>

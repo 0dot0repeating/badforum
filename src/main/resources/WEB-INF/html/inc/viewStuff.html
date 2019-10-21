@@ -9,7 +9,7 @@
             <h2>Boards</h2>
             <ul class="childBoards">
                 <li th:each="childBoard: ${boardViewData.childBoards}">
-                    <a th:href="${'/board/' + childBoard.id}" class="childBoardLink" th:text="${childBoard.name}"></a>
+                    <a th:href="${'/board/' + childBoard.index}" class="childBoardLink" th:text="${childBoard.name}"></a>
                     <span class="childBoardThreadCount">Threads: [[${childBoard.threadCount}]]</span>
                     <span class="childBoardPostCount">Posts: [[${childBoard.postCount}]]</span>
                 </li>
@@ -18,7 +18,7 @@
 
         <form method="post" action="/board/new" th:if="${canMakeBoards}">
             <h3>Create sub-board</h3>
-            <input type="hidden" name="parentIndex" th:value="${boardViewData.id}">
+            <input type="hidden" name="parentIndex" th:value="${boardViewData.index}">
             <label for="boardName">Board name: </label> <input id="boardName" name="boardName" placeholder="Board name">
             <input type="submit" value="Create board">
         </form>
@@ -27,7 +27,7 @@
             <h2>Threads</h2>
             <ul class="threads">
                 <li th:each="thread: ${boardViewData.threads}">
-                    <a th:href="${'/thread/' + thread.id}" class="threadLink" th:text="${thread.topic}"></a>
+                    <a th:href="${'/thread/' + thread.index}" class="threadLink" th:text="${thread.topic}"></a>
                     <span class="threadAuthor" th:if="${thread.author.username == null}">Posted by Anonymous</span>
                     <span class="threadAuthor" th:if="${thread.author.username != null}">Posted by [[${thread.author.username}]]</span>
                     <span class="threadPostTime" th:if="${thread.getCreationTime() != null}">on [[${#temporals.format(thread.getCreationTime(), "yyyy-MM-dd HH:mm:ss")}]]</span>
