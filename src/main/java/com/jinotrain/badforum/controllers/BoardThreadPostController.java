@@ -42,7 +42,7 @@ public class BoardThreadPostController extends ForumController
 
         ModelAndView ret = new ModelAndView("viewboard.html");
         ret.addObject("boardViewData", viewData);
-        ret.addObject("canMakeBoards", userHasPermission(viewer, UserPermission.MANAGE_BOARDS));
+        ret.addObject("canManageBoard", userHasPermission(viewer, UserPermission.MANAGE_BOARDS));
         ret.addObject("canPost", userHasBoardPermission(viewer, board, BoardPermission.POST));
         ret.addObject("canModerate", userHasBoardPermission(viewer, board, BoardPermission.MODERATE));
         return ret;
@@ -347,6 +347,64 @@ public class BoardThreadPostController extends ForumController
         boardRepository.saveAndFlush(newBoard);
 
         return new ModelAndView("redirect:/board/" + newBoard.getIndex());
+    }
+
+
+    @Transactional
+    @RequestMapping(value = "/board/delete", method = RequestMethod.POST)
+    public ModelAndView deleteBoard(HttpServletRequest request, HttpServletResponse response)
+    {
+        ForumUser user = getUserFromRequest(request);
+
+        if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
+        {
+            return errorPage("deleteboard_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
+        }
+
+        String boardIndexRaw = request.getParameter("boardIndex");
+
+        if (boardIndexRaw == null || boardIndexRaw.isEmpty())
+        {
+            return errorPage("deleteboard_error.html", "MISSING_INDEX", HttpStatus.BAD_REQUEST);
+        }
+
+        long boardIndex;
+
+        try
+        {
+            boardIndex = Long.valueOf(boardIndexRaw);
+        }
+        catch (NumberFormatException e)
+        {
+            return errorPage("deleteboard_error.html", "INVALID_INDEX", HttpStatus.BAD_REQUEST);
+        }
+
+        ForumBoard board = boardRepository.findByIndex(boardIndex);
+
+        if (board == null)
+        {
+            return errorPage("deleteboard_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        if (board.isRootBoard())
+        {
+            return errorPage("deleteboard_error.html", "CANT_DELETE_ROOT", HttpStatus.FORBIDDEN);
+        }
+
+        ForumBoard parentBoard = board.getParentBoard();
+        String boardName = board.getName();
+
+        em.createQuery("DELETE FROM RoleToBoardLink l WHERE l.board.id = :boardID")
+          .setParameter("boardID", board.getId())
+          .executeUpdate();
+
+        boardRepository.delete(board);
+
+        ModelAndView ret = new ModelAndView("deleteboard.html");
+        ret.addObject("boardName", boardName);
+        ret.addObject("parentIndex", parentBoard == null ? -1 : parentBoard.getIndex());
+        ret.addObject("parentName", parentBoard == null ? null : parentBoard.getName());
+        return ret;
     }
 
 

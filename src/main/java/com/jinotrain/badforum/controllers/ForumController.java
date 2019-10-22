@@ -144,7 +144,7 @@ abstract class ForumController
                                     .setParameter("boardIDs", childBoardIDs)
                                     .getSingleResult();
 
-            BoardViewData childData = new BoardViewData(cb.getIndex(), cb.getName(), childThreadCount, childPostCount);
+            BoardViewData childData = new BoardViewData(cb.getIndex(), cb.getName(), childThreadCount, childPostCount, false);
             childBoardData.add(childData);
 
             totalThreads += childThreadCount;
@@ -187,7 +187,7 @@ abstract class ForumController
             threadData.add(td);
         }
 
-        BoardViewData ret = new BoardViewData(board.getIndex(), board.getName(), totalThreads, totalPosts);
+        BoardViewData ret = new BoardViewData(board.getIndex(), board.getName(), totalThreads, totalPosts, board.isRootBoard());
         ret.childBoards = childBoardData;
         ret.threads = threadData;
 

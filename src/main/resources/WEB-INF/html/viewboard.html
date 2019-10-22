@@ -10,8 +10,29 @@
 
     <h1>Viewing board "[[${boardViewData.name}]]"</h1>
 
-    <div th:replace="inc/viewStuff :: viewBoard(${boardViewData}, ${canMakeBoards}, ${canModerate})"></div>
+    <div th:replace="inc/viewStuff :: viewBoard(${boardViewData}, ${canModerate})"></div>
 
     <form th:replace="inc/postStuff :: newThread(${boardViewData.index}, ${boardViewData.name}, ${postError}, ${postTopic}, ${postText}, ${canPost})"></form>
+
+    <section th:if="${canManageBoard}">
+        <h2>Admin Tools</h2>
+
+        <ul>
+            <li><a th:href="${'/board/' + boardViewData.index + '/permissions'}">View permissions</a></li>
+        </ul>
+
+        <form method="post" action="/board/new">
+            <h3>Create sub-board</h3>
+            <input type="hidden" name="parentIndex" th:value="${boardViewData.index}">
+            <label for="boardName">Board name: </label> <input id="boardName" name="boardName" placeholder="Board name">
+            <input type="submit" value="Create board">
+        </form>
+
+        <form method="post" action="/board/delete" th:if="${!boardViewData.isRootBoard}">
+            <h3>Delete board</h3>
+            <input type="hidden" name="boardIndex" th:value="${boardViewData.index}">
+            <input type="submit" value="Delete board">
+        </form>
+    </section>
 </body>
 </html>

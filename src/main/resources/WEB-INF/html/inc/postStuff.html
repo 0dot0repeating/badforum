@@ -11,8 +11,8 @@
 
             <input type="hidden" name="boardIndex" th:value="${boardIndex}">
             <div class="topicField">
-                Topic:
-                <input type="text" name="topic" th:value="${postTopic}" placeholder="Insert topic here">
+                <label for="postTopic">Topic:</label>
+                <input id="postTopic" type="text" name="topic" th:value="${postTopic}" placeholder="Insert topic here">
             </div>
             <div class="textField">
                 <textarea name="text" th:value="${postText}" placeholder="Type your post here"></textarea>

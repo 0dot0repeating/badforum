@@ -4,7 +4,7 @@
     <title>w h o m s t</title>
 </head>
 <body>
-    <section class="board" th:fragment="viewBoard(boardViewData, canMakeBoards, canModerate)">
+    <section class="board" th:fragment="viewBoard(boardViewData, canModerate)">
         <th:block th:if="${boardViewData.childBoards.size() > 0}">
             <h2>Boards</h2>
             <ul class="childBoards">
@@ -15,13 +15,6 @@
                 </li>
             </ul>
         </th:block>
-
-        <form method="post" action="/board/new" th:if="${canMakeBoards}">
-            <h3>Create sub-board</h3>
-            <input type="hidden" name="parentIndex" th:value="${boardViewData.index}">
-            <label for="boardName">Board name: </label> <input id="boardName" name="boardName" placeholder="Board name">
-            <input type="submit" value="Create board">
-        </form>
 
         <th:block th:if="${boardViewData.threads.size() > 0}">
             <h2>Threads</h2>

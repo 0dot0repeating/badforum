@@ -26,13 +26,13 @@ public class ForumBoard
     @Column(unique = true, nullable = false)
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval = true, mappedBy = "board")
+    @OneToMany(cascade = CascadeType.PERSIST, fetch=FetchType.LAZY, orphanRemoval = true, mappedBy = "board")
     private Set<RoleToBoardLink> accessRoles;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "board")
+    @OneToMany(cascade = CascadeType.PERSIST, fetch=FetchType.LAZY, mappedBy = "board")
     private Collection<ForumThread> threads;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, mappedBy = "parentBoard")
+    @OneToMany(cascade = CascadeType.PERSIST, fetch=FetchType.LAZY, mappedBy = "parentBoard")
     private Collection<ForumBoard> childBoards;
 
     @ManyToOne
