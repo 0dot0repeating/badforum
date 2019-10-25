@@ -89,16 +89,7 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
 
     private List<ForumRole> findOrCreateAdminRoles()
     {
-        List<ForumRole> adminRoles = new ArrayList<>();
-
-        for (ForumRole role: roleRepository.findAll())
-        {
-           if (role.isAdmin())
-           {
-               adminRoles.add(role);
-               break;
-           }
-        }
+        List<ForumRole> adminRoles = new ArrayList<>(roleRepository.findAllByAdmin(true));
 
         if (adminRoles.isEmpty())
         {
@@ -112,7 +103,6 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
     }
 
 
-    // TODO: JPQL this up so it's much less DB-intensive
     private boolean noUsersWithRoles(List<ForumRole> roles)
     {
         Set<Long> roleIDs = new HashSet<>();
@@ -122,18 +112,11 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
             roleIDs.add(role.getId());
         }
 
-        for (ForumUser user: userRepository.findAll())
-        {
-            for (ForumRole userRole: user.getRoles())
-            {
-                if (roleIDs.contains(userRole.getId()))
-                {
-                    return false;
-                }
-            }
-        }
+        Long count = em.createQuery("SELECT COUNT(l) FROM UserToRoleLink l WHERE l.role.id IN :roleIDs", Long.class)
+                       .setParameter("roleIDs", roleIDs)
+                       .getSingleResult();
 
-        return true;
+        return count == 0;
     }
 
 
