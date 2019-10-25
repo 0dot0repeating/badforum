@@ -68,7 +68,7 @@ public class ForumRole
 
 
 
-    public PermissionState hasPermission(UserPermission type)
+    public PermissionState getPermission(UserPermission type)
     {
         if (admin) { return PermissionState.ON; }
 

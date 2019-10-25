@@ -1,33 +1,34 @@
 package com.jinotrain.badforum.data;
 
-import com.jinotrain.badforum.db.BoardPermission;
-import com.jinotrain.badforum.db.BoardPermissionState;
 import com.jinotrain.badforum.db.PermissionState;
+import com.jinotrain.badforum.db.BoardPermission;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class BoardPermissionData
+public class BoardRoleData
 {
     public String roleName;
-    public List<BoardPermissionState> permissions;
+    public boolean isAdmin;
+    public List<BoardPermissionStateData> permissions;
 
 
-    public BoardPermissionData(String name)
+    public BoardRoleData(String name)
     {
         this.roleName    = name;
         this.permissions = new ArrayList<>();
     }
 
-    public BoardPermissionData(String name, Map<BoardPermission, PermissionState> permissions)
+    public BoardRoleData(String name, boolean isAdmin, Map<BoardPermission, PermissionState> permissions)
     {
         this.roleName    = name;
+        this.isAdmin     = isAdmin;
         this.permissions = new ArrayList<>();
 
         for (BoardPermission p: BoardPermission.values())
         {
-            BoardPermissionState perm = new BoardPermissionState(p, permissions.getOrDefault(p, PermissionState.KEEP));
+            BoardPermissionStateData perm = new BoardPermissionStateData(p, permissions.getOrDefault(p, PermissionState.KEEP));
             this.permissions.add(perm);
         }
     }

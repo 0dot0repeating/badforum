@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Role Created</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Role Created</h1>
+
+    <p>Successfully created role "[[${roleName}]]".</p>
+
+    <ul>
+        <li><a href="/roles">Return to role page</a></li>
+        <li><a href="/">Return to home page</a></li>
+    </ul>
+</body>
+</html>

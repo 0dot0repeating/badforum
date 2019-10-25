@@ -1,7 +1,7 @@
 package com.jinotrain.badforum.controllers;
 
-import com.jinotrain.badforum.data.BoardPermissionData;
-import com.jinotrain.badforum.db.BoardPermissionState;
+import com.jinotrain.badforum.data.BoardRoleData;
+import com.jinotrain.badforum.data.BoardPermissionStateData;
 import com.jinotrain.badforum.db.BoardPermission;
 import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.PermissionState;
@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 @Controller
-public class ModifyPermissionsController extends ForumController
+public class BoardPermissionsController extends ForumController
 {
     private static final Map<String, BoardPermission> PERMISSIONS_BY_NAME;
 
@@ -35,29 +35,29 @@ public class ModifyPermissionsController extends ForumController
     }
 
 
-    private List<BoardPermissionData> getAllBoardPermissions(ForumBoard board)
+    private List<BoardRoleData> getAllBoardPermissions(ForumBoard board)
     {
-        List<BoardPermissionData> ret = new ArrayList<>();
+        List<BoardRoleData> ret = new ArrayList<>();
         List<ForumRole> roles = roleRepository.findAll();
 
         roles.sort(Comparator.comparing(ForumRole::getPriority).reversed());
 
         for (ForumRole role: roles)
         {
-            ret.add(new BoardPermissionData(role.getName(), role.getBoardPermissions(board)));
+            ret.add(new BoardRoleData(role.getName(), role.isAdmin(), role.getBoardPermissions(board)));
         }
 
-        ret.add(new BoardPermissionData(null, board.getGlobalPermissions()));
+        ret.add(new BoardRoleData(null, false, board.getGlobalPermissions()));
 
         return ret;
     }
 
 
-    private void updateBoardPermissions(ForumBoard board, List<BoardPermissionData> permissions)
+    private void updateBoardPermissions(ForumBoard board, List<BoardRoleData> permissions)
     {
         List<String> roleNames = new ArrayList<>();
 
-        for (BoardPermissionData perms: permissions)
+        for (BoardRoleData perms: permissions)
         {
             if (perms.roleName != null)
             {
@@ -72,14 +72,14 @@ public class ModifyPermissionsController extends ForumController
         Map<String, ForumRole> roleMap = new HashMap<>();
         for (ForumRole role: roles) { roleMap.put(role.getName().toLowerCase(), role); }
 
-        for (BoardPermissionData perms: permissions)
+        for (BoardRoleData perms: permissions)
         {
-            List<BoardPermissionState> permValues = perms.permissions;
+            List<BoardPermissionStateData> permValues = perms.permissions;
             String roleName = perms.roleName;
 
             if (roleName == null)
             {
-                for (BoardPermissionState p: permValues)
+                for (BoardPermissionStateData p: permValues)
                 {
                     board.setGlobalPermission(p.perm, p.state == PermissionState.ON);
                 }
@@ -87,14 +87,14 @@ public class ModifyPermissionsController extends ForumController
             else
             {
                 ForumRole role = roleMap.get(roleName.toLowerCase());
-                if (role == null) { continue; }
+                if (role == null || role.isAdmin()) { continue; }
 
                 if (allPermsAreKeep(role, board, permValues))
                 {
                     role.clearBoardPermissions(board);
                 }
 
-                for (BoardPermissionState p: permValues)
+                for (BoardPermissionStateData p: permValues)
                 {
                     role.setBoardPermission(board, p.perm, p.state);
                 }
@@ -103,11 +103,11 @@ public class ModifyPermissionsController extends ForumController
     }
 
 
-    private boolean allPermsAreKeep(ForumRole role, ForumBoard board, List<BoardPermissionState> newPerms)
+    private boolean allPermsAreKeep(ForumRole role, ForumBoard board, List<BoardPermissionStateData> newPerms)
     {
         Map<BoardPermission, PermissionState> perms = role.getBoardPermissions(board);
 
-        for (BoardPermissionState p: newPerms)
+        for (BoardPermissionStateData p: newPerms)
         {
              perms.put(p.perm, p.state);
         }
@@ -151,7 +151,7 @@ public class ModifyPermissionsController extends ForumController
             return errorPage("boardpermissions_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
-        List<BoardPermissionData> permissionViewData = getAllBoardPermissions(board);
+        List<BoardRoleData> permissionViewData = getAllBoardPermissions(board);
 
         ModelAndView ret = new ModelAndView("boardpermissions.html");
         ret.addObject("boardIndex", board.getIndex());
@@ -169,9 +169,9 @@ public class ModifyPermissionsController extends ForumController
     //
     // keys are case insensitive
 
-    private List<BoardPermissionData> buildPermissionDataFromRequest(Map<String, String[]> requestParams)
+    private List<BoardRoleData> buildPermissionsFromParams(Map<String, String[]> requestParams)
     {
-        Map<String, BoardPermissionData> permissions = new HashMap<>();
+        Map<String, BoardRoleData> permissions = new HashMap<>();
 
         for (Map.Entry<String, String[]> params: requestParams.entrySet())
         {
@@ -181,7 +181,7 @@ public class ModifyPermissionsController extends ForumController
             int splitPoint = key.indexOf(':');
 
             BoardPermission permission;
-            BoardPermissionData permData;
+            BoardRoleData permData;
 
             // possibly global permission
             if (splitPoint == -1)
@@ -189,7 +189,7 @@ public class ModifyPermissionsController extends ForumController
                 permission = PERMISSIONS_BY_NAME.get(key.toLowerCase());
                 if (permission == null) { continue; }
 
-                permData = permissions.computeIfAbsent(null, BoardPermissionData::new);
+                permData = permissions.computeIfAbsent(null, BoardRoleData::new);
             }
             else
             {
@@ -199,7 +199,7 @@ public class ModifyPermissionsController extends ForumController
                 permission = PERMISSIONS_BY_NAME.get(permName);
                 if (permission == null) { continue; }
 
-                permData = permissions.computeIfAbsent(roleName, BoardPermissionData::new);
+                permData = permissions.computeIfAbsent(roleName, BoardRoleData::new);
             }
 
             PermissionState state;
@@ -211,7 +211,7 @@ public class ModifyPermissionsController extends ForumController
                 default:   state = PermissionState.KEEP;    break;
             }
 
-            permData.permissions.add(new BoardPermissionState(permission, state));
+            permData.permissions.add(new BoardPermissionStateData(permission, state));
         }
 
         return new ArrayList<>(permissions.values());
@@ -241,14 +241,11 @@ public class ModifyPermissionsController extends ForumController
             return errorPage("boardpermissions_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
-        updateBoardPermissions(board, buildPermissionDataFromRequest(request.getParameterMap()));
-        List<BoardPermissionData> permissionViewData = getAllBoardPermissions(board);
+        updateBoardPermissions(board, buildPermissionsFromParams(request.getParameterMap()));
 
-        ModelAndView ret = new ModelAndView("boardpermissions.html");
+        ModelAndView ret = new ModelAndView("boardpermissions_saved.html");
         ret.addObject("boardIndex", board.getIndex());
-        ret.addObject("boardName",  board.getName());
-        ret.addObject("permissionData", permissionViewData);
-        ret.addObject("messageCode", "SAVED");
+        ret.addObject("boardName", board.getName());
         return ret;
     }
 }

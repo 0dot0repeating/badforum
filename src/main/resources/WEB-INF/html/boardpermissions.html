@@ -16,19 +16,23 @@
         <input type="hidden" name="boardIndex" th:value="${boardIndex}">
 
         <div class="role" th:each="viewdata: ${permissionData}">
-            <span class="roleName" th:text="${viewdata.roleName} ?: 'Everyone'"></span>
+            <h2 class="roleName" th:text="${viewdata.roleName} ?: 'Everyone'"></h2>
             <div class="permission" th:each="permission: ${viewdata.permissions}">
                 <span class="permissionName" th:text="${permission.perm.label}"></span>
 
-                <select th:name="${permission.perm.name() + ':' + viewdata.roleName}" th:if="${viewdata.roleName != null}">
+                <select th:name="${permission.perm.name() + ':' + viewdata.roleName}" th:if="${viewdata.roleName != null && !viewdata.isAdmin}">
                     <option value="-1" th:selected="${permission.state.name() == 'OFF'}">Off</option>
                     <option value="0" th:selected="${permission.state.name() == 'KEEP'}">Pass through</option>
                     <option value="1" th:selected="${permission.state.name() == 'ON'}">On</option>
                 </select>
 
-                <select th:name="${permission.perm.name()}" th:if="${viewdata.roleName == null}">
+                <select th:name="${permission.perm.name()}" th:if="${viewdata.roleName == null && !viewdata.isAdmin}">
                     <option value="-1" th:selected="${permission.state.name() == 'OFF'}">Off</option>
                     <option value="1" th:selected="${permission.state.name() == 'ON'}">On</option>
+                </select>
+
+                <select th:if="${viewdata.isAdmin}">
+                    <option>On (Admin)</option>
                 </select>
             </div>
         </div>

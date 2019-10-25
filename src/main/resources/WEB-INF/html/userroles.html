@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - User Roles Saved</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Roles for user "[[${userdata.username}]]"</h1>
+
+    <form action="/saveuserroles" method="post">
+        <input type="hidden" name="username" th:value="${userdata.username}">
+
+        <ul>
+            <!--/* the checkbox must be before the hidden input, since the backend grabs the first value with a given name */-->
+            <li th:each="role: ${userdata.roles}">
+                <label th:for="${'role' + role.viewIndex}" th:text="${role.roleName}"></label>
+                <input th:id="${'role' + role.viewIndex}" th:name="${'role:' + role.roleName}" value="1" type="checkbox" th:checked="${role.present}">
+                <input th:name="${'role:' + role.roleName}" value="0" type="hidden">
+            </li>
+        </ul>
+
+        <input type="submit" value="Save roles">
+    </form>
+</body>
+</html>

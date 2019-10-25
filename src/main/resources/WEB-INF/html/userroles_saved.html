@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - User Roles Saved</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>User roles - Saved</h1>
+
+    <p>User roles successfully saved.</p>
+
+    <ul>
+        <li><a th:href="${'/roles/' + username}">Return to user roles</a></li>
+        <li><a th:href="${'/settings/' + username}">Return to user settings</a></li>
+        <li><a href="/">Return to home page</a></li>
+    </ul>
+</body>
+</html>

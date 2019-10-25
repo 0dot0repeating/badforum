@@ -102,7 +102,7 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
 
         if (adminRoles.isEmpty())
         {
-            ForumRole newAdminRole = new ForumRole("Global administrator", 0x7FFFFFFF);
+            ForumRole newAdminRole = new ForumRole("Global administrator", Integer.MAX_VALUE);
             newAdminRole.setAdmin(true);
             roleRepository.save(newAdminRole);
             adminRoles.add(newAdminRole);
@@ -112,6 +112,7 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
     }
 
 
+    // TODO: JPQL this up so it's much less DB-intensive
     private boolean noUsersWithRoles(List<ForumRole> roles)
     {
         Set<Long> roleIDs = new HashSet<>();
@@ -168,7 +169,7 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
         {
             logger.info("No default user role found, creating one");
 
-            currentDefault = new ForumRole("All users", 0);
+            currentDefault = new ForumRole("All users", Integer.MIN_VALUE);
             currentDefault.setDefaultRole(true);
             roleRepository.saveAndFlush(currentDefault);
 

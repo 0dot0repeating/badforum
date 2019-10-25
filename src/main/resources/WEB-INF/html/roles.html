@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Roles and permissions</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Roles and permissions</h1>
+
+    <form action="/saveroles" method="post">
+        <div class="role" th:each="data: ${roleData}">
+            <h2 th:text="${data.roleName}"></h2>
+
+            <div th:unless="${data.isAdmin || data.isDefault}">
+                <label th:for="${'name' + data.viewIndex}">New name:</label>
+                <input th:id="${'name' + data.viewIndex}" th:name="${'(NAME):' + data.roleName}" th:value="${data.roleName}" placeholder="New role name">
+            </div>
+
+                <div th:unless="${data.isAdmin || data.isDefault}">
+                <label th:for="${'priority' + data.viewIndex}">Role priority:</label>
+                <input th:id="${'priority' + data.viewIndex}" th:name="${'(PRIORITY):' + data.roleName}" th:value="${data.priority}" placeholder="-1000 to 1000">
+            </div>
+
+            <h3>Permissions</h3>
+
+            <ul>
+                <li th:each="permData: ${data.permissions}">
+                    <label th:for="${permData.perm.name() + data.viewIndex}" th:text="${permData.perm.label}"></label>
+
+                    <select th:id="${permData.perm.name() + data.viewIndex}"
+                            th:name="${permData.perm.name() + ':' + data.roleName}" th:unless="${data.isAdmin}">
+                        <option value="-1" th:selected="${permData.state.name() == 'OFF'}">Off</option>
+                        <option value="0" th:selected="${permData.state.name() == 'KEEP'}">Pass through</option>
+                        <option value="1" th:selected="${permData.state.name() == 'ON'}">On</option>
+                    </select>
+
+                    <select th:id="${permData.perm.name() + data.viewIndex}" th:if="${data.isAdmin}">
+                        <option>On (Admin)</option>
+                    </select>
+                </li>
+            </ul>
+
+            <div th:unless="${data.isAdmin || data.isDefault}">
+                <label th:for="${'delete' + data.viewIndex}">Delete role?</label>
+                <input th:id="${'delete' + data.viewIndex}" th:name="${'(DELETE):' + data.roleName}" type="checkbox" value="do it">
+            </div>
+        </div>
+
+        <input type="submit" value="Save roles">
+    </form>
+
+    <h1>Create new role</h1>
+
+    <form action="/newrole" method="post">
+        <div>
+            <label for="newname">Role name:</label>
+            <input id="newname" name="roleName" placeholder="Role name">
+        </div>
+
+        <div>
+            <label for="priority">Priority:</label>
+            <input id="priority" name="priority" placeholder="-1000 to 1000">
+        </div>
+
+        <ul>
+            <li th:each="perm: ${permissions}">
+                <label th:for="${'newperm:' + perm.name()}">[[${perm.label}]]</label>
+
+                <select th:id="${'newperm:' + perm.name()}" th:name="${perm.name()}">
+                    <option value="-1">Off</option>
+                    <option value="0" selected>Pass through</option>
+                    <option value="1">On</option>
+                </select>
+            </li>
+        </ul>
+
+        <input type="submit" value="Create role">
+    </form>
+</body>
+</html>

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 public interface ForumRoleRepository extends JpaRepository<ForumRole, Long>
 {
     ForumRole findByNameIgnoreCase(String name);
+    boolean existsByNameIgnoreCase(String name);
 
     @Query("SELECT role FROM ForumRole role WHERE role.defaultRole = true")
     ForumRole findDefaultRole();

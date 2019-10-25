@@ -142,7 +142,7 @@ public class ForumUser
     {
         for (ForumRole role: getRoles())
         {
-            PermissionState state = role.hasPermission(type);
+            PermissionState state = role.getPermission(type);
 
             if (state == PermissionState.OFF) { return false; }
             if (state == PermissionState.ON)  { return true; }
