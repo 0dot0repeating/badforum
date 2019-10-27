@@ -61,5 +61,24 @@
 
         <input type="submit" value="Submit">
     </form>
+
+    <section class="userroles" th:if="${userRoles != null}">
+        <h1>Set roles</h1>
+
+        <form action="/saveuserroles" method="post">
+            <input type="hidden" name="username" th:value="${username}">
+
+            <ul>
+                <!--/* the checkbox must be before the hidden input, since the backend grabs the first value with a given name */-->
+                <li th:each="role: ${userRoles}">
+                    <label th:for="${'role' + role.viewIndex}" th:text="${role.roleName}"></label>
+                    <input th:id="${'role' + role.viewIndex}" th:name="${'role:' + role.roleName}" value="1" type="checkbox" th:checked="${role.present}">
+                    <input th:name="${'role:' + role.roleName}" value="0" type="hidden">
+                </li>
+            </ul>
+
+            <input type="submit" value="Save roles">
+        </form>
+    </section>
 </body>
 </html>

@@ -24,8 +24,6 @@
                 <input th:id="${'priority' + data.viewIndex}" th:name="${'(PRIORITY):' + data.roleName}" th:value="${data.priority}" placeholder="-1000 to 1000">
             </div>
 
-            <h3>Permissions</h3>
-
             <ul>
                 <li th:each="permData: ${data.permissions}">
                     <label th:for="${permData.perm.name() + data.viewIndex}" th:text="${permData.perm.label}"></label>
