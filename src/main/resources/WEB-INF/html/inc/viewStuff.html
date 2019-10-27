@@ -52,7 +52,7 @@
 
             <div class="text" th:utext="${post.text}"></div>
 
-            <form action="/post/delete" method="post" th:if="${canModerate && !post.deleted}">
+            <form action="/post/delete" method="post" th:if="${(canModerate || post.viewerIsAuthor) && !post.deleted}">
                 <input type="hidden" name="postIndex" th:value="${post.index}">
                 <input type="submit" value="Delete post">
             </form>

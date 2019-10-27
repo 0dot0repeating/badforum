@@ -503,18 +503,27 @@ public class BoardThreadPostController extends ForumController
         }
 
         ForumThread thread = post.getThread();
-        ForumUser user = getUserFromRequest(request);
-        boolean allowed;
+        ForumUser user   = getUserFromRequest(request);
+        ForumUser author = post.getAuthor();
+        boolean allowed  = false;
 
-        if (thread == null)
+        if (user != null && author != null && user.getUsername().equalsIgnoreCase(author.getUsername()))
         {
-            allowed = userHasPermission(user, UserPermission.MANAGE_DETACHED);
+            allowed = true;
         }
-        else
+
+        if (!allowed)
         {
-            ForumBoard board = thread.getBoard();
-            allowed = board == null ? userHasPermission(user, UserPermission.MANAGE_DETACHED)
-                                    : userHasBoardPermission(user, board, BoardPermission.MODERATE);
+            if (thread == null)
+            {
+                allowed = userHasPermission(user, UserPermission.MANAGE_DETACHED);
+            }
+            else
+            {
+                ForumBoard board = thread.getBoard();
+                allowed = board == null ? userHasPermission(user, UserPermission.MANAGE_DETACHED)
+                                        : userHasBoardPermission(user, board, BoardPermission.MODERATE);
+            }
         }
 
         if (!allowed)
@@ -522,7 +531,7 @@ public class BoardThreadPostController extends ForumController
             return errorPage("deletepost_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
-        String  postUsername = post.getAuthor().getUsername();
+        String  postUsername = author == null ? "Anonymous" : author.getUsername();
         Instant postTime     = post.getPostTime();
 
         post.deleteContents();

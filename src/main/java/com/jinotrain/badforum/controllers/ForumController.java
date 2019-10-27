@@ -208,6 +208,8 @@ abstract class ForumController
         List<PostViewData> postData = new ArrayList<>();
         UserViewData firstPoster = null;
 
+        String viewerUsername = viewer == null ? null : viewer.getUsername();
+
         for (ForumPost p: posts)
         {
             ForumUser user = p.getAuthor();
@@ -215,6 +217,12 @@ abstract class ForumController
             String postText = formatPostText(p.getPostText());
 
             PostViewData pdata = new PostViewData(p.getIndex(), postText, userdata, p.getPostTime(), p.getlastEditTime(), p.isDeleted());
+
+            if (user != null && user.getUsername().equalsIgnoreCase(viewerUsername))
+            {
+                pdata.viewerIsAuthor = true;
+            }
+
             postData.add(pdata);
 
             if (firstPoster == null) { firstPoster = userdata; }

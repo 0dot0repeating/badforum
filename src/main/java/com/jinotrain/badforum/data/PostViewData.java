@@ -10,14 +10,16 @@ public class PostViewData
     public Instant postTime;
     public Instant lastEditTime;
     public boolean deleted;
+    public boolean viewerIsAuthor;
 
     public PostViewData(long index, String text, UserViewData author, Instant postTime, Instant lastEditTime, boolean deleted)
     {
-        this.index        = index;
-        this.text         = text;
-        this.author       = author;
-        this.postTime     = postTime;
-        this.lastEditTime = lastEditTime;
-        this.deleted      = deleted;
+        this.index          = index;
+        this.text           = text;
+        this.author         = author;
+        this.postTime       = postTime;
+        this.lastEditTime   = lastEditTime;
+        this.deleted        = deleted;
+        this.viewerIsAuthor = false;
     }
 }
