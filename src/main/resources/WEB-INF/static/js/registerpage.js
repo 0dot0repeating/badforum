@@ -72,6 +72,12 @@ function checkUsername(username, notifyElement)
         return;
     }
 
+    if (username.toLowerCase() === "anonymous")
+    {
+        notifyElement.innerHTML = "Can't be anonymous";
+        return;
+    }
+
     var request = new XMLHttpRequest();
     request.onreadystatechange = function() {
         if (this.readyState != 4 || this.status != 200) { return; }
