@@ -24,8 +24,17 @@
         <form method="post" action="/board/new">
             <h3>Create sub-board</h3>
             <input type="hidden" name="parentIndex" th:value="${boardViewData.index}">
-            <label for="boardName">Board name: </label> <input id="boardName" name="boardName" placeholder="Board name">
+            <label for="boardName">Board name: </label>
+            <input id="boardName" name="boardName" placeholder="Board name">
             <input type="submit" value="Create board">
+        </form>
+
+        <form method="post" action="/board/rename">
+            <h3>Rename board</h3>
+            <input type="hidden" name="boardIndex" th:value="${boardViewData.index}">
+            <label for="newName">New board name: </label>
+            <input id="newName" name="newName" placeholder="New board name" th:value="${boardViewData.name}">
+            <input type="submit" value="Rename board">
         </form>
 
         <form method="post" action="/board/delete" th:if="${!boardViewData.isRootBoard}">

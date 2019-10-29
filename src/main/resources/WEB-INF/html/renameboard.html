@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Board renamed</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Thread renamed</h1>
+
+    <p>Successfully renamed board "[[${oldName}]]" to "[[${newName}]]".</p>
+
+    <ul>
+        <li><a th:href="${'/board/' + boardIndex}">Return to board</a></li>
+        <li><a href="/">Return to home page</a></li>
+    </ul>
+</body>
+</html>

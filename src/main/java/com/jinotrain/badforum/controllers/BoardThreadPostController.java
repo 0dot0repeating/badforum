@@ -64,10 +64,16 @@ public class BoardThreadPostController extends ForumController
 
         ForumBoard board = thread.getBoard();
 
+        boolean canPost = board == null ? userHasPermission(viewer, UserPermission.MANAGE_BOARDS)
+                                        : userHasBoardPermission(viewer, board, BoardPermission.POST);
+
+        boolean canModerate = board == null ? userHasPermission(viewer, UserPermission.MANAGE_BOARDS)
+                                            : userHasBoardPermission(viewer, board, BoardPermission.MODERATE);
+
         ModelAndView ret = new ModelAndView("viewthread.html");
         ret.addObject("threadViewData", viewData);
-        ret.addObject("canPost", userHasBoardPermission(viewer, board, BoardPermission.POST));
-        ret.addObject("canModerate", userHasBoardPermission(viewer, board, BoardPermission.MODERATE));
+        ret.addObject("canPost", canPost);
+        ret.addObject("canModerate", canModerate);
         return ret;
     }
 
@@ -135,9 +141,14 @@ public class BoardThreadPostController extends ForumController
 
 
     @Transactional
-    @RequestMapping(value = "/post", method = RequestMethod.POST)
+    @RequestMapping(value = "/post")
     public ModelAndView postOrReply(HttpServletRequest request, HttpServletResponse response)
     {
+        if (!request.getMethod().equals("POST"))
+        {
+            return errorPage("post_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
+        }
+
         if (request.getParameter("boardIndex") != null)
         {
             return postNewTopic(request, response);
@@ -301,9 +312,14 @@ public class BoardThreadPostController extends ForumController
 
 
     @Transactional
-    @RequestMapping(value = "/board/new", method = RequestMethod.POST)
+    @RequestMapping(value = "/board/new")
     public ModelAndView createNewBoard(HttpServletRequest request, HttpServletResponse response)
     {
+        if (!request.getMethod().equals("POST"))
+        {
+            return errorPage("newboard_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
+        }
+
         ForumUser user = getUserFromRequest(request);
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
@@ -351,9 +367,14 @@ public class BoardThreadPostController extends ForumController
 
 
     @Transactional
-    @RequestMapping(value = "/board/delete", method = RequestMethod.POST)
+    @RequestMapping(value = "/board/delete")
     public ModelAndView deleteBoard(HttpServletRequest request, HttpServletResponse response)
     {
+        if (!request.getMethod().equals("POST"))
+        {
+            return errorPage("deleteboard_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
+        }
+
         ForumUser user = getUserFromRequest(request);
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
@@ -409,9 +430,14 @@ public class BoardThreadPostController extends ForumController
 
 
     @Transactional
-    @RequestMapping(value = "/thread/delete", method = RequestMethod.POST)
+    @RequestMapping(value = "/thread/delete")
     public ModelAndView deleteThread(HttpServletRequest request, HttpServletResponse response)
     {
+        if (!request.getMethod().equals("POST"))
+        {
+            return errorPage("deletethread_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
+        }
+
         String threadIndexRaw = request.getParameter("threadIndex");
 
         if (threadIndexRaw == null)
@@ -469,9 +495,14 @@ public class BoardThreadPostController extends ForumController
 
 
     @Transactional
-    @RequestMapping(value = "/post/delete", method = RequestMethod.POST)
+    @RequestMapping(value = "/post/delete")
     public ModelAndView deletePost(HttpServletRequest request, HttpServletResponse response)
     {
+        if (!request.getMethod().equals("POST"))
+        {
+            return errorPage("deletepost_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
+        }
+
         String postIndexRaw = request.getParameter("postIndex");
 
         if (postIndexRaw == null)
@@ -541,6 +572,126 @@ public class BoardThreadPostController extends ForumController
         ret.addObject("postTime", postTime);
         ret.addObject("threadIndex", thread == null ? -1   : thread.getIndex());
         ret.addObject("threadTopic", thread == null ? null : thread.getTopic());
+        return ret;
+    }
+
+
+    @Transactional
+    @RequestMapping(value = "/board/rename")
+    public ModelAndView renameBoard(HttpServletRequest request, HttpServletResponse response)
+    {
+        if (!request.getMethod().equals("POST"))
+        {
+            return errorPage("renameboard_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
+        }
+
+        ForumUser user = getUserFromRequest(request);
+
+        if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
+        {
+            return errorPage("renameboard_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
+        }
+
+        String boardIndexRaw = request.getParameter("boardIndex");
+        String newName       = request.getParameter("newName");
+
+        if (boardIndexRaw == null || boardIndexRaw.isEmpty())
+        {
+            return errorPage("renameboard_error.html", "MISSING_INDEX", HttpStatus.BAD_REQUEST);
+        }
+
+        if (newName == null || newName.isEmpty())
+        {
+            return errorPage("renameboard_error.html", "MISSING_NAME", HttpStatus.BAD_REQUEST);
+        }
+
+        long boardIndex;
+
+        try
+        {
+            boardIndex = Long.valueOf(boardIndexRaw);
+        }
+        catch (NumberFormatException e)
+        {
+            return errorPage("renameboard_error.html", "INVALID_INDEX", HttpStatus.BAD_REQUEST);
+        }
+
+        ForumBoard board = boardRepository.findByIndex(boardIndex);
+
+        if (board == null)
+        {
+            return errorPage("renameboard_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        String oldName = board.getName();
+        board.setName(newName);
+
+        ModelAndView ret = new ModelAndView("renameboard.html");
+        ret.addObject("boardIndex", boardIndex);
+        ret.addObject("oldName", oldName);
+        ret.addObject("newName", newName);
+        return ret;
+    }
+
+
+    @Transactional
+    @RequestMapping(value = "/thread/rename")
+    public ModelAndView renameThread(HttpServletRequest request, HttpServletResponse response)
+    {
+        if (!request.getMethod().equals("POST"))
+        {
+            return errorPage("renamethread_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
+        }
+
+        String threadIndexRaw = request.getParameter("threadIndex");
+        String newTopic       = request.getParameter("newTopic");
+
+        if (threadIndexRaw == null)
+        {
+            return errorPage("renamethread_error.html", "MISSING_INDEX", HttpStatus.BAD_REQUEST);
+        }
+
+        if (newTopic == null || newTopic.isEmpty())
+        {
+            return errorPage("renamethread_error.html", "MISSING_NAME", HttpStatus.BAD_REQUEST);
+        }
+
+        long threadIndex;
+
+        try
+        {
+            threadIndex = Long.valueOf(threadIndexRaw);
+        }
+        catch (NumberFormatException e)
+        {
+            return errorPage("renamethread_error.html", "INVALID_INDEX", HttpStatus.BAD_REQUEST);
+        }
+
+        ForumThread thread = threadRepository.findByIndex(threadIndex);
+
+        if (thread == null)
+        {
+            return errorPage("renamethread_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        ForumBoard board = thread.getBoard();
+        ForumUser user = getUserFromRequest(request);
+
+        if (board == null ? !userHasPermission(user, UserPermission.MANAGE_DETACHED)
+                          : !userHasBoardPermission(user, board, BoardPermission.MODERATE))
+        {
+            return errorPage("renamethread_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
+        }
+
+        String oldTopic = thread.getTopic();
+        thread.setTopic(newTopic);
+
+        ModelAndView ret = new ModelAndView("renamethread.html");
+        ret.addObject("threadIndex", threadIndex);
+        ret.addObject("oldTopic", oldTopic);
+        ret.addObject("newTopic", newTopic);
+        ret.addObject("boardIndex", board == null ? -1   : board.getIndex());
+        ret.addObject("boardName",  board == null ? null : board.getName());
         return ret;
     }
 }

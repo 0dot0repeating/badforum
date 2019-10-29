@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>[[#{badforum.name}]] - Thread deleted</title>
+    <title>[[#{badforum.name}]] - Thread renamed</title>
 </head>
 <body>
     <div th:replace="inc/header :: header">
 
     </div>
 
-    <h1>Thread deleted</h1>
+    <h1>Thread renamed</h1>
 
-    <p>Successfully deleted thread "[[${threadTopic}]]".</p>
+    <p>Successfully renamed thread "[[${oldTopic}]]" to "[[${newTopic}]]".</p>
 
     <ul>
+        <li><a th:href="${'/thread/' + threadIndex}">Return to thread</a></li>
         <li><a th:if="${boardIndex != -1}" th:href="${'/board/' + boardIndex}">Return to board "[[${boardName}]]"</a></li>
         <li><a href="/">Return to home page</a></li>
     </ul>

@@ -12,7 +12,9 @@
 
     <p>Successfully deleted the post by [[${postUsername}]] on <time>[[${#temporals.format(postTime, "yyyy-MM-dd HH:mm:ss")}]]</time>.</p>
 
-    <a th:if="${threadIndex != -1}" th:href="${'/thread/' + threadIndex}">Return to thread "[[${threadTopic}]]"</a>
-    <a href="/">Return to home page</a>
+    <ul>
+        <li><a th:if="${threadIndex != -1}" th:href="${'/thread/' + threadIndex}">Return to thread "[[${threadTopic}]]"</a></li>
+        <li><a href="/">Return to home page</a></li>
+    </ul>
 </body>
 </html>

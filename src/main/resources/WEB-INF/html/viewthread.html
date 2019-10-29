@@ -15,5 +15,23 @@
     <div th:replace="inc/viewStuff :: viewThread(${threadViewData}, ${canModerate})"></div>
 
     <form th:replace="inc/postStuff :: reply(${threadViewData.index}, ${threadViewData.topic}, ${postError}, ${postText}, ${canPost})"></form>
+
+    <section th:if="${canModerate}">
+        <h2>Moderator Tools</h2>
+
+        <form method="post" action="/thread/rename">
+            <h3>Change thread topic</h3>
+            <input type="hidden" name="threadIndex" th:value="${threadViewData.index}">
+            <label for="threadName">New name: </label>
+            <input id="threadName" name="newTopic" placeholder="Thread name" th:value="${threadViewData.topic}">
+            <input type="submit" value="Submit new topic">
+        </form>
+
+        <form method="post" action="/thread/delete">
+            <h3>Delete thread</h3>
+            <input type="hidden" name="threadIndex" th:value="${threadViewData.index}">
+            <input type="submit" value="Delete thread">
+        </form>
+    </section>
 </body>
 </html>

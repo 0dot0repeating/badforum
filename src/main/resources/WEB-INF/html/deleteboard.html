@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>[[#{badforum.name}]] - Error - [[#{error.newboard.__${errorCode}__.title}]]</title>
+    <title>[[#{badforum.name}]] - Board deleted</title>
 </head>
 <body>
     <div th:replace="inc/header :: header">
@@ -12,7 +12,9 @@
 
     <p>Successfully deleted board "[[${boardName}]]".</p>
 
-    <a th:if="${parentIndex != -1}" th:href="${'/board/' + parentIndex}">Return to parent board "[[${parentName}]]"</a>
-    <a href="/">Return to home page</a>
+    <ul>
+        <li><a th:if="${parentIndex != -1}" th:href="${'/board/' + parentIndex}">Return to parent board "[[${parentName}]]"</a></li>
+        <li><a href="/">Return to home page</a></li>
+    </ul>
 </body>
 </html>
