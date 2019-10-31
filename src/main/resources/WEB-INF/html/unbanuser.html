@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Error - [[#{error.banuser.__${errorCode}__.title}]]</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>User unbanned</h1>
+
+    <p>
+        User "[[${unbanUsername}]]" has been unbanned.
+    </p>
+
+    <ul>
+        <li><a th:href="${'/settings/' + unbanUsername}">Go to [[${unbanUsername}]]'s settings</a></li>
+        <li><a href="/">Return to home page</a></li>
+    </ul>
+</body>
+</html>

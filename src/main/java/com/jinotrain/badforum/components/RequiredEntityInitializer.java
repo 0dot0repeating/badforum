@@ -1,6 +1,8 @@
 package com.jinotrain.badforum.components;
 
 import com.jinotrain.badforum.data.PreAdminKey;
+import com.jinotrain.badforum.db.BoardPermission;
+import com.jinotrain.badforum.db.PermissionState;
 import com.jinotrain.badforum.db.entities.*;
 import com.jinotrain.badforum.db.repositories.*;
 import org.slf4j.Logger;
@@ -50,8 +52,8 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
     public void onApplicationEvent(ContextRefreshedEvent event)
     {
         initAdminStuff();
-        initRootBoard();
-        initDefaultRole();
+        ForumRole defaultRole = initDefaultRole();
+        initRootBoard(defaultRole);
     }
 
 
@@ -120,7 +122,7 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
     }
 
 
-    private void initRootBoard()
+    private void initRootBoard(ForumRole defaultRole)
     {
         ForumBoard currentRoot = boardRepository.findRootBoard();
 
@@ -140,11 +142,14 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
 
             testPost.setThread(testThread);
             postRepository.save(testPost);
+
+            defaultRole.setBoardPermission(currentRoot, BoardPermission.POST, PermissionState.ON);
+            defaultRole.setBoardPermission(currentRoot, BoardPermission.VIEW, PermissionState.ON);
         }
     }
 
 
-    private void initDefaultRole()
+    private ForumRole initDefaultRole()
     {
         ForumRole currentDefault = roleRepository.findDefaultRole();
 
@@ -162,5 +167,7 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
                 user.addRole(currentDefault);
             }
         }
+
+        return currentDefault;
     }
 }

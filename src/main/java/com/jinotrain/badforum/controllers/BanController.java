@@ -45,7 +45,7 @@ public class BanController extends ForumController
     //  - postIndex: optional, the post you banned them for (will be marked with "USER WAS BANNED FOR THIS POST")
 
     @Transactional
-    @RequestMapping(value = "/banuser", method = RequestMethod.POST)
+    @RequestMapping(value = "/banuser")
     public ModelAndView banUser(HttpServletRequest request, HttpServletResponse response)
     {
         if (!request.getMethod().equals("POST"))
@@ -84,9 +84,9 @@ public class BanController extends ForumController
         Integer banHours  = safeValueOf(banHoursRaw);
         Integer postIndex = safeValueOf(postIndexRaw);
 
-        if (banDays   == null || banDays < 0)                   { errorItems.add("days"); }
-        if (banHours  == null || banHours < 0 || banHours > 23) { errorItems.add("hours"); }
-        if (postIndex == null && postIndexRaw != null && !postIndexRaw.isEmpty()) { errorItems.add("postIndex"); }
+        if (banDays   == null || banDays < 0)                   { errorItems.add("days (must be positive integer)"); }
+        if (banHours  == null || banHours < 0 || banHours > 23) { errorItems.add("hours (must be integer between 0-23)"); }
+        if (postIndex == null && postIndexRaw != null && !postIndexRaw.isEmpty()) { errorItems.add("postIndex (must be valid post index, blank, or null)"); }
 
         if (!errorItems.isEmpty())
         {
@@ -130,10 +130,55 @@ public class BanController extends ForumController
             {
                 ForumBoard banBoard = banThread.getBoard();
                 ret.addObject("banBoardIndex", banBoard.getIndex());
-                ret.addObject("baBoardnName", banBoard.getName());
+                ret.addObject("banBoardName", banBoard.getName());
             }
         }
 
+        return ret;
+    }
+
+
+    @Transactional
+    @RequestMapping(value = "/unbanuser")
+    public ModelAndView unbanUser(HttpServletRequest request, HttpServletResponse response)
+    {
+        if (!request.getMethod().equals("POST"))
+        {
+            return errorPage("unbanuser_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
+        }
+
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
+
+        if (!userHasPermission(user, UserPermission.MANAGE_USERS))
+        {
+            return errorPage("unbanuser_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
+        }
+
+        String unbanUsername = request.getParameter("username");
+
+        if (unbanUsername == null || unbanUsername.isEmpty())
+        {
+            return errorPage("unbanuser_error.html", "MISSING_USERNAME", HttpStatus.BAD_REQUEST);
+        }
+
+        ForumUser unbanUser = userRepository.findByUsernameIgnoreCase(unbanUsername);
+
+        if (unbanUser == null)
+        {
+            return errorPage("unbanuser_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        if (!unbanUser.isBanned())
+        {
+            return errorPage("unbanuser_error.html", "NOT_BANNED", HttpStatus.CONFLICT);
+        }
+
+        unbanUser.unban();
+
+        ModelAndView ret = new ModelAndView("unbanuser.html");
+        ret.addObject("unbanUsername", unbanUser.getUsername());
         return ret;
     }
 }
