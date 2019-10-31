@@ -427,7 +427,7 @@ public class LoginAndRegisterController extends ForumController
         ret.put("tooLong",   username.length() > ForumUser.MAX_USERNAME_LENGTH);
         ret.put("tooShort",  username.length() < ForumUser.MIN_USERNAME_LENGTH);
         ret.put("valid",     username.matches(ForumUser.VALID_USERNAME_REGEX));
-        ret.put("available", existingCount > 0);
+        ret.put("available", existingCount == 0);
         return ret.toString();
     }
 }
