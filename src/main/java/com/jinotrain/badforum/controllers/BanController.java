@@ -103,10 +103,17 @@ public class BanController extends ForumController
             return errorPage("banuser_error.html", "USER_NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
+        if (banUser.isBanned())
+        {
+            return errorPage("banuser_error.html", "ALREADY_BANNED", HttpStatus.CONFLICT);
+        }
+
         ForumPost banPost     = postIndex == null ? null : postRepository.findByIndex(postIndex);
         String    banReason   = request.getParameter("reason");
+        if (banReason != null && banReason.isEmpty()) { banReason = null; }
+
         //noinspection ConstantConditions
-        Instant   bannedUntil = (banDays > 0 || banHours > 0) ? nowPlusDaysHours(banDays, banHours) : null;
+        Instant bannedUntil = (banDays > 0 || banHours > 0) ? nowPlusDaysHours(banDays, banHours) : null;
 
         banUser.ban(bannedUntil, banReason);
 
@@ -179,6 +186,55 @@ public class BanController extends ForumController
 
         ModelAndView ret = new ModelAndView("unbanuser.html");
         ret.addObject("unbanUsername", unbanUser.getUsername());
+        return ret;
+    }
+
+
+    @Transactional
+    @RequestMapping(value = "/post/*/ban")
+    public ModelAndView prepareBanForPost(HttpServletRequest request, HttpServletResponse response)
+    {
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
+
+        if (!userHasPermission(user, UserPermission.MANAGE_USERS))
+        {
+            return errorPage("banuser_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
+        }
+
+        String requestURL   = request.getServletPath();
+        String postIndexRaw = requestURL.substring("/post/".length(), requestURL.length() - "/ban".length());
+        long   postIndex;
+
+        try
+        {
+            postIndex = Long.valueOf(postIndexRaw);
+        }
+        catch (NumberFormatException e)
+        {
+            return errorPage("banuser_error.html", "MALFORMED_INDEX", HttpStatus.BAD_REQUEST);
+        }
+
+        ForumPost banPost = postRepository.findByIndex(postIndex);
+
+        if (banPost == null)
+        {
+            return errorPage("banuser_error.html", "POST_NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        ForumUser   banUser = banPost.getAuthor();
+        ForumThread thread  = banPost.getThread();
+
+        if (banUser == null)
+        {
+            return errorPage("banuser_error.html", "NO_AUTHOR", HttpStatus.NOT_FOUND);
+        }
+
+        ModelAndView ret = new ModelAndView("banforpost.html");
+        ret.addObject("banUsername", banUser.getUsername());
+        ret.addObject("postIndex", postIndex);
+        ret.addObject("threadTopic", thread == null ? null : thread.getTopic());
         return ret;
     }
 }

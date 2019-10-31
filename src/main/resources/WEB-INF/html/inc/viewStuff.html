@@ -41,20 +41,28 @@
     </section>
 
 
-    <article class="thread" th:fragment="viewThread(threadViewData, canModerate)">
+    <article class="thread" th:fragment="viewThread(threadViewData, canModerate, canManageUsers)">
         <section class="post" th:each="post: ${threadViewData.posts}">
             <header>
-                <span class="author" th:if="${!post.deleted && post.author.username != null}">Posted by [[${post.author.username}]]</span>
-                <span class="author" th:if="${!post.deleted && post.author.username == null}">Posted anonymously</span>
-                <span class="author" th:if="${post.deleted}">Posted by [deleted]</span>
+                <span class="author" th:if="${post.author.username != null}">Posted by [[${post.author.username}]]</span>
+                <span class="author" th:if="${post.author.username == null}">Posted anonymously</span>
+                <span th:if="${post.author.isBanned}">(BANNED)</span>
                 <span>on <time>[[${#temporals.format(post.postTime, "yyyy-MM-dd HH:mm:ss")}]]</time></span>
             </header>
 
             <div class="text" th:utext="${post.text}"></div>
 
+            <div class="banned" th:if="${post.userBanned}">
+                (USER WAS BANNED FOR THIS POST. Reason: [[${post.banReason == null ? "None specified." : '"' + post.banReason + '"'}]])
+            </div>
+
             <form action="/post/delete" method="post" th:if="${(canModerate || post.viewerIsAuthor) && !post.deleted}">
                 <input type="hidden" name="postIndex" th:value="${post.index}">
                 <input type="submit" value="Delete post">
+            </form>
+
+            <form th:action="${'/post/' + post.index + '/ban'}" method="get" th:if="${canManageUsers && !post.deleted && !post.author.isBanned && post.author.username != null}">
+                <input type="submit" value="Ban poster">
             </form>
         </section>
     </article>

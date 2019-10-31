@@ -11,8 +11,10 @@ public class PostViewData
     public Instant lastEditTime;
     public boolean deleted;
     public boolean viewerIsAuthor;
+    public boolean userBanned;
+    public String  banReason;
 
-    public PostViewData(long index, String text, UserViewData author, Instant postTime, Instant lastEditTime, boolean deleted)
+    public PostViewData(long index, String text, UserViewData author, Instant postTime, Instant lastEditTime, boolean deleted, boolean banned, String banReason)
     {
         this.index          = index;
         this.text           = text;
@@ -20,6 +22,8 @@ public class PostViewData
         this.postTime       = postTime;
         this.lastEditTime   = lastEditTime;
         this.deleted        = deleted;
+        this.userBanned     = banned;
         this.viewerIsAuthor = false;
+        this.banReason      = banReason;
     }
 }

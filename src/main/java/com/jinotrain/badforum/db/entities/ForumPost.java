@@ -73,6 +73,9 @@ public class ForumPost implements Comparable<ForumPost>
     public void        setThread(ForumThread t) { thread = t; }
 
     public boolean isDeleted() { return deleted; }
+    public boolean isUserBanned() { return bannedForThis; }
+
+    public String  getBanReason() { return banReason; }
 
 
     @Override
@@ -109,8 +112,6 @@ public class ForumPost implements Comparable<ForumPost>
     public void deleteContents()
     {
         deleted = true;
-
-        author = null;
         postText = "[deleted]";
         lastEditTime = Instant.now();
     }

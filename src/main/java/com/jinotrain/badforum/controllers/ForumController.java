@@ -187,14 +187,16 @@ abstract class ForumController
                 ForumPost lastPost  = posts.get(postCount-1);
 
                 ForumUser userAuthor = firstPost.getAuthor();
-                userdata = new UserViewData(userAuthor == null ? null : userAuthor.getUsername());
+                String  authorName = userAuthor == null ? null : userAuthor.getUsername();
+                boolean banned     = userAuthor != null && userAuthor.isBanned();
+                userdata = new UserViewData(authorName, banned);
 
                 creationTime = firstPost.getPostTime();
                 lastUpdate   = lastPost.getPostTime();
             }
             else
             {
-                userdata = new UserViewData(null);
+                userdata = new UserViewData(null, false);
             }
 
             ThreadViewData td = new ThreadViewData(t.getIndex(), t.getTopic(), userdata, postCount, creationTime, lastUpdate);
@@ -227,10 +229,14 @@ abstract class ForumController
         for (ForumPost p: posts)
         {
             ForumUser user = p.getAuthor();
-            UserViewData userdata = new UserViewData(user == null ? null : user.getUsername());
+            String  username = user == null ? null  : user.getUsername();
+            boolean banned   = user != null && user.isBanned();
+
+            UserViewData userdata = new UserViewData(username, banned);
             String postText = formatPostText(p.getPostText());
 
-            PostViewData pdata = new PostViewData(p.getIndex(), postText, userdata, p.getPostTime(), p.getlastEditTime(), p.isDeleted());
+            PostViewData pdata = new PostViewData(p.getIndex(), postText, userdata, p.getPostTime(), p.getlastEditTime(),
+                                                    p.isDeleted(), p.isUserBanned(), p.getBanReason());
 
             if (user != null && user.getUsername().equalsIgnoreCase(viewerUsername))
             {

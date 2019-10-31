@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Error - [[#{error.banuser.__${errorCode}__.title}]]</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Ban user for post</h1>
+
+    <section class="ban">
+        <p th:if="${threadTopic != null}">You're about to ban "[[${banUsername}]]" for a post in "[[${threadTopic}]]".</p>
+        <p th:if="${threadTopic == null}">You're about to ban "[[${banUsername}]]" for a detached post".</p>
+
+        <h3>Post contents</h3>
+        <div th:utext="${postText}"></div>
+
+        <h3>Options</h3>
+
+        <form action="/banuser" method="post">
+            <input type="hidden" name="username"  th:value="${banUsername}">
+            <input type="hidden" name="postIndex" th:value="${postIndex}">
+
+            <div>
+                Ban for <input name="days" placeholder="0 or up" value="0" size="5"> days and
+                <input name="hours" placeholder="0 to 23" value="0" size="5"> hours (leave both at 0 for permanent)
+            </div>
+            <div>
+                <label for="banReason">Ban reason:</label>
+                <input id="banReason" name="reason" placeholder="Ban reason">
+            </div>
+
+            <input type="submit" value="Ban user">
+        </form>
+    </section>
+</body>
+</html>

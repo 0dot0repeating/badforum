@@ -75,6 +75,7 @@ public class BoardThreadPostController extends ForumController
         ret.addObject("threadViewData", viewData);
         ret.addObject("canPost", canPost);
         ret.addObject("canModerate", canModerate);
+        ret.addObject("canManageUsers", userHasPermission(viewer, UserPermission.MANAGE_BOARDS));
         return ret;
     }
 
