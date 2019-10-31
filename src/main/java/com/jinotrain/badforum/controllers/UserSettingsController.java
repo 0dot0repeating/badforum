@@ -8,6 +8,7 @@ import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumUser;
 import com.jinotrain.badforum.lambdas.UserSettingInterface;
+import com.jinotrain.badforum.util.UserBannedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.Instant;
 import java.util.*;
 
 @Controller
@@ -180,8 +182,22 @@ public class UserSettingsController extends ForumController
         mav.addObject("showConfirmPassword", needsConfirm && protectedViewData.size() > 0);
         mav.addObject("username", username);
         mav.addObject("userRoles", userRoles);
-
         return mav;
+    }
+
+
+    private void addBanData(ModelAndView mav, boolean banned, Instant bannedUntil, String banReason)
+    {
+        if (banned)
+        {
+            mav.addObject("showUnbanForm", true);
+            mav.addObject("bannedUntil", bannedUntil);
+            mav.addObject("banReason", banReason);
+        }
+        else
+        {
+            mav.addObject("showBanForm", true);
+        }
     }
 
 
@@ -252,15 +268,20 @@ public class UserSettingsController extends ForumController
     public ModelAndView viewOwnSettings(HttpServletRequest  request,
                                         HttpServletResponse response)
     {
-        ForumUser viewUser = getUserFromRequest(request);
+        ForumUser viewUser;
+        try { viewUser = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         ModelAndView errorMAV = checkPermission(viewUser, viewUser);
         if (errorMAV != null) { return errorMAV; }
 
+        boolean canManageUsers = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
         List<UserSettingViewData> viewData = buildSettingData(viewUser);
-        List<UserRoleStateData> userRoles  = userHasPermission(viewUser, UserPermission.MANAGE_USERS) ? getUserRoles(viewUser) : null;
+        List<UserRoleStateData> userRoles  = canManageUsers ? getUserRoles(viewUser) : null;
 
-        return displaySettings(viewData, viewUser.getUsername(), userRoles, true);
+        ModelAndView mav = displaySettings(viewData, viewUser.getUsername(), userRoles, true);
+        if (canManageUsers) { addBanData(mav, viewUser.isBanned(), viewUser.getBannedUntil(), viewUser.getBanReason()); }
+        return mav;
     }
 
 
@@ -269,7 +290,9 @@ public class UserSettingsController extends ForumController
     public ModelAndView viewOtherSettings(HttpServletRequest  request,
                                           HttpServletResponse response)
     {
-        ForumUser viewUser = getUserFromRequest(request);
+        ForumUser viewUser;
+        try { viewUser = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         String settingsUsername = request.getServletPath().substring("/settings/".length());
         ForumUser settingsUser = userRepository.findByUsernameIgnoreCase(settingsUsername);
@@ -277,11 +300,15 @@ public class UserSettingsController extends ForumController
         ModelAndView errorMAV = checkPermission(viewUser, viewUser);
         if (errorMAV != null) { return errorMAV; }
 
-        List<UserSettingViewData> viewData = buildSettingData(settingsUser);
-        List<UserRoleStateData> userRoles  = userHasPermission(viewUser, UserPermission.MANAGE_USERS) ? getUserRoles(settingsUser) : null;
+        boolean canManageUsers = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
         boolean needsConfirm = viewUser.getUsername().equalsIgnoreCase(settingsUsername);
 
-        return displaySettings(viewData, settingsUser.getUsername(), userRoles, needsConfirm);
+        List<UserSettingViewData> viewData = buildSettingData(settingsUser);
+        List<UserRoleStateData> userRoles  = canManageUsers ? getUserRoles(settingsUser) : null;
+
+        ModelAndView mav = displaySettings(viewData, settingsUser.getUsername(), userRoles, needsConfirm);
+        if (canManageUsers) { addBanData(mav, settingsUser.isBanned(), settingsUser.getBannedUntil(), settingsUser.getBanReason()); }
+        return mav;
     }
 
 
@@ -294,7 +321,9 @@ public class UserSettingsController extends ForumController
             return errorPage("usersettings_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
         }
 
-        ForumUser viewUser = getUserFromRequest(request);
+        ForumUser viewUser;
+        try { viewUser = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         String    settingsUsername = request.getParameter("username");
         ForumUser settingsUser     = settingsUsername == null ? null : userRepository.findByUsernameIgnoreCase(settingsUsername);
@@ -366,8 +395,11 @@ public class UserSettingsController extends ForumController
 
         if (thingsChanged) { userRepository.saveAndFlush(settingsUser); }
 
-        List<UserRoleStateData> userRoles  = userHasPermission(viewUser, UserPermission.MANAGE_USERS) ? getUserRoles(settingsUser) : null;
+        boolean canManageUsers = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
+        List<UserRoleStateData> userRoles = canManageUsers ? getUserRoles(settingsUser) : null;
+
         ModelAndView mav = displaySettings(viewData, settingsUser.getUsername(), userRoles, needsConfirm);
+        if (canManageUsers) { addBanData(mav, settingsUser.isBanned(), settingsUser.getBannedUntil(), settingsUser.getBanReason()); }
 
         mav.addObject("savingSettings", true);
         mav.addObject("errorsOccured", errorsOccured);
@@ -391,7 +423,9 @@ public class UserSettingsController extends ForumController
             return errorPage("userroles_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
         }
 
-        ForumUser accessUser = getUserFromRequest(request);
+        ForumUser accessUser;
+        try { accessUser = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         if (!userHasPermission(accessUser, UserPermission.MANAGE_USERS))
         {

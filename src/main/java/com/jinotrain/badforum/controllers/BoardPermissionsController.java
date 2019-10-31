@@ -8,6 +8,7 @@ import com.jinotrain.badforum.db.PermissionState;
 import com.jinotrain.badforum.db.entities.ForumBoard;
 import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumUser;
+import com.jinotrain.badforum.util.UserBannedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,7 +129,9 @@ public class BoardPermissionsController extends ForumController
     @RequestMapping(value="/board/*/permissions")
     public ModelAndView viewBoardPermissions(HttpServletRequest request, HttpServletResponse response)
     {
-        ForumUser user = getUserFromRequest(request);
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
@@ -222,7 +225,9 @@ public class BoardPermissionsController extends ForumController
     @RequestMapping(value="/board/savepermissions", method=RequestMethod.POST)
     public ModelAndView saveBoardPermissions(HttpServletRequest request, HttpServletResponse response)
     {
-        ForumUser user = getUserFromRequest(request);
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {

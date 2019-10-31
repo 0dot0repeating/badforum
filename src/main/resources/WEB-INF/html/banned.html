@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Error - [[#{error.banuser.__${errorCode}__.title}]]</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>You have been banned</h1>
+
+    <p>
+        You have been banned
+        <th:block th:if="${bannedUntil != null}">
+            until <time th:if="${bannedUntil != null}">[[${#temporals.format(bannedUntil, "yyyy-MM-dd HH:mm:ss")}]]</time>
+        </th:block>
+
+        <th:block th:if="${bannedUntil == null}">
+            permanently.
+        </th:block>
+
+        The reason given for this: "[[${banReason == null ? 'No reason specified.' : banReason}]]"
+    </p>
+
+    <p>
+        Now that you have seen this message, you will be logged out.
+    </p>
+</body>
+</html>

@@ -80,5 +80,41 @@
             <input type="submit" value="Save roles">
         </form>
     </section>
+
+    <section class="ban" th:if="${showBanForm}">
+        <h1>Ban user</h1>
+
+        <form action="/banuser" method="post">
+            <input type="hidden" name="username" th:value="${username}">
+            <div>
+                For <input name="days" placeholder="0 or up" value="0" size="5"> days and
+                <input name="hours" placeholder="0 to 23" value="0" size="5"> hours (leave both at 0 for permanent)
+            </div>
+            <div>
+                <label for="banReason">Ban reason:</label>
+                <input id="banReason" name="reason" placeholder="Ban reason">
+            </div>
+
+            <input type="submit" value="Ban user">
+        </form>
+    </section>
+
+    <section class="ban" th:if="${showUnbanForm}">
+        <h1>Unban user</h1>
+
+        <h3>Ban expire time</h3>
+        <p>
+            <time th:if="${bannedUntil != null}">[[${#temporals.format(bannedUntil, "yyyy-MM-dd HH:mm:ss")}]]</time>
+            <th:block th:if="${bannedUntil == null}">Never</th:block>
+        </p>
+
+        <h3>Reason for banning</h3>
+        <p th:text="${banReason == null ? 'None specified' : banReason}"></p>
+
+        <form action="/unbanuser" method="post">
+            <input type="hidden" name="username" th:value="${username}">
+            <input type="submit" value="Unban user">
+        </form>
+    </section>
 </body>
 </html>

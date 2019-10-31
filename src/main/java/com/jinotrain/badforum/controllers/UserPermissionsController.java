@@ -6,6 +6,7 @@ import com.jinotrain.badforum.db.PermissionState;
 import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumUser;
+import com.jinotrain.badforum.util.UserBannedException;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -115,7 +116,9 @@ public class UserPermissionsController extends ForumController
     @RequestMapping("/roles")
     public ModelAndView viewRoles(HttpServletRequest request, HttpServletResponse response)
     {
-        ForumUser user = getUserFromRequest(request);
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         if (!userHasPermission(user, UserPermission.MANAGE_USERS))
         {
@@ -178,7 +181,7 @@ public class UserPermissionsController extends ForumController
                 continue;
             }
 
-            if ("(name)".equals(permName))
+            if ("(name)".equals(permName) && !paramVal.isEmpty())
             {
                 renameData.put(roleName, paramVal);
                 continue;
@@ -248,7 +251,9 @@ public class UserPermissionsController extends ForumController
             return errorPage("roles_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
         }
 
-        ForumUser accessUser = getUserFromRequest(request);
+        ForumUser accessUser;
+        try { accessUser = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         if (!userHasPermission(accessUser, UserPermission.MANAGE_USERS))
         {
@@ -284,10 +289,13 @@ public class UserPermissionsController extends ForumController
     {
         if (!request.getMethod().equals("POST"))
         {
-            return errorPage("roles_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
+            return errorPage("newrole_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
         }
 
-        ForumUser user = getUserFromRequest(request);
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
+
 
         if (!userHasPermission(user, UserPermission.MANAGE_USERS))
         {

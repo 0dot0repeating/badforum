@@ -33,6 +33,9 @@ public class ForumPost implements Comparable<ForumPost>
 
     private boolean deleted = false;
 
+    private boolean bannedForThis = false;
+    private String  banReason     = null;
+
 
     @SuppressWarnings("unused")
     ForumPost() {}
@@ -110,5 +113,12 @@ public class ForumPost implements Comparable<ForumPost>
         author = null;
         postText = "[deleted]";
         lastEditTime = Instant.now();
+    }
+
+
+    public void userWasBannedForThisPost(String reason)
+    {
+        bannedForThis = true;
+        banReason = reason;
     }
 }

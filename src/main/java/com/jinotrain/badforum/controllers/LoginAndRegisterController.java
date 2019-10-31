@@ -270,21 +270,11 @@ public class LoginAndRegisterController extends ForumController
         String pwConfirm = request.getParameter("confirm");
         String address   = request.getRemoteAddr();
 
-        ModelAndView mav;
         boolean flooding = !floodProtectionService.updateIfNotFlooding(FloodCategory.REGISTER, address);
-
-        if (flooding)
-        {
-            mav = new ModelAndView("flooding.html");
-            Duration floodWindow = floodProtectionService.getFloodWindow(FloodCategory.REGISTER);
-
-            response.setStatus(429); // too many requests
-            mav.addObject("floodType", "login");
-            mav.addObject("floodWindow", DurationFormat.format(floodWindow));
-            return mav;
-        }
+        if (flooding) { return floodingPage(FloodCategory.REGISTER); }
 
         Map<String, Object> result = registerUser(username, email, password, pwConfirm);
+        ModelAndView mav;
 
         if ((boolean)result.get("registered"))
         {
@@ -355,25 +345,15 @@ public class LoginAndRegisterController extends ForumController
         boolean rememberMe = Boolean.parseBoolean(request.getParameter("rememberMe"));
         String address     = request.getRemoteAddr();
 
-        ModelAndView mav;
         boolean flooding = !floodProtectionService.updateIfNotFlooding(FloodCategory.LOGIN, address);
-
-        if (flooding)
-        {
-            mav = new ModelAndView("flooding.html");
-            Duration floodWindow = floodProtectionService.getFloodWindow(FloodCategory.LOGIN);
-
-            response.setStatus(429); // too many requests
-            mav.addObject("floodType", "login");
-            mav.addObject("floodWindow", DurationFormat.format(floodWindow));
-            return mav;
-        }
+        if (flooding) { return floodingPage(FloodCategory.LOGIN); }
 
         String referer = request.getParameter("previousPage");
         if (referer == null) { referer = request.getHeader("Referer"); }
         if (referer == null) { referer = "/"; }
 
         Map<String, Object> result = loginUser(username, password, rememberMe);
+        ModelAndView mav;
 
         if ((boolean)result.get("loggedIn"))
         {

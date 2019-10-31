@@ -33,10 +33,12 @@ public class ForumUser
 
     private String email;
 
-    private Boolean enabled;
-
     private Instant creationTime;
     private Instant lastLoginTime;
+
+    private Boolean banned      = false;
+    private Instant bannedUntil = null;
+    private String  banReason   = null;
 
     @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval = true, mappedBy = "user")
     private Collection<UserToRoleLink> roleLinks;
@@ -50,13 +52,14 @@ public class ForumUser
     public String getEmail()       { return email; }
     public void setEmail(String e) { email = e; }
 
-    public Boolean getEnabled()       { return enabled; }
-    public void setEnabled(Boolean e) { enabled = e; }
-
     public Instant getCreationTime() { return creationTime; }
 
     public Instant getLastLoginTime() { return lastLoginTime; }
-    public void setLastLoginTime(Instant d) { lastLoginTime = d; }
+    public void setLastLoginTime(Instant t) { lastLoginTime = t; }
+
+    public boolean isBanned()       { return banned; }
+    public Instant getBannedUntil() { return bannedUntil; }
+    public String  getBanReason()   { return banReason; }
 
 
     @SuppressWarnings("unused")
@@ -75,7 +78,6 @@ public class ForumUser
         this.roleLinks     = new HashSet<>();
         this.creationTime  = Instant.now();
         this.lastLoginTime = this.creationTime;
-        this.enabled       = true;
     }
 
 
@@ -163,5 +165,31 @@ public class ForumUser
         }
 
         return board.getGlobalPermission(type);
+    }
+
+
+    public void ban(Instant until, String reason)
+    {
+        banned      = true;
+        bannedUntil = until;
+        banReason   = reason;
+    }
+
+
+    public void unban()
+    {
+        banned      = false;
+        bannedUntil = null;
+        banReason   = null;
+    }
+
+
+    @PostLoad
+    public void clearBanIfExpired()
+    {
+        if (bannedUntil != null && bannedUntil.isBefore(Instant.now()))
+        {
+            unban();
+        }
     }
 }

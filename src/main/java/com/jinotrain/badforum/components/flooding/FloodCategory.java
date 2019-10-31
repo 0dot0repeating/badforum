@@ -4,14 +4,16 @@ import java.time.Duration;
 
 public enum FloodCategory
 {
-    LOGIN    (100, Duration.ofMinutes(1)),
-    REGISTER (100, Duration.ofHours(1));
+    LOGIN    ("Login", 100, Duration.ofMinutes(1)),
+    REGISTER ("Registration", 100, Duration.ofHours(1));
 
+    public final String   niceName;
     public final int      defaultLimit;
     public final Duration defaultWindow;
 
-    FloodCategory(int limit, Duration window)
+    FloodCategory(String name, int limit, Duration window)
     {
+        niceName      = name;
         defaultLimit  = limit;
         defaultWindow = window;
     }

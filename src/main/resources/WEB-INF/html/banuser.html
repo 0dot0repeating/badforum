@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Error - [[#{error.banuser.__${errorCode}__.title}]]</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>User banned</h1>
+
+    <p>
+        User "[[${banUsername}]]" has been banned
+        <th:block th:if="${bannedUntil != null}">
+            until <time th:if="${bannedUntil != null}">[[${#temporals.format(bannedUntil, "yyyy-MM-dd HH:mm:ss")}]]</time>
+        </th:block>
+
+        <th:block th:if="${bannedUntil == null}">
+            permanently.
+        </th:block>
+    </p>
+
+    <h3>Ban reason</h3>
+    <p>
+        [[${banReason == null ? 'No reason specified.' : banReason}]]
+    </p>
+
+    <ul>
+        <li th:if="${banThreadIndex != null}"><a th:href="${'/thread/' + banThreadIndex}">Return to thread "[[${banThreadTopic}]]"</a></li>
+        <li th:if="${banBoardIndex != null}"><a th:href="${'/board/' + banBoardIndex}">Return to board "[[${banThreadName}]]"</a></li>
+        <li><a th:href="${'/settings/' + banUsername}">Go to [[${banUsername}]]'s settings</a></li>
+        <li><a href="/">Return to home page</a></li>
+    </ul>
+</body>
+</html>

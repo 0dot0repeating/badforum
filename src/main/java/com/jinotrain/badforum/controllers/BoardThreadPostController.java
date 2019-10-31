@@ -8,6 +8,7 @@ import com.jinotrain.badforum.db.entities.ForumBoard;
 import com.jinotrain.badforum.db.entities.ForumPost;
 import com.jinotrain.badforum.db.entities.ForumThread;
 import com.jinotrain.badforum.db.entities.ForumUser;
+import com.jinotrain.badforum.util.UserBannedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -83,7 +84,12 @@ public class BoardThreadPostController extends ForumController
     public ModelAndView viewTopLevelBoard(HttpServletRequest request, HttpServletResponse response)
     {
         ForumBoard rootBoard = boardRepository.findRootBoard();
-        return getBoard(rootBoard, getUserFromRequest(request));
+
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
+
+        return getBoard(rootBoard, user);
     }
 
 
@@ -109,7 +115,11 @@ public class BoardThreadPostController extends ForumController
             return errorPage("viewboard_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
-        return getBoard(viewBoard, getUserFromRequest(request));
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
+
+        return getBoard(viewBoard, user);
     }
 
 
@@ -135,7 +145,11 @@ public class BoardThreadPostController extends ForumController
             return errorPage("viewthread_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
-        return getThread(viewThread, getUserFromRequest(request));
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
+
+        return getThread(viewThread, user);
     }
 
 
@@ -191,7 +205,9 @@ public class BoardThreadPostController extends ForumController
             return mav;
         }
 
-        ForumUser poster = getUserFromRequest(request);
+        ForumUser poster;
+        try { poster = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         if (!userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
         {
@@ -274,7 +290,10 @@ public class BoardThreadPostController extends ForumController
             return mav;
         }
 
-        ForumUser  poster      = getUserFromRequest(request);
+        ForumUser poster;
+        try { poster = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
+
         ForumBoard targetBoard = targetThread.getBoard();
 
         if (!userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
@@ -320,7 +339,9 @@ public class BoardThreadPostController extends ForumController
             return errorPage("newboard_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
         }
 
-        ForumUser user = getUserFromRequest(request);
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
@@ -375,7 +396,9 @@ public class BoardThreadPostController extends ForumController
             return errorPage("deleteboard_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
         }
 
-        ForumUser user = getUserFromRequest(request);
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
@@ -466,7 +489,9 @@ public class BoardThreadPostController extends ForumController
         String threadTopic = thread.getTopic();
 
         ForumBoard board = thread.getBoard();
-        ForumUser user = getUserFromRequest(request);
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         if (board == null ? !userHasPermission(user, UserPermission.MANAGE_DETACHED)
                           : !userHasBoardPermission(user, board, BoardPermission.MODERATE))
@@ -533,8 +558,11 @@ public class BoardThreadPostController extends ForumController
             return errorPage("deletepost_error.html", "ALREADY_DELETED", HttpStatus.GONE);
         }
 
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
+
         ForumThread thread = post.getThread();
-        ForumUser user   = getUserFromRequest(request);
         ForumUser author = post.getAuthor();
         boolean allowed  = false;
 
@@ -585,7 +613,9 @@ public class BoardThreadPostController extends ForumController
             return errorPage("renameboard_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
         }
 
-        ForumUser user = getUserFromRequest(request);
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
 
         if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
@@ -674,8 +704,11 @@ public class BoardThreadPostController extends ForumController
             return errorPage("renamethread_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
+
         ForumBoard board = thread.getBoard();
-        ForumUser user = getUserFromRequest(request);
 
         if (board == null ? !userHasPermission(user, UserPermission.MANAGE_DETACHED)
                           : !userHasBoardPermission(user, board, BoardPermission.MODERATE))

@@ -1,5 +1,6 @@
 package com.jinotrain.badforum.controllers;
 
+import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.components.flooding.FloodProtectionService;
 import com.jinotrain.badforum.data.BoardViewData;
 import com.jinotrain.badforum.data.PostViewData;
@@ -9,6 +10,8 @@ import com.jinotrain.badforum.db.BoardPermission;
 import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.entities.*;
 import com.jinotrain.badforum.db.repositories.*;
+import com.jinotrain.badforum.util.DurationFormat;
+import com.jinotrain.badforum.util.UserBannedException;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
@@ -19,6 +22,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.servlet.http.HttpServletRequest;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 
@@ -73,13 +77,23 @@ abstract class ForumController
     }
 
 
-    ForumUser getUserFromRequest(HttpServletRequest request)
+    ForumUser getUserFromRequest(HttpServletRequest request) throws UserBannedException
     {
         ForumSession session = getForumSession(request);
         if (session == null) { return null; }
 
         ForumUser user = session.getUser();
-        if (user != null) { user = userRepository.findByUsernameIgnoreCase(user.getUsername()); }
+
+        if (user != null)
+        {
+            if (user.isBanned())
+            {
+                throw new UserBannedException(user.getBanReason(), user.getBannedUntil(), session.getId());
+            }
+
+            user = userRepository.findByUsernameIgnoreCase(user.getUsername());
+        }
+
         return user;
     }
 
@@ -261,5 +275,35 @@ abstract class ForumController
         errorMAV.setStatus(status);
         errorMAV.addObject("errorCode", errorCode);
         return errorMAV;
+    }
+
+
+    ModelAndView bannedPage(UserBannedException e)
+    {
+        ForumSession session = sessionRepository.findById(e.getSessionID()).orElse(null);
+
+        if (session != null)
+        {
+            session.setRefreshDuration(Duration.ofMillis(250));
+            session.refreshExpireTime();
+        }
+
+        ModelAndView bannedMAV = new ModelAndView("banned.html");
+        bannedMAV.setStatus(HttpStatus.UNAUTHORIZED);
+        bannedMAV.addObject("banReason", e.getBanReason());
+        bannedMAV.addObject("bannedUntil", e.getBannedUntil());
+        return bannedMAV;
+    }
+
+
+    ModelAndView floodingPage(FloodCategory category)
+    {
+        ModelAndView mav = new ModelAndView("flooding.html");
+        Duration floodWindow = floodProtectionService.getFloodWindow(category);
+
+        mav.setStatus(HttpStatus.TOO_MANY_REQUESTS);
+        mav.addObject("floodType", category.niceName);
+        mav.addObject("floodWindow", DurationFormat.format(floodWindow));
+        return mav;
     }
 }
