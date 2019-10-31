@@ -23,6 +23,7 @@
                     <a th:href="${'/thread/' + thread.index}" class="threadLink" th:text="${thread.topic}"></a>
                     <span class="threadAuthor" th:if="${thread.author.username == null}">Posted by Anonymous</span>
                     <span class="threadAuthor" th:if="${thread.author.username != null}">Posted by [[${thread.author.username}]]</span>
+                    <span class="threadBanned" th:if="${thread.author.isBanned}">(BANNED)</span>
                     <span class="threadPostTime" th:if="${thread.getCreationTime() != null}">on [[${#temporals.format(thread.getCreationTime(), "yyyy-MM-dd HH:mm:ss")}]]</span>
                     <span class="threadPostTime" th:if="${thread.getCreationTime() == null}">from the land before time</span>
                     <span class="threadPostCount">([[${thread.getPostCount()}]] posts)</span>
@@ -46,7 +47,7 @@
             <header>
                 <span class="author" th:if="${post.author.username != null}">Posted by [[${post.author.username}]]</span>
                 <span class="author" th:if="${post.author.username == null}">Posted anonymously</span>
-                <span th:if="${post.author.isBanned}">(BANNED)</span>
+                <span class="banned" th:if="${post.author.isBanned}">(BANNED)</span>
                 <span>on <time>[[${#temporals.format(post.postTime, "yyyy-MM-dd HH:mm:ss")}]]</time></span>
             </header>
 
