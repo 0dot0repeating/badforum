@@ -375,7 +375,7 @@ public class UserSettingsController extends ForumController
         if (!passwordConfirmed && paramData.containsKey("currentPassword"))
         {
             String pw = paramData.get("currentPassword")[0];
-            passwordConfirmed = passwordService.checkAndUpgradePassword(pw, settingsUser.getPasshash());
+            passwordConfirmed = passwordService.checkAndUpgradePassword(pw, settingsUser.getPasshash()) != null;
         }
 
         for (UserSettingInterface i: settingInterfaces)

@@ -181,7 +181,7 @@ public class LoginAndRegisterController extends ForumController
         }
 
         String currentHash  = user.getPasshash();
-        String upgradedHash = passwordService.checkAndUpgradePassword(password, user.getPasshash());
+        String upgradedHash = passwordService.checkAndUpgradePassword(password, currentHash);
 
         if (upgradedHash == null)
         {

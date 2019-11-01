@@ -46,7 +46,7 @@ public abstract class PasswordHasher
 
     final String hashAndPrefix(String password)
     {
-        return String.format("{%s}%s", getPrefix(), hash(password));
+        return "{" + getPrefix() +"}" + hash(password);
     }
 
 
@@ -61,7 +61,7 @@ public abstract class PasswordHasher
         if (!prefix.equals(getPrefix())) { return null; }
 
         String newHash = checkHash(password, hash);
-        if (newHash != null) { return hashAndPrefix(newHash); }
+        if (newHash != null) { return "{" + getPrefix() + "}" + newHash; }
 
         return null;
     }

@@ -39,15 +39,10 @@ public class BCryptHasher extends PasswordHasher
 
         if (matches) // we know it's a valid hash since it matched
         {
-            // [0] = ID, [1] = work factor, [2] = salt/hash
+            // [0] = zero length, [1] = ID, [2] = work factor, [3] = salt/hash
             String[] parts = hash.split("\\$");
-            int workFactor = Integer.valueOf(parts[1]);
-
-            if (workFactor < WORK_FACTOR)
-            {
-                return hash(password);
-            }
-
+            int workFactor = Integer.valueOf(parts[2]);
+            if (workFactor < WORK_FACTOR) { return hash(password); }
             return hash;
         }
 
