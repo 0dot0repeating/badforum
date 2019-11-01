@@ -210,8 +210,13 @@ public class ForumUser
 
     public Boolean outranks(ForumUser other)
     {
-        // this way, you can manage your own stuff
-        if (this.id.equals(other.id)) { return true; }
         return getMaxPriority() > other.getMaxPriority();
+    }
+
+
+    public Boolean outranksOrIs(ForumUser other)
+    {
+        if (this.id.equals(other.id)) { return true; }
+        return outranks(other);
     }
 }

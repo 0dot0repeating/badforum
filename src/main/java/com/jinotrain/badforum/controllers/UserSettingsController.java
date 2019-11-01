@@ -140,7 +140,7 @@ public class UserSettingsController extends ForumController
             return errorPage("usersettings_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
-        if (!viewUser.outranks(settingsUser))
+        if (!viewUser.outranksOrIs(settingsUser))
         {
             return errorPage("usersettings_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
         }
@@ -471,7 +471,7 @@ public class UserSettingsController extends ForumController
             return errorPage("userroles_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
-        if (!accessUser.outranks(modifyUser))
+        if (!accessUser.outranksOrIs(modifyUser))
         {
             return errorPage("userroles_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
         }
