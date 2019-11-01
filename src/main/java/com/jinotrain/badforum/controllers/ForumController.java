@@ -168,30 +168,27 @@ abstract class ForumController
 
         List<ThreadViewData> threadData = new ArrayList<>();
 
+        boolean hasModeratePrivilege = ForumUser.userHasPermission(viewer, UserPermission.MANAGE_BOARDS);
+
         for (ForumThread t: threads)
         {
             List<ForumPost> posts = new ArrayList<>(t.getPosts());
             int postCount = posts.size();
 
-            UserViewData userdata;
             Instant creationTime = t.getCreationTime();
             Instant lastUpdate   = t.getLastUpdate();
             ForumUser author     = t.getAuthor();
 
-            if (author != null)
-            {
-                userdata = new UserViewData(author.getUsername(), author.isBanned());
-            }
-            else
-            {
-                userdata = new UserViewData(null, false);
-            }
+            UserViewData userdata = author == null ? new UserViewData()
+                                                   : new UserViewData(author.getUsername(), author.isBanned());
 
             ThreadViewData td = new ThreadViewData(t.getIndex(), t.getTopic(), userdata, postCount, creationTime, lastUpdate);
+            td.canModerate = hasModeratePrivilege && ForumUser.userOutranksOrIs(viewer, author);
             threadData.add(td);
         }
 
         BoardViewData ret = new BoardViewData(board.getIndex(), board.getName(), totalThreads, totalPosts, board.isRootBoard());
+        ret.canManage = ForumUser.userHasPermission(viewer, UserPermission.MANAGE_BOARDS);
         ret.childBoards = childBoardData;
         ret.threads = threadData;
 
@@ -213,12 +210,15 @@ abstract class ForumController
 
         String viewerUsername = viewer == null ? null : viewer.getUsername();
 
+        boolean hasModeratePrivilege = ForumUser.userHasBoardPermission(viewer, board, BoardPermission.MODERATE);
+        boolean hasBanPrivilege      = ForumUser.userHasPermission(viewer, UserPermission.BAN_USERS);
+
         for (ForumPost p: posts)
         {
             ForumUser user = p.getAuthor();
             String postText = formatPostText(p.getPostText());
 
-            UserViewData userdata = user == null ? new UserViewData(null, false)
+            UserViewData userdata = user == null ? new UserViewData()
                                                  : new UserViewData(user.getUsername(), user.isBanned());
 
             PostViewData pdata = new PostViewData(p.getIndex(), postText, userdata, p.getPostTime(), p.getlastEditTime(),
@@ -229,16 +229,23 @@ abstract class ForumController
                 pdata.viewerIsAuthor = true;
             }
 
+            boolean outranks = ForumUser.userOutranksOrIs(viewer,user );
+            pdata.canModerate = hasModeratePrivilege && outranks;
+            pdata.canBan      = hasBanPrivilege      && outranks;
+
             postData.add(pdata);
         }
 
         BoardViewData boardData = board == null ? new BoardViewData(-1, null) : new BoardViewData(board.getIndex(), board.getName());
 
         ForumUser author = thread.getAuthor();
-        UserViewData authorData = author == null ? new UserViewData(null, false)
+        UserViewData authorData = author == null ? new UserViewData()
                                                  : new UserViewData(author.getUsername(), author.isBanned());
 
-        return new ThreadViewData(thread.getIndex(), thread.getTopic(), authorData, boardData, postData);
+        ThreadViewData ret = new ThreadViewData(thread.getIndex(), thread.getTopic(), authorData, boardData, postData);
+
+        ret.canModerate = hasModeratePrivilege && ForumUser.userOutranksOrIs(viewer, author);
+        return ret;
     }
 
 

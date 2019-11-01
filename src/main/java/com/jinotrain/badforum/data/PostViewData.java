@@ -13,6 +13,9 @@ public class PostViewData
     public boolean viewerIsAuthor;
     public boolean userBanned;
     public String  banReason;
+    public boolean canModerate;
+    public boolean canBan;
+
 
     public PostViewData(long index, String text, UserViewData author, Instant postTime, Instant lastEditTime, boolean deleted, boolean banned, String banReason)
     {

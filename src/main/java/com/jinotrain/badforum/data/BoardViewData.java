@@ -9,6 +9,7 @@ public class BoardViewData
     public long threadCount;
     public long postCount;
     public boolean isRootBoard;
+    public boolean canManage;
 
     public List<BoardViewData>  childBoards = null;
     public List<ThreadViewData> threads     = null;

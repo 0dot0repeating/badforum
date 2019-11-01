@@ -4,7 +4,7 @@
     <title>w h o m s t</title>
 </head>
 <body>
-    <section class="board" th:fragment="viewBoard(boardViewData, canModerate)">
+    <section class="board" th:fragment="viewBoard(boardViewData)">
         <th:block th:if="${boardViewData.childBoards.size() > 0}">
             <h2>Boards</h2>
             <ul class="childBoards">
@@ -28,7 +28,7 @@
                     <span class="threadPostTime" th:if="${thread.getCreationTime() == null}">from the land before time</span>
                     <span class="threadPostCount">([[${thread.getPostCount()}]] posts)</span>
 
-                    <form action="/thread/delete" method="post" th:if="${canModerate}">
+                    <form action="/thread/delete" method="post" th:if="${thread.canModerate}">
                         <input type="hidden" name="threadIndex" th:value="${thread.index}">
                         <input type="submit" value="Delete thread">
                     </form>
@@ -42,7 +42,7 @@
     </section>
 
 
-    <article class="thread" th:fragment="viewThread(threadViewData, canModerate, canBanUsers)">
+    <article class="thread" th:fragment="viewThread(threadViewData)">
         <section class="post" th:each="post: ${threadViewData.posts}">
             <header>
                 <span class="author" th:if="${post.author.username != null}">Posted by [[${post.author.username}]]</span>
@@ -57,12 +57,12 @@
                 (USER WAS BANNED FOR THIS POST. Reason: [[${post.banReason == null ? "None specified." : '"' + post.banReason + '"'}]])
             </div>
 
-            <form action="/post/delete" method="post" th:if="${(canModerate || post.viewerIsAuthor) && !post.deleted}">
+            <form action="/post/delete" method="post" th:if="${(post.canModerate || post.viewerIsAuthor) && !post.deleted}">
                 <input type="hidden" name="postIndex" th:value="${post.index}">
                 <input type="submit" value="Delete post">
             </form>
 
-            <form th:action="${'/post/' + post.index + '/ban'}" method="get" th:if="${canModerate && canBanUsers && !post.deleted && !post.userBanned && !post.author.isBanned && post.author.username != null}">
+            <form th:action="${'/post/' + post.index + '/ban'}" method="get" th:if="${post.canBan && !post.deleted && !post.userBanned && !post.author.isBanned && post.author.username != null}">
                 <input type="submit" value="Ban poster">
             </form>
         </section>

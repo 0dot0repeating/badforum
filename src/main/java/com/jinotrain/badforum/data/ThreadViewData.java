@@ -11,6 +11,7 @@ public class ThreadViewData
     public String topic;
     public UserViewData author;
     public BoardViewData board;
+    public boolean canModerate;
 
     private int    postCount;
     private List<PostViewData> posts = null;

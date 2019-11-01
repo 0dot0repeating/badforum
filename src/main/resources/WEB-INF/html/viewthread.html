@@ -12,7 +12,7 @@
     <h1>Viewing thread "[[${threadViewData.topic}]]"</h1>
     <p>from board "<a th:href="${'/board/' + threadViewData.board.index}">[[${threadViewData.board.name}]]</a>"</p>
 
-    <div th:replace="inc/viewStuff :: viewThread(${threadViewData}, ${canModerate}, ${canBanUsers})"></div>
+    <div th:replace="inc/viewStuff :: viewThread(${threadViewData})"></div>
 
     <form th:replace="inc/postStuff :: reply(${threadViewData.index}, ${threadViewData.topic}, ${postError}, ${postText}, ${canPost})"></form>
 
