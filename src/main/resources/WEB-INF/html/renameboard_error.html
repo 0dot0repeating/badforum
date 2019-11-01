@@ -10,9 +10,7 @@
 
     <h1>Roles and permissions - [[#{error.renameboard.__${errorCode}__.title}]]</h1>
 
-    <p class="error">
-        [[#{error.renameboard.__${errorCode}__}]]
-        <th:block th:if="${errorDetails != null}" th:text="'(' + ${errorDetails} + ')'"></th:block>
-    </p>
+    <p class="error" th:text="#{error.renameboard.__${errorCode}__}"></p>
+    <p class="errorDetails" th:if="${errorDetails != null}" th:text="'(' + ${errorDetails} + ')'"></p>
 </body>
 </html>

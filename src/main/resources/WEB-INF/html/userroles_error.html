@@ -10,8 +10,6 @@
 
     <h1>User roles - [[#{error.userroles.__${errorCode}__.title}]]</h1>
 
-    <p class="error">
-        [[#{error.userroles.__${errorCode}__}]]
-    </p>
+    <p class="error" th:text="#{error.userroles.__${errorCode}__}"></p>
 </body>
 </html>

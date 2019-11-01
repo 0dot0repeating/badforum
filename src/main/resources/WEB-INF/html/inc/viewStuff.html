@@ -62,7 +62,7 @@
                 <input type="submit" value="Delete post">
             </form>
 
-            <form th:action="${'/post/' + post.index + '/ban'}" method="get" th:if="${canManageUsers && !post.deleted && !post.author.isBanned && post.author.username != null}">
+            <form th:action="${'/post/' + post.index + '/ban'}" method="get" th:if="${canManageUsers && !post.deleted && !post.userBanned && !post.author.isBanned && post.author.username != null}">
                 <input type="submit" value="Ban poster">
             </form>
         </section>

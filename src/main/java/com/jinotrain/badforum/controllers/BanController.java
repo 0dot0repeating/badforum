@@ -119,6 +119,11 @@ public class BanController extends ForumController
 
         if (banPost != null)
         {
+            if (banPost.isUserBanned())
+            {
+                return errorPage("banuser_error.html", "DOUBLE_JEOPARDY", HttpStatus.CONFLICT);
+            }
+
             banPost.userWasBannedForThisPost(banReason);
         }
 

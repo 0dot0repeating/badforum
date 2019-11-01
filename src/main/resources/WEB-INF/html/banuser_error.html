@@ -10,9 +10,7 @@
 
     <h1>Ban user - [[#{error.banuser.__${errorCode}__.title}]]</h1>
 
-    <p class="error">
-        [[#{error.banuser.__${errorCode}__}]]
-        <th:block th:if="${errorDetails != null}" th:text="'(' + ${errorDetails} + ')'"></th:block>
-    </p>
+    <p class="error" th:text="#{error.banuser.__${errorCode}__}"></p>
+    <p class="errorDetails" th:if="${errorDetails != null}" th:text="'(' + ${errorDetails} + ')'"></p>
 </body>
 </html>
