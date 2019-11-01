@@ -140,7 +140,7 @@ public class UserSettingsController extends ForumController
             return errorPage("usersettings_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
-        if (!viewUser.outranksOrIs(settingsUser))
+        if (!ForumUser.userOutranksOrIs(viewUser, settingsUser))
         {
             return errorPage("usersettings_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
         }
@@ -297,8 +297,8 @@ public class UserSettingsController extends ForumController
         ModelAndView errorMAV = checkPermission(viewUser, viewUser);
         if (errorMAV != null) { return errorMAV; }
 
-        boolean canManageUsers = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
-        boolean canBanUsers    = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
+        boolean canManageUsers = ForumUser.userHasPermission(viewUser, UserPermission.MANAGE_USERS);
+        boolean canBanUsers    = ForumUser.userHasPermission(viewUser, UserPermission.MANAGE_USERS);
         List<UserSettingViewData> viewData = buildSettingData(viewUser);
         List<UserRoleStateData> userRoles  = canManageUsers ? getUserRoles(viewUser) : null;
 
@@ -323,8 +323,8 @@ public class UserSettingsController extends ForumController
         ModelAndView errorMAV = checkPermission(viewUser, settingsUser);
         if (errorMAV != null) { return errorMAV; }
 
-        boolean canManageUsers = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
-        boolean canBanUsers    = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
+        boolean canManageUsers = ForumUser.userHasPermission(viewUser, UserPermission.MANAGE_USERS);
+        boolean canBanUsers    = ForumUser.userHasPermission(viewUser, UserPermission.MANAGE_USERS);
         boolean needsConfirm   = viewUser.getUsername().equalsIgnoreCase(settingsUsername);
 
         List<UserSettingViewData> viewData = buildSettingData(settingsUser);
@@ -419,8 +419,8 @@ public class UserSettingsController extends ForumController
 
         if (thingsChanged) { userRepository.saveAndFlush(settingsUser); }
 
-        boolean canManageUsers = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
-        boolean canBanUsers    = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
+        boolean canManageUsers = ForumUser.userHasPermission(viewUser, UserPermission.MANAGE_USERS);
+        boolean canBanUsers    = ForumUser.userHasPermission(viewUser, UserPermission.MANAGE_USERS);
         List<UserRoleStateData> userRoles = canManageUsers ? getUserRoles(settingsUser) : null;
 
         ModelAndView mav = displaySettings(viewData, settingsUser.getUsername(), userRoles, needsConfirm);
@@ -452,7 +452,7 @@ public class UserSettingsController extends ForumController
         try { accessUser = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(accessUser, UserPermission.MANAGE_USERS))
+        if (!ForumUser.userHasPermission(accessUser, UserPermission.MANAGE_USERS))
         {
             return errorPage("userroles_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -471,7 +471,7 @@ public class UserSettingsController extends ForumController
             return errorPage("userroles_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
-        if (!accessUser.outranksOrIs(modifyUser))
+        if (!ForumUser.userOutranksOrIs(accessUser, modifyUser))
         {
             return errorPage("userroles_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
         }

@@ -100,7 +100,7 @@ abstract class ForumController
 
     BoardViewData getBoardViewData(ForumBoard board, ForumUser viewer, EntityManager em)
     {
-        if (!userHasBoardPermission(viewer, board, BoardPermission.VIEW))
+        if (!ForumUser.userHasBoardPermission(viewer, board, BoardPermission.VIEW))
         {
             throw new SecurityException("Viewer is not allowed to view board");
         }
@@ -123,7 +123,7 @@ abstract class ForumController
 
         for (ForumBoard cb: childBoards)
         {
-            if (!userHasBoardPermission(viewer, cb, BoardPermission.VIEW)) { continue; }
+            if (!ForumUser.userHasBoardPermission(viewer, cb, BoardPermission.VIEW)) { continue; }
 
             long childBoardID = cb.getId();
             Collection<Long> childBoardIDs = new HashSet<>();
@@ -137,7 +137,7 @@ abstract class ForumController
 
                 for (ForumBoard b: curChildBoards)
                 {
-                    if (userHasBoardPermission(viewer, b, BoardPermission.VIEW))
+                    if (ForumUser.userHasBoardPermission(viewer, b, BoardPermission.VIEW))
                     {
                         childBoardIDs.add(b.getId());
                         newBoards.addAll(b.getChildBoards());
@@ -203,7 +203,7 @@ abstract class ForumController
     {
         ForumBoard board = thread.getBoard();
 
-        if (!userHasBoardPermission(viewer, board, BoardPermission.VIEW))
+        if (!ForumUser.userHasBoardPermission(viewer, board, BoardPermission.VIEW))
         {
             throw new SecurityException("Viewer is not allowed to view thread's board");
         }
@@ -246,20 +246,6 @@ abstract class ForumController
     {
         Node parsedPostText = markdownParser.parse(postText);
         return mdToHTML.render(parsedPostText);
-    }
-
-
-    boolean userHasPermission(ForumUser user, UserPermission permission)
-    {
-        if (user == null) { return false; }
-        return user.hasPermission(permission);
-    }
-
-
-    boolean userHasBoardPermission(ForumUser user, ForumBoard board, BoardPermission permission)
-    {
-        if (user == null) { return board.getGlobalPermission(permission); }
-        return user.hasBoardPermission(board, permission);
     }
 
 

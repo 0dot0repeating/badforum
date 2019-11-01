@@ -42,9 +42,9 @@ public class BoardThreadPostController extends ForumController
 
         ModelAndView ret = new ModelAndView("viewboard.html");
         ret.addObject("boardViewData", viewData);
-        ret.addObject("canManageBoard", userHasPermission(viewer, UserPermission.MANAGE_BOARDS));
-        ret.addObject("canPost", userHasBoardPermission(viewer, board, BoardPermission.POST));
-        ret.addObject("canModerate", userHasBoardPermission(viewer, board, BoardPermission.MODERATE));
+        ret.addObject("canManageBoard", ForumUser.userHasPermission(viewer, UserPermission.MANAGE_BOARDS));
+        ret.addObject("canPost", ForumUser.userHasBoardPermission(viewer, board, BoardPermission.POST));
+        ret.addObject("canModerate", ForumUser.userHasBoardPermission(viewer, board, BoardPermission.MODERATE));
         return ret;
     }
 
@@ -64,17 +64,17 @@ public class BoardThreadPostController extends ForumController
 
         ForumBoard board = thread.getBoard();
 
-        boolean canPost = board == null ? userHasPermission(viewer, UserPermission.MANAGE_BOARDS)
-                                        : userHasBoardPermission(viewer, board, BoardPermission.POST);
+        boolean canPost = board == null ? ForumUser.userHasPermission(viewer, UserPermission.MANAGE_BOARDS)
+                                        : ForumUser.userHasBoardPermission(viewer, board, BoardPermission.POST);
 
-        boolean canModerate = board == null ? userHasPermission(viewer, UserPermission.MANAGE_BOARDS)
-                                            : userHasBoardPermission(viewer, board, BoardPermission.MODERATE);
+        boolean canModerate = board == null ? ForumUser.userHasPermission(viewer, UserPermission.MANAGE_BOARDS)
+                                            : ForumUser.userHasBoardPermission(viewer, board, BoardPermission.MODERATE);
 
         ModelAndView ret = new ModelAndView("viewthread.html");
         ret.addObject("threadViewData", viewData);
         ret.addObject("canPost", canPost);
         ret.addObject("canModerate", canModerate);
-        ret.addObject("canBanUsers", userHasPermission(viewer, UserPermission.BAN_USERS));
+        ret.addObject("canBanUsers", ForumUser.userHasPermission(viewer, UserPermission.BAN_USERS));
         return ret;
     }
 
@@ -209,7 +209,7 @@ public class BoardThreadPostController extends ForumController
         try { poster = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
+        if (!ForumUser.userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
         {
             ModelAndView mav = errorPage("post_error.html", "NOT_ALLOWED_TO_VIEW", HttpStatus.UNAUTHORIZED);
             mav.addObject("postTopic", postTopic);
@@ -217,7 +217,7 @@ public class BoardThreadPostController extends ForumController
             return mav;
         }
 
-        if (!userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
+        if (!ForumUser.userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
         {
             ModelAndView mav = getBoard(targetBoard, poster);
             mav.setStatus(HttpStatus.UNAUTHORIZED);
@@ -294,14 +294,14 @@ public class BoardThreadPostController extends ForumController
 
         ForumBoard targetBoard = targetThread.getBoard();
 
-        if (!userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
+        if (!ForumUser.userHasBoardPermission(poster, targetBoard, BoardPermission.VIEW))
         {
             ModelAndView mav = errorPage("post_error.html", "NOT_ALLOWED_TO_VIEW", HttpStatus.UNAUTHORIZED);
             mav.addObject("postText",  postText);
             return mav;
         }
 
-        if (!userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
+        if (!ForumUser.userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
         {
             ModelAndView mav = getThread(targetThread, poster);
             mav.setStatus(HttpStatus.UNAUTHORIZED);
@@ -343,7 +343,7 @@ public class BoardThreadPostController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
+        if (!ForumUser.userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
             return errorPage("newboard_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -400,7 +400,7 @@ public class BoardThreadPostController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
+        if (!ForumUser.userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
             return errorPage("deleteboard_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -487,18 +487,19 @@ public class BoardThreadPostController extends ForumController
         }
 
         String threadTopic = thread.getTopic();
+        ForumBoard board   = thread.getBoard();
 
-
-        ForumBoard board = thread.getBoard();
         ForumUser user;
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (board == null ? !userHasPermission(user, UserPermission.MANAGE_DETACHED)
-                          : !userHasBoardPermission(user, board, BoardPermission.MODERATE))
+        if (board == null ? !ForumUser.userHasPermission(user, UserPermission.MANAGE_DETACHED)
+                          : !ForumUser.userHasBoardPermission(user, board, BoardPermission.MODERATE))
         {
             return errorPage("deletethread_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
+
+        ForumUser author = thread.getAuthor();
 
         String keepPostsRaw = request.getParameter("keepPosts");
         boolean deletePosts = !("true".equalsIgnoreCase(keepPostsRaw) || "1".equals(keepPostsRaw));
@@ -576,13 +577,13 @@ public class BoardThreadPostController extends ForumController
         {
             if (thread == null)
             {
-                allowed = userHasPermission(user, UserPermission.MANAGE_DETACHED);
+                allowed = ForumUser.userHasPermission(user, UserPermission.MANAGE_DETACHED);
             }
             else
             {
                 ForumBoard board = thread.getBoard();
-                allowed = board == null ? userHasPermission(user, UserPermission.MANAGE_DETACHED)
-                                        : userHasBoardPermission(user, board, BoardPermission.MODERATE);
+                allowed = board == null ? ForumUser.userHasPermission(user, UserPermission.MANAGE_DETACHED)
+                                        : ForumUser.userHasBoardPermission(user, board, BoardPermission.MODERATE);
             }
         }
 
@@ -618,7 +619,7 @@ public class BoardThreadPostController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
+        if (!ForumUser.userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
             return errorPage("renameboard_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -711,8 +712,8 @@ public class BoardThreadPostController extends ForumController
 
         ForumBoard board = thread.getBoard();
 
-        if (board == null ? !userHasPermission(user, UserPermission.MANAGE_DETACHED)
-                          : !userHasBoardPermission(user, board, BoardPermission.MODERATE))
+        if (board == null ? !ForumUser.userHasPermission(user, UserPermission.MANAGE_DETACHED)
+                          : !ForumUser.userHasBoardPermission(user, board, BoardPermission.MODERATE))
         {
             return errorPage("renamethread_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }

@@ -267,7 +267,7 @@ public class UserPermissionsController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.MANAGE_ROLES))
+        if (!ForumUser.userHasPermission(user, UserPermission.MANAGE_ROLES))
         {
             return errorPage("roles_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -402,7 +402,7 @@ public class UserPermissionsController extends ForumController
         try { accessUser = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(accessUser, UserPermission.MANAGE_ROLES))
+        if (!ForumUser.userHasPermission(accessUser, UserPermission.MANAGE_ROLES))
         {
             return errorPage("roles_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -460,7 +460,7 @@ public class UserPermissionsController extends ForumController
         catch (UserBannedException e) { return bannedPage(e); }
 
 
-        if (!userHasPermission(user, UserPermission.MANAGE_ROLES))
+        if (!ForumUser.userHasPermission(user, UserPermission.MANAGE_ROLES))
         {
             return errorPage("newrole_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }

@@ -56,7 +56,7 @@ public class BanController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.BAN_USERS))
+        if (!ForumUser.userHasPermission(user, UserPermission.BAN_USERS))
         {
             return errorPage("banuser_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -102,7 +102,7 @@ public class BanController extends ForumController
             return errorPage("banuser_error.html", "USER_NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
-        if (!user.outranksOrIs(banUser))
+        if (!ForumUser.userOutranksOrIs(user, banUser))
         {
             return errorPage("banuser_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
         }
@@ -167,7 +167,7 @@ public class BanController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.BAN_USERS))
+        if (!ForumUser.userHasPermission(user, UserPermission.BAN_USERS))
         {
             return errorPage("unbanuser_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -207,7 +207,7 @@ public class BanController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.BAN_USERS))
+        if (!ForumUser.userHasPermission(user, UserPermission.BAN_USERS))
         {
             return errorPage("banuser_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -240,7 +240,7 @@ public class BanController extends ForumController
             return errorPage("banuser_error.html", "NO_AUTHOR", HttpStatus.NOT_FOUND);
         }
 
-        if (!user.outranksOrIs(banUser))
+        if (!ForumUser.userOutranksOrIs(user, banUser))
         {
             return errorPage("banuser_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
         }

@@ -133,7 +133,7 @@ public class BoardPermissionsController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
+        if (!ForumUser.userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
             return errorPage("boardpermissions_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -229,7 +229,7 @@ public class BoardPermissionsController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.MANAGE_BOARDS))
+        if (!ForumUser.userHasPermission(user, UserPermission.MANAGE_BOARDS))
         {
             return errorPage("boardpermissions_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }

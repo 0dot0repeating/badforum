@@ -208,15 +208,34 @@ public class ForumUser
     }
 
 
-    public Boolean outranks(ForumUser other)
+    public static boolean userHasBoardPermission(ForumUser user, ForumBoard board, BoardPermission permission)
     {
-        return getMaxPriority() > other.getMaxPriority();
+        if (user == null) { return board.getGlobalPermission(permission); }
+        return user.hasBoardPermission(board, permission);
     }
 
 
-    public Boolean outranksOrIs(ForumUser other)
+    public static boolean userHasPermission(ForumUser user, UserPermission permission)
     {
-        if (this.id.equals(other.id)) { return true; }
-        return outranks(other);
+        if (user == null) { return false; }
+        return user.hasPermission(permission);
+    }
+
+
+    public static boolean userOutranks(ForumUser user, ForumUser other)
+    {
+        if (other == null) { return true; }
+        if (user  == null) { return false; }
+        return user.getMaxPriority() > other.getMaxPriority();
+    }
+
+
+    public static boolean userOutranksOrIs(ForumUser user, ForumUser other)
+    {
+        if (other == null) { return true; }
+        if (user  == null) { return false; }
+
+        if (user.id.equals(other.id)) { return true; }
+        return user.getMaxPriority() > other.getMaxPriority();
     }
 }
