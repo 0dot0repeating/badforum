@@ -13,7 +13,7 @@ public class ForumSession
 {
     @Id
     @GeneratedValue(generator="randomID")
-    @GenericGenerator(name="randomID", strategy="com.jinotrain.badforum.db.RandomIDGenerator")
+    @GenericGenerator(name="randomID", strategy="com.jinotrain.badforum.util.RandomIDGenerator")
     private String id;
 
     @ManyToOne

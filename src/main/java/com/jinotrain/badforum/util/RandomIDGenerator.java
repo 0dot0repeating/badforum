@@ -1,6 +1,5 @@
-package com.jinotrain.badforum.db;
+package com.jinotrain.badforum.util;
 
-import com.jinotrain.badforum.util.XToY;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.Configurable;
@@ -21,11 +20,7 @@ public class RandomIDGenerator implements IdentifierGenerator, Configurable
     @Override
     public Serializable generate(SharedSessionContractImplementor session, Object object) throws HibernateException
     {
-        Random rnd = new SecureRandom();
-        byte[] randBytes = new byte[idBytes];
-
-        rnd.nextBytes(randBytes);
-        return XToY.bytesToHex(randBytes);
+        return newID(idBytes);
     }
 
 
@@ -33,5 +28,15 @@ public class RandomIDGenerator implements IdentifierGenerator, Configurable
     public void configure(Type type, Properties params, ServiceRegistry serviceRegistry)
     {
         idBytes = ConfigurationHelper.getInt("bytes", params, idBytes);
+    }
+
+
+    public static String newID(int length)
+    {
+        Random rnd = new SecureRandom();
+        byte[] randBytes = new byte[length];
+
+        rnd.nextBytes(randBytes);
+        return XToY.bytesToHex(randBytes);
     }
 }

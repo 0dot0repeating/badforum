@@ -6,7 +6,11 @@ import com.jinotrain.badforum.db.PermissionState;
 import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumUser;
+import com.jinotrain.badforum.util.RandomIDGenerator;
 import com.jinotrain.badforum.util.UserBannedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -21,6 +25,7 @@ import java.util.*;
 @Controller
 public class UserPermissionsController extends ForumController
 {
+    private static Logger logger = LoggerFactory.getLogger(UserPermissionsController.class);
     private static Map<String, UserPermission> PERMISSIONS_BY_NAME;
 
     static
@@ -55,8 +60,61 @@ public class UserPermissionsController extends ForumController
     }
 
 
-    private void updatePermissions(Map<String, UserRoleData> permissionData, Map<String, String> toRename, Set<String> toDelete)
+    // returns list of lowercase names that are currently used by one role,
+    //  but will be used by a different one after renaming
+    //
+    // any names in this list will move from one role to another if a
+    //  DataIntegrityViolationException hasn't been thrown
+
+    private Set<String> checkForNameConflicts(Map<String, String> toRename) throws DataIntegrityViolationException
     {
+        Set<String> namesToCheck    = new HashSet<>();
+        Set<String> reassignedNames = new HashSet<>();
+
+        for (Map.Entry<String, String> entry: toRename.entrySet())
+        {
+            namesToCheck.add(entry.getKey().toLowerCase()); // from-name
+
+            String toName = entry.getValue().toLowerCase();
+            namesToCheck.add(toName);
+            reassignedNames.add(toName);
+        }
+
+        Map<String, Integer> conflictCount = new HashMap<>();
+        List<String> conflicts = new ArrayList<>();
+
+        Set<String> usedNames = new HashSet<>(em.createQuery("SELECT role.name FROM ForumRole role WHERE LOWER(role.name) IN :roleNames", String.class)
+                                                .setParameter("roleNames", namesToCheck).getResultList());
+
+        for (String name: usedNames)
+        {
+            String endName = toRename.getOrDefault(name, name);
+            int count = conflictCount.getOrDefault(endName, 0);
+            if (count == 1) { conflicts.add(endName); }
+
+            conflictCount.put(endName, count+1);
+        }
+
+        if (!conflicts.isEmpty())
+        {
+            List<String> conflictStrs = new ArrayList<>();
+
+            for (String name: conflicts)
+            {
+                conflictStrs.add("\"" + name + "\" (" + conflictCount.get(name) + " uses)");
+            }
+
+            throw new DataIntegrityViolationException("Attempted to rename roles to same names: " + String.join(", ", conflictStrs));
+        }
+
+        reassignedNames.retainAll(usedNames);
+        return reassignedNames;
+    }
+
+
+    private void updatePermissions(Map<String, UserRoleData> permissionData, Map<String, String> toRename, Set<String> toDelete) throws DataIntegrityViolationException
+    {
+        Set<String> shiftedNames = checkForNameConflicts(toRename);
         Set<String> roleNames = new HashSet<>();
 
         for (String name: permissionData.keySet())
@@ -69,32 +127,40 @@ public class UserPermissionsController extends ForumController
             roleNames.add(name.toLowerCase());
         }
 
-        roleNames.addAll(toDelete);
+        for (String name: toDelete)
+        {
+            roleNames.add(name.toLowerCase());
+        }
 
-        List<ForumRole> roles = em.createQuery("SELECT role FROM ForumRole role WHERE lower(role.name) IN :roleNames", ForumRole.class)
-                                  .setParameter("roleNames", roleNames)
-                                  .getResultList();
+        // deleting a given role is handled first, then its permissions are updated
+        // once all that's done, then roles are renamed, with the default and admin roles exempted from this
+        List<ForumRole> roles = roleRepository.findAllByNameIgnoreCaseIn(roleNames);
+        Map<String, ForumRole> roleMap = new HashMap<>();
 
         for (ForumRole role: roles)
         {
             if (role.isAdmin()) { continue; }
 
-            String roleName = role.getName().toLowerCase();
+            String  roleName    = role.getName().toLowerCase();
+            roleMap.put(roleName, role);
 
-            if (!role.isDefaultRole())
+            boolean admin       = role.isAdmin();
+            boolean defaultRole = role.isDefaultRole();
+
+            if (admin || defaultRole)
             {
-                if (toDelete.contains(roleName))
-                {
-                    em.createQuery("DELETE FROM UserToRoleLink l WHERE l.role.id = :roleID")
-                      .setParameter("roleID", role.getId())
-                      .executeUpdate();
+                toRename.remove(roleName);
+                if (admin) { continue; }
+            }
 
-                    roleRepository.delete(role);
-                    continue;
-                }
+            if (!defaultRole && toDelete.contains(roleName))
+            {
+                em.createQuery("DELETE FROM UserToRoleLink l WHERE l.role.id = :roleID")
+                  .setParameter("roleID", role.getId())
+                  .executeUpdate();
 
-                String newName = toRename.get(roleName);
-                if (newName != null) { role.setName(newName); }
+                roleRepository.delete(role);
+                continue;
             }
 
             UserRoleData data = permissionData.get(roleName);
@@ -109,6 +175,58 @@ public class UserPermissionsController extends ForumController
                 role.setPriority(data.priority);
             }
         }
+
+        // TODO: figure out how to do this in one query
+        // the two passes are necessary because the DB enforces unique constraints mid-commit
+
+        Map<String, String>    tempToNewName = new HashMap<>();
+        Map<String, ForumRole> tempToRole    = new HashMap<>();
+        Set<ForumRole> changed = new HashSet<>();
+
+        for (Map.Entry<String, String> entry: toRename.entrySet())
+        {
+            String fromName      = entry.getKey();
+            String fromNameLower = fromName.toLowerCase();
+            String toName        = entry.getValue();
+
+            ForumRole role = roleMap.get(fromNameLower);
+            if (role == null) { continue; }
+
+            if (shiftedNames.contains(fromNameLower))
+            {
+                String tempID;
+                do { tempID = RandomIDGenerator.newID(32); }
+                while (roleRepository.existsByNameIgnoreCase(tempID));
+
+                role.setName(tempID);
+                tempToNewName.put(tempID, toName);
+                tempToRole.put(tempID, role);
+            }
+            else
+            {
+                role.setName(toName);
+            }
+
+            changed.add(role);
+        }
+
+        // without this, the DB still goes straight from from-name to to-name and complains about conflicts
+        roleRepository.saveAll(changed);
+        roleRepository.flush();
+        changed.clear();
+
+        for (Map.Entry<String, String> entry: tempToNewName.entrySet())
+        {
+            String tempID = entry.getKey();
+            String toName = entry.getValue();
+
+            ForumRole role = tempToRole.get(tempID);
+            role.setName(toName);
+            changed.add(role);
+        }
+
+        roleRepository.saveAll(changed);
+        roleRepository.flush();
     }
 
 
@@ -181,7 +299,7 @@ public class UserPermissionsController extends ForumController
                 continue;
             }
 
-            if ("(name)".equals(permName) && !paramVal.isEmpty())
+            if ("(name)".equals(permName) && !paramVal.isEmpty() && !roleName.equals(paramVal))
             {
                 renameData.put(roleName, paramVal);
                 continue;
@@ -273,7 +391,17 @@ public class UserPermissionsController extends ForumController
             return error;
         }
 
-        updatePermissions(permissionData.permissions, permissionData.toRename, permissionData.toDelete);
+        try
+        {
+            updatePermissions(permissionData.permissions, permissionData.toRename, permissionData.toDelete);
+        }
+        catch (DataIntegrityViolationException e)
+        {
+            ModelAndView error = errorPage("roles_error.html", "NAME_CONFLICTS", HttpStatus.CONFLICT);
+            error.addObject("errorDetails", e.getMessage());
+            return error;
+        }
+
         return new ModelAndView("roles_saved.html");
     }
 
