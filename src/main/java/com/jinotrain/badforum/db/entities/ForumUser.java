@@ -238,4 +238,14 @@ public class ForumUser
         if (user.id.equals(other.id)) { return true; }
         return user.getMaxPriority() > other.getMaxPriority();
     }
+
+
+    public static boolean sameUser(ForumUser user, ForumUser other)
+    {
+        if (user == null || other == null) { return false; }
+        if (user == other) { return true; }
+
+        if (user.id == null || other.id == null) { return false; }
+        return user.id.equals(other.id);
+    }
 }

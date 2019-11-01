@@ -501,12 +501,26 @@ public class BoardThreadPostController extends ForumController
 
         ForumUser author = thread.getAuthor();
 
+        if (!ForumUser.userOutranksOrIs(user, author))
+        {
+            return errorPage("deletethread_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
+        }
+
         String keepPostsRaw = request.getParameter("keepPosts");
         boolean deletePosts = !("true".equalsIgnoreCase(keepPostsRaw) || "1".equals(keepPostsRaw));
 
         for (ForumPost post: thread.getPosts())
         {
-            if (deletePosts) { post.deleteContents(); }
+            if (deletePosts)
+            {
+                ForumUser postAuthor = post.getAuthor();
+
+                if (ForumUser.userOutranksOrIs(user, postAuthor))
+                {
+                    post.deleteContents();
+                }
+            }
+
             post.setThread(null);
         }
 
@@ -565,13 +579,8 @@ public class BoardThreadPostController extends ForumController
         catch (UserBannedException e) { return bannedPage(e); }
 
         ForumThread thread = post.getThread();
-        ForumUser author = post.getAuthor();
-        boolean allowed  = false;
-
-        if (user != null && author != null && user.getUsername().equalsIgnoreCase(author.getUsername()))
-        {
-            allowed = true;
-        }
+        ForumUser author   = post.getAuthor();
+        boolean allowed    = ForumUser.sameUser(user, author);
 
         if (!allowed)
         {
@@ -590,6 +599,11 @@ public class BoardThreadPostController extends ForumController
         if (!allowed)
         {
             return errorPage("deletepost_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
+        }
+
+        if (!ForumUser.userOutranksOrIs(user, author))
+        {
+            return errorPage("deletepost_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
         }
 
         String  postUsername = author == null ? "Anonymous" : author.getUsername();
@@ -709,6 +723,13 @@ public class BoardThreadPostController extends ForumController
         ForumUser user;
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
+
+        ForumUser author = thread.getAuthor();
+
+        if (!ForumUser.userOutranksOrIs(user, author))
+        {
+            return errorPage("renamethread_error.html", "OUTRANKED", HttpStatus.NOT_FOUND);
+        }
 
         ForumBoard board = thread.getBoard();
 

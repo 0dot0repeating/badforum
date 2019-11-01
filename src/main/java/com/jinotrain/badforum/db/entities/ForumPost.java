@@ -15,7 +15,7 @@ public class ForumPost implements Comparable<ForumPost>
     @Column(unique = true)
     private long index;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 2048)
     private String postText;
 
     @Column(nullable = false)
