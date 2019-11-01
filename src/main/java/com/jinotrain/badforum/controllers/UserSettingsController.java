@@ -3,7 +3,6 @@ package com.jinotrain.badforum.controllers;
 import com.jinotrain.badforum.components.passwords.ForumPasswordService;
 import com.jinotrain.badforum.data.UserRoleStateData;
 import com.jinotrain.badforum.data.UserSettingViewData;
-import com.jinotrain.badforum.data.UserViewData;
 import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumUser;
@@ -141,6 +140,11 @@ public class UserSettingsController extends ForumController
             return errorPage("usersettings_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
+        if (!viewUser.outranks(settingsUser))
+        {
+            return errorPage("usersettings_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
+        }
+
         return null;
     }
 
@@ -210,26 +214,29 @@ public class UserSettingsController extends ForumController
         for (ForumRole role: userRoles) { userRoleIDs.add(role.getId()); }
 
 
-        List<Object[]> roleData = em.createQuery("SELECT role.name, role.id, role.admin FROM ForumRole role"
+        List<Object[]> roleData = em.createQuery("SELECT role.name, role.id, role.admin, role.priority FROM ForumRole role"
                                                          + " WHERE role.defaultRole = false ORDER BY role.priority DESC", Object[].class)
                                           .getResultList();
 
         int i = 0;
+        int maxPriority = user.getMaxPriority();
 
         for (Object[] d: roleData)
         {
-            String  name    = (String)d[0];
-            boolean present = userRoleIDs.contains((Long)d[1]);
-            ret.add(new UserRoleStateData(name, present, (boolean)d[2], i++));
+            String  name     = (String)d[0];
+            boolean present  = userRoleIDs.contains((Long)d[1]);
+            boolean outranks = (Integer)d[3] > maxPriority;
+            ret.add(new UserRoleStateData(name, present, (boolean)d[2], outranks, i++));
         }
 
         return ret;
     }
 
 
-    private void updateRolesFromParams(ForumUser user, Map<String, String[]> params) throws IllegalArgumentException
+    private void updateRolesFromParams(ForumUser user, Map<String, String[]> params, int maxPriority) throws IllegalArgumentException, SecurityException
     {
         Map<String, Boolean> roleStates = new HashMap<>();
+        Set<String> giveRoles = new HashSet<>();
 
         for (Map.Entry<String, String[]> param: params.entrySet())
         {
@@ -239,7 +246,9 @@ public class UserSettingsController extends ForumController
             if (roleName.startsWith("role:")) { roleName = roleName.substring("role:".length()); }
             else { continue; }
 
-            roleStates.put(roleName, "1".equals(roleState));
+            boolean give = "1".equals(roleState);
+            if (give) { giveRoles.add(roleName); }
+            roleStates.put(roleName, give);
         }
 
         if (roleStates.isEmpty())
@@ -247,10 +256,23 @@ public class UserSettingsController extends ForumController
             throw new IllegalArgumentException("No roles specified");
         }
 
-        List<ForumRole> roles = em.createQuery("SELECT role FROM ForumRole role WHERE lower(role.name) IN :roleNames"
+        if (!giveRoles.isEmpty())
+        {
+            int givePriority = em.createQuery("SELECT MAX(role.priority) FROM ForumRole role WHERE LOWER(role.name) IN :roleNames", Integer.class)
+                                 .setParameter("roleNames", giveRoles)
+                                 .getSingleResult();
+
+            if (givePriority > maxPriority)
+            {
+                throw new SecurityException("user attempted to give a role of higher rank than it possesses");
+            }
+        }
+
+        List<ForumRole> roles = em.createQuery("SELECT role FROM ForumRole role WHERE LOWER(role.name) IN :roleNames"
                                                        + " AND role.defaultRole = false", ForumRole.class)
                                         .setParameter("roleNames", roleStates.keySet())
                                         .getResultList();
+
 
         for (ForumRole role: roles)
         {
@@ -276,11 +298,12 @@ public class UserSettingsController extends ForumController
         if (errorMAV != null) { return errorMAV; }
 
         boolean canManageUsers = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
+        boolean canBanUsers    = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
         List<UserSettingViewData> viewData = buildSettingData(viewUser);
         List<UserRoleStateData> userRoles  = canManageUsers ? getUserRoles(viewUser) : null;
 
         ModelAndView mav = displaySettings(viewData, viewUser.getUsername(), userRoles, true);
-        if (canManageUsers) { addBanData(mav, viewUser.isBanned(), viewUser.getBannedUntil(), viewUser.getBanReason()); }
+        if (canBanUsers) { addBanData(mav, viewUser.isBanned(), viewUser.getBannedUntil(), viewUser.getBanReason()); }
         return mav;
     }
 
@@ -297,17 +320,18 @@ public class UserSettingsController extends ForumController
         String settingsUsername = request.getServletPath().substring("/settings/".length());
         ForumUser settingsUser = userRepository.findByUsernameIgnoreCase(settingsUsername);
 
-        ModelAndView errorMAV = checkPermission(viewUser, viewUser);
+        ModelAndView errorMAV = checkPermission(viewUser, settingsUser);
         if (errorMAV != null) { return errorMAV; }
 
         boolean canManageUsers = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
-        boolean needsConfirm = viewUser.getUsername().equalsIgnoreCase(settingsUsername);
+        boolean canBanUsers    = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
+        boolean needsConfirm   = viewUser.getUsername().equalsIgnoreCase(settingsUsername);
 
         List<UserSettingViewData> viewData = buildSettingData(settingsUser);
         List<UserRoleStateData> userRoles  = canManageUsers ? getUserRoles(settingsUser) : null;
 
         ModelAndView mav = displaySettings(viewData, settingsUser.getUsername(), userRoles, needsConfirm);
-        if (canManageUsers) { addBanData(mav, settingsUser.isBanned(), settingsUser.getBannedUntil(), settingsUser.getBanReason()); }
+        if (canBanUsers) { addBanData(mav, settingsUser.isBanned(), settingsUser.getBannedUntil(), settingsUser.getBanReason()); }
         return mav;
     }
 
@@ -396,10 +420,11 @@ public class UserSettingsController extends ForumController
         if (thingsChanged) { userRepository.saveAndFlush(settingsUser); }
 
         boolean canManageUsers = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
+        boolean canBanUsers    = userHasPermission(viewUser, UserPermission.MANAGE_USERS);
         List<UserRoleStateData> userRoles = canManageUsers ? getUserRoles(settingsUser) : null;
 
         ModelAndView mav = displaySettings(viewData, settingsUser.getUsername(), userRoles, needsConfirm);
-        if (canManageUsers) { addBanData(mav, settingsUser.isBanned(), settingsUser.getBannedUntil(), settingsUser.getBanReason()); }
+        if (canBanUsers) { addBanData(mav, settingsUser.isBanned(), settingsUser.getBannedUntil(), settingsUser.getBanReason()); }
 
         mav.addObject("savingSettings", true);
         mav.addObject("errorsOccured", errorsOccured);
@@ -446,13 +471,22 @@ public class UserSettingsController extends ForumController
             return errorPage("userroles_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
+        if (!accessUser.outranks(modifyUser))
+        {
+            return errorPage("userroles_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
+        }
+
         try
         {
-            updateRolesFromParams(modifyUser, request.getParameterMap());
+            updateRolesFromParams(modifyUser, request.getParameterMap(), accessUser.getMaxPriority());
         }
         catch (IllegalArgumentException e)
         {
             return errorPage("userroles_error.html", "MISSING_ROLES", HttpStatus.BAD_REQUEST);
+        }
+        catch (SecurityException e)
+        {
+            return errorPage("userroles_error.html", "ATTEMPTED_TO_ELEVATE", HttpStatus.UNAUTHORIZED);
         }
 
         ModelAndView ret = new ModelAndView("userroles_saved.html");

@@ -15,7 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -75,7 +74,7 @@ public class BoardThreadPostController extends ForumController
         ret.addObject("threadViewData", viewData);
         ret.addObject("canPost", canPost);
         ret.addObject("canModerate", canModerate);
-        ret.addObject("canManageUsers", userHasPermission(viewer, UserPermission.MANAGE_BOARDS));
+        ret.addObject("canBanUsers", userHasPermission(viewer, UserPermission.BAN_USERS));
         return ret;
     }
 

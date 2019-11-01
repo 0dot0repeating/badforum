@@ -42,7 +42,7 @@
     </section>
 
 
-    <article class="thread" th:fragment="viewThread(threadViewData, canModerate, canManageUsers)">
+    <article class="thread" th:fragment="viewThread(threadViewData, canModerate, canBanUsers)">
         <section class="post" th:each="post: ${threadViewData.posts}">
             <header>
                 <span class="author" th:if="${post.author.username != null}">Posted by [[${post.author.username}]]</span>
@@ -62,7 +62,7 @@
                 <input type="submit" value="Delete post">
             </form>
 
-            <form th:action="${'/post/' + post.index + '/ban'}" method="get" th:if="${canManageUsers && !post.deleted && !post.userBanned && !post.author.isBanned && post.author.username != null}">
+            <form th:action="${'/post/' + post.index + '/ban'}" method="get" th:if="${canModerate && canBanUsers && !post.deleted && !post.userBanned && !post.author.isBanned && post.author.username != null}">
                 <input type="submit" value="Ban poster">
             </form>
         </section>

@@ -36,8 +36,10 @@ public class ForumRole
     private boolean defaultRole;
 
     private byte canManageUsers;
+    private byte canManageRoles;
     private byte canManageBoards;
     private byte canManageDetached;
+    private byte canBanUsers;
 
 
     @SuppressWarnings("unused")
@@ -77,8 +79,10 @@ public class ForumRole
         switch (type)
         {
             case MANAGE_USERS:    state = canManageUsers;  break;
+            case MANAGE_ROLES:    state = canManageRoles;  break;
             case MANAGE_BOARDS:   state = canManageBoards; break;
             case MANAGE_DETACHED: state = canManageDetached; break;
+            case BAN_USERS:       state = canBanUsers; break;
             default: throw new UnsupportedOperationException("User-level permission " + type.name() + " not implemented in ForumRole");
         }
 
@@ -105,8 +109,10 @@ public class ForumRole
         switch (type)
         {
             case MANAGE_USERS:    canManageUsers    = internalState; break;
+            case MANAGE_ROLES:    canManageRoles    = internalState; break;
             case MANAGE_BOARDS:   canManageBoards   = internalState; break;
             case MANAGE_DETACHED: canManageDetached = internalState; break;
+            case BAN_USERS:       canBanUsers       = internalState; break;
             default: throw new UnsupportedOperationException("User-level permission " + type.name() + " not implemented in ForumRole");
         }
     }

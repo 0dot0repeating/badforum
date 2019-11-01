@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -57,7 +56,7 @@ public class BanController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.MANAGE_USERS))
+        if (!userHasPermission(user, UserPermission.BAN_USERS))
         {
             return errorPage("banuser_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -101,6 +100,11 @@ public class BanController extends ForumController
         if (banUser == null)
         {
             return errorPage("banuser_error.html", "USER_NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        if (!user.outranks(banUser))
+        {
+            return errorPage("banuser_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
         }
 
         if (banUser.isBanned())
@@ -163,7 +167,7 @@ public class BanController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.MANAGE_USERS))
+        if (!userHasPermission(user, UserPermission.BAN_USERS))
         {
             return errorPage("unbanuser_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -203,7 +207,7 @@ public class BanController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.MANAGE_USERS))
+        if (!userHasPermission(user, UserPermission.BAN_USERS))
         {
             return errorPage("banuser_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -234,6 +238,11 @@ public class BanController extends ForumController
         if (banUser == null)
         {
             return errorPage("banuser_error.html", "NO_AUTHOR", HttpStatus.NOT_FOUND);
+        }
+
+        if (!user.outranks(banUser))
+        {
+            return errorPage("banuser_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
         }
 
         ModelAndView ret = new ModelAndView("banforpost.html");

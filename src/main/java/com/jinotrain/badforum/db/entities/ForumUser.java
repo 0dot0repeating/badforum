@@ -192,4 +192,26 @@ public class ForumUser
             unban();
         }
     }
+
+
+    public int getMaxPriority()
+    {
+        int maxPriority = Integer.MIN_VALUE;
+
+        for (ForumRole role: getRoles())
+        {
+            int p = role.getPriority();
+            if (p > maxPriority) { maxPriority = p; }
+        }
+
+        return maxPriority;
+    }
+
+
+    public Boolean outranks(ForumUser other)
+    {
+        // this way, you can manage your own stuff
+        if (this.id.equals(other.id)) { return true; }
+        return getMaxPriority() > other.getMaxPriority();
+    }
 }

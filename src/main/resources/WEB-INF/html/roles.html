@@ -14,34 +14,34 @@
         <div class="role" th:each="data: ${roleData}">
             <h2 th:text="${data.roleName}"></h2>
 
-            <div th:unless="${data.isAdmin || data.isDefault}">
+            <div th:unless="${data.isAdmin || data.isDefault || !data.canModify}">
                 <label th:for="${'name' + data.viewIndex}">New name:</label>
                 <input th:id="${'name' + data.viewIndex}" th:name="${'(NAME):' + data.roleName}" th:value="${data.roleName}" placeholder="New role name">
             </div>
 
                 <div th:unless="${data.isAdmin || data.isDefault}">
                 <label th:for="${'priority' + data.viewIndex}">Role priority:</label>
-                <input th:id="${'priority' + data.viewIndex}" th:name="${'(PRIORITY):' + data.roleName}" th:value="${data.priority}" placeholder="-1000 to 1000">
+                <input th:id="${'priority' + data.viewIndex}" th:name="${'(PRIORITY):' + data.roleName}" th:value="${data.priority}" th:disabled="${!data.canModify}" placeholder="-1000 to 1000">
             </div>
 
             <ul>
                 <li th:each="permData: ${data.permissions}">
                     <label th:for="${permData.perm.name() + data.viewIndex}" th:text="${permData.perm.label}"></label>
 
-                    <select th:id="${permData.perm.name() + data.viewIndex}"
+                    <select th:id="${permData.perm.name() + data.viewIndex}" th:disabled="${!data.canModify}"
                             th:name="${permData.perm.name() + ':' + data.roleName}" th:unless="${data.isAdmin}">
                         <option value="-1" th:selected="${permData.state.name() == 'OFF'}">Off</option>
                         <option value="0" th:selected="${permData.state.name() == 'KEEP'}">Pass through</option>
                         <option value="1" th:selected="${permData.state.name() == 'ON'}">On</option>
                     </select>
 
-                    <select th:id="${permData.perm.name() + data.viewIndex}" th:if="${data.isAdmin}">
+                    <select th:id="${permData.perm.name() + data.viewIndex}" th:if="${data.isAdmin}" disabled>
                         <option>On (Admin)</option>
                     </select>
                 </li>
             </ul>
 
-            <div th:unless="${data.isAdmin || data.isDefault}">
+            <div th:unless="${data.isAdmin || data.isDefault || !data.canModify}">
                 <label th:for="${'delete' + data.viewIndex}">Delete role?</label>
                 <input th:id="${'delete' + data.viewIndex}" th:name="${'(DELETE):' + data.roleName}" type="checkbox" value="do it">
             </div>

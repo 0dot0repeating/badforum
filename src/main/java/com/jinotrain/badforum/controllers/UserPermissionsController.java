@@ -39,7 +39,7 @@ public class UserPermissionsController extends ForumController
     }
 
 
-    private List<UserRoleData> getRolesAndPerms()
+    private List<UserRoleData> getRolesAndPerms(int maxPriority)
     {
         List<UserRoleData> ret = new ArrayList<>();
         int i = 0;
@@ -53,10 +53,21 @@ public class UserPermissionsController extends ForumController
                 permissions.add(new UserPermissionStateData(p, role.getPermission(p)));
             }
 
-             ret.add(new UserRoleData(role.getName(), role.getPriority(), role.isAdmin(), role.isDefaultRole(), permissions, i++));
+            boolean canModify = role.getPriority() < maxPriority;
+             ret.add(new UserRoleData(role.getName(), role.getPriority(), role.isAdmin(), role.isDefaultRole(), canModify, permissions, i++));
         }
 
         return ret;
+    }
+
+
+    private boolean modifyingRolesTooHigh(Set<String> roleNames, int maxPriority)
+    {
+        int roleMax = em.createQuery("SELECT MAX(role.priority) FROM ForumRole role WHERE LOWER(role.name) IN :roleNames", Integer.class)
+                        .setParameter("roleNames", roleNames)
+                        .getSingleResult();
+
+        return roleMax >= maxPriority;
     }
 
 
@@ -68,6 +79,8 @@ public class UserPermissionsController extends ForumController
 
     private Set<String> checkForNameConflicts(Map<String, String> toRename) throws DataIntegrityViolationException
     {
+        if (toRename.isEmpty()) { return new HashSet<>(); }
+
         Set<String> namesToCheck    = new HashSet<>();
         Set<String> reassignedNames = new HashSet<>();
 
@@ -112,9 +125,8 @@ public class UserPermissionsController extends ForumController
     }
 
 
-    private void updatePermissions(Map<String, UserRoleData> permissionData, Map<String, String> toRename, Set<String> toDelete) throws DataIntegrityViolationException
+    private void updatePermissions(Map<String, UserRoleData> permissionData, Map<String, String> toRename, Set<String> toDelete, int maxPriority) throws SecurityException, DataIntegrityViolationException
     {
-        Set<String> shiftedNames = checkForNameConflicts(toRename);
         Set<String> roleNames = new HashSet<>();
 
         for (String name: permissionData.keySet())
@@ -131,6 +143,23 @@ public class UserPermissionsController extends ForumController
         {
             roleNames.add(name.toLowerCase());
         }
+
+        if (roleNames.isEmpty()) { return; }
+
+        if (modifyingRolesTooHigh(roleNames, maxPriority))
+        {
+            throw new SecurityException("user attempted to modify roles at or above their own max priority");
+        }
+
+        for (UserRoleData roleData: permissionData.values())
+        {
+            if (roleData.priority != null && roleData.priority >= maxPriority)
+            {
+                throw new SecurityException("user attempted to raise a role's priority to or above their highest role");
+            }
+        }
+
+        Set<String> shiftedNames = checkForNameConflicts(toRename);
 
         // deleting a given role is handled first, then its permissions are updated
         // once all that's done, then roles are renamed, with the default and admin roles exempted from this
@@ -238,13 +267,13 @@ public class UserPermissionsController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(user, UserPermission.MANAGE_USERS))
+        if (!userHasPermission(user, UserPermission.MANAGE_ROLES))
         {
             return errorPage("roles_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
         ModelAndView ret = new ModelAndView("roles.html");
-        ret.addObject("roleData", getRolesAndPerms());
+        ret.addObject("roleData", getRolesAndPerms(user.getMaxPriority()));
         ret.addObject("permissions", UserPermission.values());
         return ret;
     }
@@ -373,7 +402,7 @@ public class UserPermissionsController extends ForumController
         try { accessUser = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        if (!userHasPermission(accessUser, UserPermission.MANAGE_USERS))
+        if (!userHasPermission(accessUser, UserPermission.MANAGE_ROLES))
         {
             return errorPage("roles_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -393,11 +422,17 @@ public class UserPermissionsController extends ForumController
 
         try
         {
-            updatePermissions(permissionData.permissions, permissionData.toRename, permissionData.toDelete);
+            updatePermissions(permissionData.permissions, permissionData.toRename, permissionData.toDelete, accessUser.getMaxPriority());
         }
         catch (DataIntegrityViolationException e)
         {
             ModelAndView error = errorPage("roles_error.html", "NAME_CONFLICTS", HttpStatus.CONFLICT);
+            error.addObject("errorDetails", e.getMessage());
+            return error;
+        }
+        catch (SecurityException e)
+        {
+            ModelAndView error = errorPage("roles_error.html", "PRIORITY_TOO_LOW", HttpStatus.UNAUTHORIZED);
             error.addObject("errorDetails", e.getMessage());
             return error;
         }
@@ -425,7 +460,7 @@ public class UserPermissionsController extends ForumController
         catch (UserBannedException e) { return bannedPage(e); }
 
 
-        if (!userHasPermission(user, UserPermission.MANAGE_USERS))
+        if (!userHasPermission(user, UserPermission.MANAGE_ROLES))
         {
             return errorPage("newrole_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
@@ -488,6 +523,11 @@ public class UserPermissionsController extends ForumController
         }
 
         if (priority == null) { priority = 0; }
+
+        if (priority >= user.getMaxPriority())
+        {
+            return errorPage("newrole_error.html", "PRIORITY_TOO_HIGH", HttpStatus.UNAUTHORIZED);
+        }
 
         ForumRole newRole = new ForumRole(roleName, priority);
 
