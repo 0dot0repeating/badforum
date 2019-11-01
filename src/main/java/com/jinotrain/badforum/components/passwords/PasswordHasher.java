@@ -1,7 +1,5 @@
 package com.jinotrain.badforum.components.passwords;
 
-import java.util.Optional;
-
 public abstract class PasswordHasher
 {
     protected class PrefixAndHash
@@ -19,10 +17,10 @@ public abstract class PasswordHasher
 
     protected abstract String getPrefix();
     protected abstract String hash(String password);
-    protected abstract boolean checkHash(String password, String hash);
+    protected abstract String checkHash(String password, String hash);
 
 
-    private Optional<PrefixAndHash> splitPrefixedHash(String prefixedHash)
+    private PrefixAndHash splitPrefixedHash(String prefixedHash)
     {
         int leftBracketPos  = prefixedHash.indexOf('{');
         int rightBracketPos = prefixedHash.indexOf('}', leftBracketPos);
@@ -34,15 +32,15 @@ public abstract class PasswordHasher
                 String prefix = prefixedHash.substring(leftBracketPos + 1, rightBracketPos);
                 String hash   = prefixedHash.substring(rightBracketPos + 1);
 
-                return Optional.of(new PrefixAndHash(prefix, hash));
+                return new PrefixAndHash(prefix, hash);
             }
             catch (IndexOutOfBoundsException e)
             {
-                return Optional.empty();
+                return null;
             }
         }
 
-        return Optional.empty();
+        return null;
     }
 
 
@@ -52,14 +50,19 @@ public abstract class PasswordHasher
     }
 
 
-    final boolean hashMatches(String password, String passhash)
+    final String checkHashAndUpgrade(String password, String passhash)
     {
-        Optional<PrefixAndHash> prefixCheck = splitPrefixedHash(passhash);
-        if (!prefixCheck.isPresent()) { return false; }
+        PrefixAndHash prefixAndHash = splitPrefixedHash(passhash);
+        if (prefixAndHash == null) { return null; }
 
-        PrefixAndHash prefixAndHash = prefixCheck.get();
-        if (!prefixAndHash.prefix.equals(getPrefix())) { return false; }
+        String prefix = prefixAndHash.prefix;
+        String hash   = prefixAndHash.hash;
 
-        return checkHash(password, prefixAndHash.hash);
+        if (!prefix.equals(getPrefix())) { return null; }
+
+        String newHash = checkHash(password, hash);
+        if (newHash != null) { return hashAndPrefix(newHash); }
+
+        return null;
     }
 }

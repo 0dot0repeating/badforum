@@ -4,6 +4,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.List;
+
 @Component
 @Order(1)
 public class BCryptHasher extends PasswordHasher
@@ -23,10 +25,32 @@ public class BCryptHasher extends PasswordHasher
         return BCrypt.hashpw(password, BCrypt.gensalt(WORK_FACTOR));
     }
 
+    //                      |--------salt--------|-------------hash-------------|
+    // example hash: $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+    //                |  |
+    //               id  |
+    //                work factor
+    //
 
     @Override
-    protected boolean checkHash(String password, String hash)
+    protected String checkHash(String password, String hash)
     {
-        return BCrypt.checkpw(password, hash);
+        boolean matches = BCrypt.checkpw(password, hash);
+
+        if (matches) // we know it's a valid hash since it matched
+        {
+            // [0] = ID, [1] = work factor, [2] = salt/hash
+            String[] parts = hash.split("\\$");
+            int workFactor = Integer.valueOf(parts[1]);
+
+            if (workFactor < WORK_FACTOR)
+            {
+                return hash(password);
+            }
+
+            return hash;
+        }
+
+        return null;
     }
 }

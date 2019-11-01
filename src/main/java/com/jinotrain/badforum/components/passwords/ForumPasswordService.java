@@ -11,16 +11,28 @@ public class ForumPasswordService
     @Autowired
     protected List<PasswordHasher> passwordHashers;
 
-    public boolean passwordMatches(String password, String checkhash)
+    public String checkAndUpgradePassword(String password, String checkhash)
     {
-        if (password == null || checkhash == null) { return false; }
+        if (password == null || checkhash == null) { return null; }
+
+        boolean notFirstPick = false;
+        PasswordHasher firstHasher = null;
 
         for (PasswordHasher hasher: passwordHashers)
         {
-            if (hasher.hashMatches(password, checkhash)) { return true; }
+            String newHash = hasher.checkHashAndUpgrade(password, checkhash);
+
+            if (newHash != null)
+            {
+                if (notFirstPick) { return firstHasher.hashAndPrefix(password); }
+                return newHash;
+            }
+
+            notFirstPick = true;
+            firstHasher  = hasher;
         }
 
-        return false;
+        return null;
     }
 
     public String hashPassword(String password)

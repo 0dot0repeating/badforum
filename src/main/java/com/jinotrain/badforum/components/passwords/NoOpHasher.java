@@ -22,8 +22,9 @@ public class NoOpHasher extends PasswordHasher
 
 
     @Override
-    protected boolean checkHash(String password, String hash)
+    protected String checkHash(String password, String hash)
     {
-        return password.equals(hash);
+        if (password.equals(hash)) { return password; }
+        return null;
     }
 }

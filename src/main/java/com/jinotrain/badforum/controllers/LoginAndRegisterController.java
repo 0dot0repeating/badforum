@@ -6,7 +6,6 @@ import com.jinotrain.badforum.data.PreAdminKey;
 import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumSession;
 import com.jinotrain.badforum.db.entities.ForumUser;
-import com.jinotrain.badforum.util.DurationFormat;
 import com.jinotrain.badforum.util.LogHelper;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -181,11 +180,19 @@ public class LoginAndRegisterController extends ForumController
             return ret;
         }
 
-        if (!passwordService.passwordMatches(password, user.getPasshash()))
+        String currentHash  = user.getPasshash();
+        String upgradedHash = passwordService.checkAndUpgradePassword(password, user.getPasshash());
+
+        if (upgradedHash == null)
         {
             ret.put("loggedIn", false);
             ret.put("errorCode", "WRONG_PASSWORD");
             return ret;
+        }
+
+        if (!currentHash.equals(upgradedHash))
+        {
+            user.setPasshash(upgradedHash);
         }
 
         try
