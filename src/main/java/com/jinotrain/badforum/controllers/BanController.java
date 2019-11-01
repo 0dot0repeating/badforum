@@ -102,7 +102,7 @@ public class BanController extends ForumController
             return errorPage("banuser_error.html", "USER_NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
-        if (!user.outranks(banUser))
+        if (!user.outranksOrIs(banUser))
         {
             return errorPage("banuser_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
         }
@@ -240,7 +240,7 @@ public class BanController extends ForumController
             return errorPage("banuser_error.html", "NO_AUTHOR", HttpStatus.NOT_FOUND);
         }
 
-        if (!user.outranks(banUser))
+        if (!user.outranksOrIs(banUser))
         {
             return errorPage("banuser_error.html", "OUTRANKED", HttpStatus.UNAUTHORIZED);
         }

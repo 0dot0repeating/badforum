@@ -113,11 +113,8 @@ abstract class ForumController
         List<BoardViewData>    childBoardData = new ArrayList<>();
 
         // gather forum threads, along with post count and thread authors
-        // TODO: implement time windows and subranges (will probably require a prodedurally-built query)
-        List<ForumThread> threads = em.createNamedQuery("ForumBoard.threadsInUpdateOrder", ForumThread.class)
-                                            .setParameter("boardID", boardID)
-                                            .setHint("javax.persistence.fetchgraph", em.getEntityGraph("ForumThread.withPosts"))
-                                            .getResultList();
+        // TODO: implement time windows and subranges
+        List<ForumThread> threads = threadRepository.findAllByBoardOrderByLastUpdateDesc(board);
 
         long totalThreads = threads.size();
         long totalPosts   = em.createNamedQuery("ForumBoard.getPostCount", Long.class)
@@ -177,22 +174,13 @@ abstract class ForumController
             int postCount = posts.size();
 
             UserViewData userdata;
-            Instant creationTime = null;
-            Instant lastUpdate   = null;
+            Instant creationTime = t.getCreationTime();
+            Instant lastUpdate   = t.getLastUpdate();
+            ForumUser author     = t.getAuthor();
 
-            if (postCount > 0)
+            if (author != null)
             {
-                posts.sort(Comparator.comparing(ForumPost::getPostTime));
-                ForumPost firstPost = posts.get(0);
-                ForumPost lastPost  = posts.get(postCount-1);
-
-                ForumUser userAuthor = firstPost.getAuthor();
-                String  authorName = userAuthor == null ? null : userAuthor.getUsername();
-                boolean banned     = userAuthor != null && userAuthor.isBanned();
-                userdata = new UserViewData(authorName, banned);
-
-                creationTime = firstPost.getPostTime();
-                lastUpdate   = lastPost.getPostTime();
+                userdata = new UserViewData(author.getUsername(), author.isBanned());
             }
             else
             {
@@ -211,7 +199,7 @@ abstract class ForumController
     }
 
 
-    ThreadViewData getThreadViewData(ForumThread thread, ForumUser viewer, EntityManager em)
+    ThreadViewData getThreadViewData(ForumThread thread, ForumUser viewer)
     {
         ForumBoard board = thread.getBoard();
 
@@ -222,18 +210,16 @@ abstract class ForumController
 
         Collection<ForumPost> posts = thread.getPosts();
         List<PostViewData> postData = new ArrayList<>();
-        UserViewData firstPoster = null;
 
         String viewerUsername = viewer == null ? null : viewer.getUsername();
 
         for (ForumPost p: posts)
         {
             ForumUser user = p.getAuthor();
-            String  username = user == null ? null  : user.getUsername();
-            boolean banned   = user != null && user.isBanned();
-
-            UserViewData userdata = new UserViewData(username, banned);
             String postText = formatPostText(p.getPostText());
+
+            UserViewData userdata = user == null ? new UserViewData(null, false)
+                                                 : new UserViewData(user.getUsername(), user.isBanned());
 
             PostViewData pdata = new PostViewData(p.getIndex(), postText, userdata, p.getPostTime(), p.getlastEditTime(),
                                                     p.isDeleted(), p.isUserBanned(), p.getBanReason());
@@ -244,13 +230,15 @@ abstract class ForumController
             }
 
             postData.add(pdata);
-
-            if (firstPoster == null) { firstPoster = userdata; }
         }
 
         BoardViewData boardData = board == null ? new BoardViewData(-1, null) : new BoardViewData(board.getIndex(), board.getName());
 
-        return new ThreadViewData(thread.getIndex(), thread.getTopic(), firstPoster, boardData, postData);
+        ForumUser author = thread.getAuthor();
+        UserViewData authorData = author == null ? new UserViewData(null, false)
+                                                 : new UserViewData(author.getUsername(), author.isBanned());
+
+        return new ThreadViewData(thread.getIndex(), thread.getTopic(), authorData, boardData, postData);
     }
 
 

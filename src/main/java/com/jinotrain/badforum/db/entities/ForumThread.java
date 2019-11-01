@@ -39,21 +39,26 @@ public class ForumThread
     @JoinColumn(name = "board_id")
     private ForumBoard board;
 
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private ForumUser author;
+
     @Column(nullable = false)
     private String topic;
 
     private Instant creationTime;
-
     private Instant lastUpdate;
 
 
     @SuppressWarnings("unused")
     ForumThread() {}
 
-    public ForumThread(long index, String topic)
+    public ForumThread(long index, String topic, ForumBoard board, ForumUser author)
     {
         this.index        = index;
         this.topic        = topic;
+        this.board        = board;
+        this.author       = author;
         this.posts        = new HashSet<>();
         this.creationTime = Instant.now();
         this.lastUpdate   = this.creationTime;
@@ -69,12 +74,15 @@ public class ForumThread
     public ForumBoard getBoard()                 { return board; }
     public void       setBoard(ForumBoard board) { this.board = board; }
 
-    public String getTopic()                     { return topic; }
-    public void   setTopic(String topic)         { this.topic = topic; }
+    public ForumUser  getAuthor()                   { return author; }
+    public void       setAuthor(ForumUser author)   { this.author = author; }
 
-    public Instant getCreationTime()             { return creationTime; }
+    public String getTopic()                             { return topic; }
+    public void   setTopic(String topic)                 { this.topic = topic; }
+
+    public Instant getCreationTime()                     { return creationTime; }
     public void    setCreationTime(Instant creationTime) { this.creationTime = creationTime; }
 
-    public Instant getLastUpdate()                   { return lastUpdate; }
-    public void    setLastUpdate(Instant lastUpdate) { this.lastUpdate = lastUpdate; }
+    public Instant getLastUpdate()                       { return lastUpdate; }
+    public void    setLastUpdate(Instant lastUpdate)     { this.lastUpdate = lastUpdate; }
 }

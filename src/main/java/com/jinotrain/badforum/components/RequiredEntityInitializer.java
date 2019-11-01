@@ -132,16 +132,14 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
 
             currentRoot = new ForumBoard(boardRepository.getHighestIndex() + 1, "Root board");
             currentRoot.setRootBoard(true);
-            boardRepository.save(currentRoot);
+            boardRepository.saveAndFlush(currentRoot);
 
-            ForumThread testThread = new ForumThread(threadRepository.getHighestIndex() + 1,"Test thread");
+            ForumThread testThread = new ForumThread(threadRepository.getHighestIndex() + 1,"Test thread", currentRoot, null);
+            threadRepository.saveAndFlush(testThread);
+
             ForumPost testPost = new ForumPost(postRepository.getHighestIndex() + 1, "Test post, please ignore (or delete if you're the admin)");
-
-            testThread.setBoard(currentRoot);
-            threadRepository.save(testThread);
-
             testPost.setThread(testThread);
-            postRepository.save(testPost);
+            postRepository.saveAndFlush(testPost);
 
             defaultRole.setBoardPermission(currentRoot, BoardPermission.POST, PermissionState.ON);
             defaultRole.setBoardPermission(currentRoot, BoardPermission.VIEW, PermissionState.ON);

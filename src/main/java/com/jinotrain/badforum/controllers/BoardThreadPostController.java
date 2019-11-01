@@ -55,7 +55,7 @@ public class BoardThreadPostController extends ForumController
 
         try
         {
-            viewData = getThreadViewData(thread, viewer, em);
+            viewData = getThreadViewData(thread, viewer);
         }
         catch (SecurityException e)
         {
@@ -255,9 +255,7 @@ public class BoardThreadPostController extends ForumController
         long threadIndex = threadRepository.getHighestIndex() + 1;
 
         ForumPost   firstPost = new ForumPost(postRepository.getHighestIndex() + 1, postText, poster);
-        ForumThread newThread = new ForumThread(threadIndex, postTopic);
-
-        newThread.setBoard(targetBoard);
+        ForumThread newThread = new ForumThread(threadIndex, postTopic, targetBoard, poster);
         firstPost.setThread(newThread);
 
         threadRepository.saveAndFlush(newThread);
@@ -325,6 +323,8 @@ public class BoardThreadPostController extends ForumController
 
         reply.setThread(targetThread);
         postRepository.saveAndFlush(reply);
+
+        targetThread.setLastUpdate(Instant.now());
 
         return new ModelAndView("redirect:/thread/" + targetThread.getIndex());
     }
@@ -487,6 +487,7 @@ public class BoardThreadPostController extends ForumController
         }
 
         String threadTopic = thread.getTopic();
+
 
         ForumBoard board = thread.getBoard();
         ForumUser user;
