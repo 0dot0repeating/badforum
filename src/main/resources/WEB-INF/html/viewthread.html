@@ -16,7 +16,7 @@
 
     <form th:replace="inc/postStuff :: reply(${threadViewData.index}, ${threadViewData.topic}, ${postError}, ${postText}, ${canPost})"></form>
 
-    <section th:if="${canModerate}">
+    <section th:if="${threadViewData.canModerate}">
         <h2>Moderator Tools</h2>
 
         <form method="post" action="/thread/rename">

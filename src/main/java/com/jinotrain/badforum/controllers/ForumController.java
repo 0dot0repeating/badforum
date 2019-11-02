@@ -168,7 +168,7 @@ abstract class ForumController
 
         List<ThreadViewData> threadData = new ArrayList<>();
 
-        boolean hasModeratePrivilege = ForumUser.userHasPermission(viewer, UserPermission.MANAGE_BOARDS);
+        boolean hasModeratePrivilege = ForumUser.userHasBoardPermission(viewer, board, BoardPermission.MODERATE);
 
         for (ForumThread t: threads)
         {

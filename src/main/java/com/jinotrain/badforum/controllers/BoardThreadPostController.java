@@ -42,9 +42,7 @@ public class BoardThreadPostController extends ForumController
 
         ModelAndView ret = new ModelAndView("viewboard.html");
         ret.addObject("boardViewData", viewData);
-        ret.addObject("canManageBoard", ForumUser.userHasPermission(viewer, UserPermission.MANAGE_BOARDS));
         ret.addObject("canPost", ForumUser.userHasBoardPermission(viewer, board, BoardPermission.POST));
-        ret.addObject("canModerate", ForumUser.userHasBoardPermission(viewer, board, BoardPermission.MODERATE));
         return ret;
     }
 
@@ -73,8 +71,6 @@ public class BoardThreadPostController extends ForumController
         ModelAndView ret = new ModelAndView("viewthread.html");
         ret.addObject("threadViewData", viewData);
         ret.addObject("canPost", canPost);
-        ret.addObject("canModerate", canModerate);
-        ret.addObject("canBanUsers", ForumUser.userHasPermission(viewer, UserPermission.BAN_USERS));
         return ret;
     }
 
