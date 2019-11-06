@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>[[#{badforum.name}]] - User settings</title>
+    <title>[[#{badforum.name}]] - Error - [[#{error.usersettings.__${errorCode}__.title}]]</title>
 </head>
 <body>
     <div th:replace="inc/header :: header">
 
     </div>
 
-    <h1>User settings - Error</h1>
+    <h1>User settings - [[#{error.usersettings.__${errorCode}__.title}]]</h1>
     
     <p class="error" th:text="#{error.usersettings.__${errorCode}__}"></p>
 </body>

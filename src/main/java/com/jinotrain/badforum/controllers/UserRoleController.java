@@ -23,9 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 @Controller
-public class UserPermissionsController extends ForumController
+public class UserRoleController extends ForumController
 {
-    private static Logger logger = LoggerFactory.getLogger(UserPermissionsController.class);
     private static Map<String, UserPermission> PERMISSIONS_BY_NAME;
 
     static

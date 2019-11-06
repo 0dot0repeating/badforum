@@ -10,7 +10,7 @@
 
     <h1>Permissions for board "[[${boardName}]]"</h1>
 
-    <div th:if="${messageCode}" th:text="#{info.boardperms.__${messageCode}__}"></div>
+    <div th:if="${messageCode}" th:text="#{info.boardpermissions.__${messageCode}__}"></div>
 
     <form class="boardPermissions" method="post" action="/board/savepermissions">
         <input type="hidden" name="boardIndex" th:value="${boardIndex}">

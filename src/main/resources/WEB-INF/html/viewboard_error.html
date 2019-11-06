@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>[[#{badforum.name}]] - Error - [[#{error.board.__${errorCode}__.title}]]</title>
+    <title>[[#{badforum.name}]] - Error - [[#{error.viewboard.__${errorCode}__.title}]]</title>
 </head>
 <body>
     <div th:replace="inc/header :: header">
 
     </div>
 
-    <h1>View board - [[#{error.board.__${errorCode}__.title}]]</h1>
+    <h1>View board - [[#{error.viewboard.__${errorCode}__.title}]]</h1>
 
     <p class="error" th:text="#{error.board.__${errorCode}__}"></p>
 </body>

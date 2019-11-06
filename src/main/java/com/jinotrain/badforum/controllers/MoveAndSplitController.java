@@ -172,6 +172,11 @@ public class MoveAndSplitController extends ForumController
     @RequestMapping(value = "/movethread")
     public ModelAndView moveThread(HttpServletRequest request, HttpServletResponse response)
     {
+        if (!request.getMethod().equals("POST"))
+        {
+            return errorPage("movethread_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
+        }
+
         ForumUser viewer;
         try { viewer = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -201,6 +206,11 @@ public class MoveAndSplitController extends ForumController
         if (threadToMove == null)
         {
             return errorPage("movethread_error.html", "THREAD_NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        if (threadToMove.isDeleted())
+        {
+            return errorPage("movethread_error.html", "DELETED", HttpStatus.GONE);
         }
 
         if (threadToMove.wasMoved())
@@ -264,6 +274,11 @@ public class MoveAndSplitController extends ForumController
     @RequestMapping(value = "/splitpost")
     public ModelAndView splitPost(HttpServletRequest request, HttpServletResponse response)
     {
+        if (!request.getMethod().equals("POST"))
+        {
+            return errorPage("splitpost_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
+        }
+
         ForumUser viewer;
         try { viewer = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -276,7 +291,7 @@ public class MoveAndSplitController extends ForumController
         }
         catch (NumberFormatException e)
         {
-            return errorPage("splitpost_error.html", "INVALID_INDEX", HttpStatus.BAD_REQUEST);
+            return errorPage("splitpost_error.html", "INVALID_POST_INDEX", HttpStatus.BAD_REQUEST);
         }
 
         try
@@ -297,7 +312,7 @@ public class MoveAndSplitController extends ForumController
 
         if (postToSplit.isDeleted())
         {
-            return errorPage("splitpost_error.html", "DELETED", HttpStatus.CONFLICT);
+            return errorPage("splitpost_error.html", "DELETED", HttpStatus.GONE);
         }
 
         if (postToSplit.wasSplit())

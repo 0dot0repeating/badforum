@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>[[#{badforum.name}]] - Error - [[#{error.posting.__${errorCode}__.title}]]</title>
+    <title>[[#{badforum.name}]] - Error - [[#{error.post.__${errorCode}__.title}]]</title>
 </head>
 <body>
     <div th:replace="inc/header :: header">
@@ -10,7 +10,7 @@
 
     <h1>Post Error - [[#{error.posting.__${errorCode}__.title}]]</h1>
     
-    <p class="error" th:text="#{error.posting.__${errorCode}__}"></p>
+    <p class="error" th:text="#{error.post.__${errorCode}__}"></p>
 
     <p th:if="${movedThreadIndex != null}">
         You can find the moved thread here: <a th:href="${'/thread/' + movedThreadIndex}">"[[${movedThreadName}]]"</a>
