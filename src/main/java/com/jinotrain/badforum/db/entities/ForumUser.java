@@ -44,6 +44,7 @@ public class ForumUser
     private Set<UserToRoleLink> roleLinks;
 
 
+    public Long   getId()       { return id; }
     public String getUsername() { return username; }
 
     public String getPasshash()       { return passhash; }
@@ -235,7 +236,9 @@ public class ForumUser
         if (other == null) { return true; }
         if (user  == null) { return false; }
 
-        if (user.id.equals(other.id)) { return true; }
+        // for some reason, direct property access can be null even if calling its
+        // respective getter returns the expected value. I have no fucking idea why.
+        if (user.getId().equals(other.getId())) { return true; }
         return user.getMaxPriority() > other.getMaxPriority();
     }
 
@@ -245,7 +248,9 @@ public class ForumUser
         if (user == null || other == null) { return false; }
         if (user == other) { return true; }
 
-        if (user.id == null || other.id == null) { return false; }
-        return user.id.equals(other.id);
+        Long id1 = user.getId();
+        Long id2 = other.getId();
+        if (id1 == null || id2 == null) { return false; }
+        return id1.equals(id2);
     }
 }

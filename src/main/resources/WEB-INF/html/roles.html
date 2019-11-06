@@ -68,9 +68,9 @@
                 <label th:for="${'newperm:' + perm.name()}">[[${perm.label}]]</label>
 
                 <select th:id="${'newperm:' + perm.name()}" th:name="${perm.name()}">
-                    <option value="-1">Off</option>
-                    <option value="0" selected>Pass through</option>
-                    <option value="1">On</option>
+                    <option value="-1" th:selected="${perm.roleDefault == -1}">Off</option>
+                    <option value="0"  th:selected="${perm.roleDefault ==  0}">Pass through</option>
+                    <option value="1"  th:selected="${perm.roleDefault ==  1}">On</option>
                 </select>
             </li>
         </ul>

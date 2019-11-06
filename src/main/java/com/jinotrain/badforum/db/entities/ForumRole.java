@@ -48,6 +48,11 @@ public class ForumRole
         this.admin = false;
         this.accessBoards = new HashSet<>();
         this.priority = priority;
+
+        for (UserPermission p: UserPermission.values())
+        {
+            setPermission(p, p.defaultState);
+        }
     }
 
 
@@ -71,7 +76,7 @@ public class ForumRole
     {
         if (admin) { return PermissionState.ON; }
 
-        byte state = 0;
+        byte state;
 
         switch (type)
         {

@@ -1,11 +1,9 @@
 package com.jinotrain.badforum.controllers;
 
 import com.jinotrain.badforum.db.BoardPermission;
+import com.jinotrain.badforum.db.PermissionState;
 import com.jinotrain.badforum.db.UserPermission;
-import com.jinotrain.badforum.db.entities.ForumBoard;
-import com.jinotrain.badforum.db.entities.ForumPost;
-import com.jinotrain.badforum.db.entities.ForumThread;
-import com.jinotrain.badforum.db.entities.ForumUser;
+import com.jinotrain.badforum.db.entities.*;
 import com.jinotrain.badforum.util.UserBannedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -69,9 +67,13 @@ public class CreateRenameDeleteController extends ForumController
             return errorPage("newboard_error.html", "NO_BOARD_NAME", HttpStatus.BAD_REQUEST);
         }
 
-        ForumBoard newBoard = new ForumBoard(boardRepository.getHighestIndex()+1, newBoardName);
+        ForumBoard newBoard = new ForumBoard(boardRepository.getHighestIndex()+1, newBoardName, user);
         newBoard.setParentBoard(parentBoard);
         boardRepository.saveAndFlush(newBoard);
+
+        ForumRole defaultRole = roleRepository.findDefaultRole();
+        defaultRole.setBoardPermission(newBoard, BoardPermission.VIEW, PermissionState.ON);
+        defaultRole.setBoardPermission(newBoard, BoardPermission.POST, PermissionState.ON);
 
         return new ModelAndView("redirect:/board/" + newBoard.getIndex());
     }
@@ -123,6 +125,11 @@ public class CreateRenameDeleteController extends ForumController
         if (board.isRootBoard())
         {
             return errorPage("deleteboard_error.html", "CANT_DELETE_ROOT", HttpStatus.FORBIDDEN);
+        }
+
+        if (!ForumUser.userOutranksOrIs(user, board.getCreator()))
+        {
+            return errorPage("deleteboard_error.html", "OUTRANKED", HttpStatus.FORBIDDEN);
         }
 
         ForumBoard parentBoard = board.getParentBoard();
@@ -346,6 +353,11 @@ public class CreateRenameDeleteController extends ForumController
         if (board == null)
         {
             return errorPage("renameboard_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        if (!ForumUser.userOutranksOrIs(user, board.getCreator()))
+        {
+            return errorPage("renameboard_error.html", "OUTRANKED", HttpStatus.FORBIDDEN);
         }
 
         String oldName = board.getName();

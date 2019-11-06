@@ -202,7 +202,9 @@ abstract class ForumController
                               .getSingleResult();
 
         BoardViewData ret = new BoardViewData(board.getIndex(), board.getName(), totalThreads, totalPosts, board.isRootBoard());
-        ret.canManage = ForumUser.userHasPermission(viewer, UserPermission.MANAGE_BOARDS);
+
+        ret.canManage = ForumUser.userHasPermission(viewer, UserPermission.MANAGE_BOARDS)
+                     && ForumUser.userOutranksOrIs(viewer, board.getCreator());
         ret.childBoards = childBoardData;
         ret.threads = threadData;
 

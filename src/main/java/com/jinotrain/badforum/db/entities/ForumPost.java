@@ -27,7 +27,7 @@ public class ForumPost implements Comparable<ForumPost>
     @JoinColumn(name = "author_id")
     private ForumUser author;
 
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinColumn(name = "thread_id")
     private ForumThread thread;
 

@@ -34,9 +34,13 @@ public class ForumBoard
     @OneToMany(cascade = CascadeType.PERSIST, fetch=FetchType.LAZY, mappedBy = "parentBoard")
     private Set<ForumBoard> childBoards;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parentboard_id")
     private ForumBoard parentBoard;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "creator_id")
+    private ForumUser creator;
 
 
     private boolean rootBoard = false;
@@ -51,8 +55,15 @@ public class ForumBoard
 
     public ForumBoard(long index, String name)
     {
-        this.index = index;
-        this.name = name;
+        this(index, name, null);
+    }
+
+    public ForumBoard(long index, String name, ForumUser creator)
+    {
+        this.index   = index;
+        this.name    = name;
+        this.creator = creator;
+
         this.accessRoles = new HashSet<>();
         this.childBoards = new HashSet<>();
         this.threads     = new HashSet<>();
@@ -68,10 +79,8 @@ public class ForumBoard
     public boolean isRootBoard() { return rootBoard; }
     public void    setRootBoard(boolean rootBoard) { this.rootBoard = rootBoard; }
 
-
     public ForumBoard getParentBoard()                       { return parentBoard; }
     public void       setParentBoard(ForumBoard parentBoard) { this.parentBoard = parentBoard; }
-
 
     public Collection<ForumThread> getThreads()    { return threads; }
     public void addThread(ForumThread thread)      { this.threads.add(thread); }
@@ -80,6 +89,8 @@ public class ForumBoard
     public Collection<ForumBoard> getChildBoards() { return childBoards; }
     public void addChildBoard(ForumBoard board)    { this.childBoards.add(board); }
     public void removeChildBoard(ForumBoard board) { this.childBoards.remove(board); }
+
+    public ForumUser getCreator() { return creator; }
 
 
     public boolean getGlobalPermission(BoardPermission type)

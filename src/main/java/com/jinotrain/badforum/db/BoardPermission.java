@@ -4,7 +4,7 @@ public enum BoardPermission
 {
     VIEW("View posts"),
     POST("Create posts"),
-    MODERATE("Delete posts"),
+    MODERATE("Moderate posts/threads"),
     ;
 
     public final String label;

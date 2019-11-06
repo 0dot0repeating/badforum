@@ -154,6 +154,11 @@ public class BoardPermissionsController extends ForumController
             return errorPage("boardpermissions_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
+        if (!ForumUser.userOutranksOrIs(user, board.getCreator()))
+        {
+            return errorPage("boardpermissions_error.html", "OUTRANKED", HttpStatus.FORBIDDEN);
+        }
+
         List<BoardRoleData> permissionViewData = getAllBoardPermissions(board);
 
         ModelAndView ret = new ModelAndView("boardpermissions.html");
@@ -244,6 +249,11 @@ public class BoardPermissionsController extends ForumController
         catch (NumberFormatException e)
         {
             return errorPage("boardpermissions_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        if (!ForumUser.userOutranksOrIs(user, board.getCreator()))
+        {
+            return errorPage("boardpermissions_error.html", "OUTRANKED", HttpStatus.FORBIDDEN);
         }
 
         updateBoardPermissions(board, buildPermissionsFromParams(request.getParameterMap()));
