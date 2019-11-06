@@ -159,16 +159,27 @@ public class BrowseAndPostController extends ForumController
             return errorPage("viewthread_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
+        if (viewThread.wasMoved())
+        {
+            long moveIndex = -1;
+
+            while (viewThread != null && viewThread.wasMoved())
+            {
+                moveIndex = viewThread.getMoveIndex();
+                viewThread = threadRepository.findByIndex(moveIndex);
+            }
+
+            if (viewThread == null || viewThread.isDeleted())
+            {
+                return errorPage("viewthread_error.html", "THREAD_DELETED", HttpStatus.GONE);
+            }
+
+            return new ModelAndView("redirect:/thread/" + moveIndex);
+        }
+
         if (viewThread.isDeleted())
         {
             return errorPage("viewthread_error.html", "THREAD_DELETED", HttpStatus.GONE);
-        }
-
-        if (viewThread.wasMoved())
-        {
-            ModelAndView mav = errorPage("viewthread_error.html", "THREAD_MOVED", HttpStatus.CONFLICT);
-            addMovedThreadDetails(mav, viewThread);
-            return mav;
         }
 
         ForumUser user;
@@ -314,18 +325,18 @@ public class BrowseAndPostController extends ForumController
             return mav;
         }
 
-        if (targetThread.isDeleted())
+        if (targetThread.wasMoved())
+        {
+            while (targetThread != null && targetThread.wasMoved())
+            {
+                targetThread = threadRepository.findByIndex(targetThread.getMoveIndex());
+            }
+        }
+
+        if (targetThread == null || targetThread.isDeleted())
         {
             ModelAndView mav = errorPage("post_error.html", "THREAD_DELETED", HttpStatus.GONE);
             mav.addObject("postText", postText);
-            return mav;
-        }
-
-        if (targetThread.wasMoved())
-        {
-            ModelAndView mav = errorPage("post_error.html", "THREAD_MOVED", HttpStatus.CONFLICT);
-            mav.addObject("postText", postText);
-            addMovedThreadDetails(mav, targetThread);
             return mav;
         }
 
