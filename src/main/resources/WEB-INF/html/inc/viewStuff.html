@@ -10,8 +10,8 @@
             <ul class="childBoards">
                 <li th:each="childBoard: ${boardViewData.childBoards}">
                     <a th:href="${'/board/' + childBoard.index}" class="childBoardLink" th:text="${childBoard.name}"></a>
-                    <span class="childBoardThreadCount">Threads: [[${childBoard.threadCount}]]</span>
-                    <span class="childBoardPostCount">Posts: [[${childBoard.postCount}]]</span>
+                    <span class="childBoardThreadCount">Threads: [[${childBoard.totalThreadCount}]]</span>
+                    <span class="childBoardPostCount">Posts: [[${childBoard.totalPostCount}]]</span>
                 </li>
             </ul>
         </th:block>

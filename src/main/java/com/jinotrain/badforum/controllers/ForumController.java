@@ -116,11 +116,6 @@ abstract class ForumController
         // TODO: implement time windows and subranges
         List<ForumThread> threads = threadRepository.findAllByBoardOrderByLastUpdateDesc(board);
 
-        long totalThreads = threads.size();
-        long totalPosts   = em.createNamedQuery("ForumBoard.getPostCount", Long.class)
-                              .setParameter("boardID", boardID)
-                              .getSingleResult();
-
         for (ForumBoard cb: childBoards)
         {
             if (!ForumUser.userHasBoardPermission(viewer, cb, BoardPermission.VIEW)) { continue; }
@@ -155,11 +150,8 @@ abstract class ForumController
                                     .setParameter("boardIDs", childBoardIDs)
                                     .getSingleResult();
 
-            BoardViewData childData = new BoardViewData(cb.getIndex(), cb.getName(), childThreadCount, childPostCount, false);
+            BoardViewData childData = new BoardViewData(cb.getIndex(), cb.getName(), childThreadCount, childPostCount);
             childBoardData.add(childData);
-
-            totalThreads += childThreadCount;
-            totalPosts   += childPostCount;
         }
 
         // for display purposes
@@ -198,6 +190,11 @@ abstract class ForumController
             td.canModerate = hasModeratePrivilege && ForumUser.userOutranksOrIs(viewer, author);
             threadData.add(td);
         }
+
+        long totalThreads = threads.size();
+        long totalPosts   = em.createNamedQuery("ForumBoard.getPostCount", Long.class)
+                              .setParameter("boardID", boardID)
+                              .getSingleResult();
 
         BoardViewData ret = new BoardViewData(board.getIndex(), board.getName(), totalThreads, totalPosts, board.isRootBoard());
         ret.canManage = ForumUser.userHasPermission(viewer, UserPermission.MANAGE_BOARDS);
