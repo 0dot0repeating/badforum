@@ -168,9 +168,14 @@ abstract class ForumController
 
             while (t.wasMoved())
             {
-                t = threadRepository.findByIndex(t.getMoveIndex());
+                long moveIndex = t.getMoveIndex();
+                t = threadRepository.findByIndex(moveIndex);
+                if (t == null) { break; }
+
                 wasMoved = true;
             }
+
+            if (t == null) { continue; }
 
             long postCountLong = em.createNamedQuery("ForumThread.getPostCount", Long.class)
                                    .setParameter("threadID", t.getID())
