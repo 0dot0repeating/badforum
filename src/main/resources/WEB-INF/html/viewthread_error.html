@@ -11,5 +11,9 @@
     <h1>View thread - Error - [[#{error.thread.__${errorCode}__.title}]]</h1>
 
     <p class="error" th:text="#{error.thread.__${errorCode}__}"></p>
+
+    <p th:if="${movedThreadIndex != null}">
+        You can find the moved thread here: <a th:href="${'/thread/' + movedThreadIndex}">"[[${movedThreadTopic}]]"</a>
+    </p>
 </body>
 </html>

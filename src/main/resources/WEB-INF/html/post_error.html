@@ -12,12 +12,16 @@
     
     <p class="error" th:text="#{error.posting.__${errorCode}__}"></p>
 
-    <div class="errorPostTopic">
+    <p th:if="${movedThreadIndex != null}">
+        You can find the moved thread here: <a th:href="${'/thread/' + movedThreadIndex}">"[[${movedThreadName}]]"</a>
+    </p>
+
+    <div class="errorPostTopic" th:if="${postTopic != null}">
         <h3>Your post topic</h3>
         <p th:text="${postTopic}"></p>
     </div>
 
-    <div class="errorPostBody">
+    <div class="errorPostBody" th:if="${postText != null}">
         <h3>Your post body</h3>
         <pre th:text="${postText}"></pre>
     </div>

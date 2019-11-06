@@ -36,6 +36,8 @@ public class ForumThread
     private Instant creationTime;
     private Instant lastUpdate;
 
+    private boolean deleted;
+
     private boolean moved;
     private Long    moveIndex;
 
@@ -94,8 +96,10 @@ public class ForumThread
     public Instant getLastUpdate()                       { return lastUpdate; }
     public void    setLastUpdate(Instant lastUpdate)     { this.lastUpdate = lastUpdate; }
 
-    public boolean wasMoved()       { return moved; }
-    public Long    getMoveIndex()   { return moveIndex; }
+    public boolean isDeleted() { return deleted; }
+
+    public boolean wasMoved()     { return moved; }
+    public Long    getMoveIndex() { return moveIndex; }
 
 
     public void setThreadMoved(long moveIndex)
@@ -104,5 +108,28 @@ public class ForumThread
         this.moveIndex = moveIndex;
         this.lastUpdate = Instant.now();
         this.topic = "[moved]";
+    }
+
+
+    public void deleteContents(boolean deletePosts, ForumUser user)
+    {
+        this.topic   = "[deleted]";
+        this.board   = null;
+        this.deleted = true;
+
+        for (ForumPost post: posts)
+        {
+            if (deletePosts)
+            {
+                ForumUser postAuthor = post.getAuthor();
+
+                if (ForumUser.userOutranksOrIs(user, postAuthor))
+                {
+                    post.deleteContents();
+                }
+            }
+
+            post.setThread(null);
+        }
     }
 }

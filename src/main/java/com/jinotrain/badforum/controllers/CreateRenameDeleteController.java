@@ -199,23 +199,7 @@ public class CreateRenameDeleteController extends ForumController
         String keepPostsRaw = request.getParameter("keepPosts");
         boolean deletePosts = !("true".equalsIgnoreCase(keepPostsRaw) || "1".equals(keepPostsRaw));
 
-        for (ForumPost post: thread.getPosts())
-        {
-            if (deletePosts)
-            {
-                ForumUser postAuthor = post.getAuthor();
-
-                if (ForumUser.userOutranksOrIs(user, postAuthor))
-                {
-                    post.deleteContents();
-                }
-            }
-
-            post.setThread(null);
-        }
-
-        thread.setBoard(null);
-        threadRepository.delete(thread);
+        thread.deleteContents(deletePosts, user);
 
         ModelAndView ret = new ModelAndView("deletethread.html");
         ret.addObject("boardIndex", board == null ? -1   : board.getIndex());

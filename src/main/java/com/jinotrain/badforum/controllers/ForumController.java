@@ -175,7 +175,7 @@ abstract class ForumController
                 wasMoved = true;
             }
 
-            if (t == null) { continue; }
+            if (t == null || t.isDeleted()) { continue; }
 
             long postCountLong = em.createNamedQuery("ForumThread.getPostCount", Long.class)
                                    .setParameter("threadID", t.getID())

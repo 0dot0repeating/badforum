@@ -70,6 +70,29 @@ public class BrowseAndPostController extends ForumController
     }
 
 
+    private void addMovedThreadDetails(ModelAndView mav, ForumThread thread)
+    {
+        long lastMoveIndex = -1;
+
+        while (thread != null && thread.wasMoved())
+        {
+            lastMoveIndex = thread.getMoveIndex();
+            thread = threadRepository.findByIndex(lastMoveIndex);
+        }
+
+        if (thread == null || thread.isDeleted())
+        {
+            mav.addObject("errorCode", "THREAD_DELETED");
+            mav.setStatus(HttpStatus.GONE);
+        }
+        else
+        {
+            mav.addObject("movedThreadIndex", lastMoveIndex);
+            mav.addObject("movedThreadTopic", thread.getTopic());
+        }
+    }
+
+
     @Transactional
     @RequestMapping(value = "/")
     public ModelAndView viewTopLevelBoard(HttpServletRequest request, HttpServletResponse response)
@@ -134,6 +157,18 @@ public class BrowseAndPostController extends ForumController
         if (viewThread == null)
         {
             return errorPage("viewthread_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        if (viewThread.isDeleted())
+        {
+            return errorPage("viewthread_error.html", "THREAD_DELETED", HttpStatus.GONE);
+        }
+
+        if (viewThread.wasMoved())
+        {
+            ModelAndView mav = errorPage("viewthread_error.html", "THREAD_MOVED", HttpStatus.CONFLICT);
+            addMovedThreadDetails(mav, viewThread);
+            return mav;
         }
 
         ForumUser user;
@@ -279,10 +314,18 @@ public class BrowseAndPostController extends ForumController
             return mav;
         }
 
+        if (targetThread.isDeleted())
+        {
+            ModelAndView mav = errorPage("post_error.html", "THREAD_DELETED", HttpStatus.GONE);
+            mav.addObject("postText", postText);
+            return mav;
+        }
+
         if (targetThread.wasMoved())
         {
             ModelAndView mav = errorPage("post_error.html", "THREAD_MOVED", HttpStatus.CONFLICT);
             mav.addObject("postText", postText);
+            addMovedThreadDetails(mav, targetThread);
             return mav;
         }
 
