@@ -163,7 +163,7 @@ abstract class ForumController
         }
 
         // for display purposes
-        // TODO: implement some way to specify order key
+        // TODO: implement some way to set child board order
         childBoardData.sort(Comparator.comparing(o -> o.index));
 
         List<ThreadViewData> threadData = new ArrayList<>();
@@ -172,8 +172,20 @@ abstract class ForumController
 
         for (ForumThread t: threads)
         {
-            List<ForumPost> posts = new ArrayList<>(t.getPosts());
-            int postCount = posts.size();
+            boolean wasMoved = false;
+
+            while (t.wasMoved())
+            {
+                t = threadRepository.findByIndex(t.getMoveIndex());
+                wasMoved = true;
+            }
+
+            long postCountLong = em.createNamedQuery("ForumThread.getPostCount", Long.class)
+                                   .setParameter("threadID", t.getID())
+                                   .getSingleResult();
+
+            int postCount = postCountLong > Integer.MAX_VALUE ? Integer.MAX_VALUE
+                          : postCountLong < Integer.MIN_VALUE ? Integer.MIN_VALUE : (int)postCountLong;
 
             Instant creationTime = t.getCreationTime();
             Instant lastUpdate   = t.getLastUpdate();
@@ -182,7 +194,7 @@ abstract class ForumController
             UserViewData userdata = author == null ? new UserViewData()
                                                    : new UserViewData(author.getUsername(), author.isBanned());
 
-            ThreadViewData td = new ThreadViewData(t.getIndex(), t.getTopic(), userdata, postCount, creationTime, lastUpdate);
+            ThreadViewData td = new ThreadViewData(t.getIndex(), t.getTopic(), userdata, postCount, creationTime, lastUpdate, wasMoved);
             td.canModerate = hasModeratePrivilege && ForumUser.userOutranksOrIs(viewer, author);
             threadData.add(td);
         }
@@ -222,14 +234,14 @@ abstract class ForumController
                                                  : new UserViewData(user.getUsername(), user.isBanned());
 
             PostViewData pdata = new PostViewData(p.getIndex(), postText, userdata, p.getPostTime(), p.getlastEditTime(),
-                                                    p.isDeleted(), p.isUserBanned(), p.getBanReason());
+                                                    p.isDeleted(), p.isUserBanned(), p.getBanReason(), p.getThreadSplitIndex());
 
             if (user != null && user.getUsername().equalsIgnoreCase(viewerUsername))
             {
                 pdata.viewerIsAuthor = true;
             }
 
-            boolean outranks = ForumUser.userOutranksOrIs(viewer,user );
+            boolean outranks = ForumUser.userOutranksOrIs(viewer, user);
             pdata.canModerate = hasModeratePrivilege && outranks;
             pdata.canBan      = hasBanPrivilege      && outranks;
 

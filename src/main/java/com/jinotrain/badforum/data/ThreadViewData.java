@@ -12,6 +12,7 @@ public class ThreadViewData
     public UserViewData author;
     public BoardViewData board;
     public boolean canModerate;
+    public boolean wasMoved;
 
     private int    postCount;
     private List<PostViewData> posts = null;
@@ -20,12 +21,13 @@ public class ThreadViewData
 
 
     // used when displaying boards - individual posts aren't needed then
-    public ThreadViewData(long index, String topic, UserViewData author, int postCount, Instant creationTime, Instant lastUpdate)
+    public ThreadViewData(long index, String topic, UserViewData author, int postCount, Instant creationTime, Instant lastUpdate, boolean wasMoved)
     {
         this.index        = index;
         this.topic        = topic;
         this.author       = author;
         this.board        = null;
+        this.wasMoved     = wasMoved;
 
         this.postCount    = postCount;
         this.creationTime = creationTime;

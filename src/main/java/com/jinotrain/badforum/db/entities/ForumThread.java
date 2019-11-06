@@ -4,25 +4,12 @@ import javax.persistence.*;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Cacheable
 @Table(name="forum_threads")
-@NamedEntityGraph(name="ForumThread.withPosts",
-                    attributeNodes =
-                    {
-                        @NamedAttributeNode(value = "posts", subgraph = "withAuthor")
-                    },
-
-                    subgraphs =
-                    {
-                        @NamedSubgraph(name="withAuthor",
-                        attributeNodes =
-                        {
-                            @NamedAttributeNode("author")
-                        })
-                    }
-                 )
+@NamedQuery(name="ForumThread.getPostCount", query="SELECT COUNT(p) FROM ForumPost p WHERE p.thread.id = :threadID AND p.split = false AND p.deleted = false")
 public class ForumThread
 {
     @Id
@@ -33,7 +20,7 @@ public class ForumThread
     private long index;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "thread", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    private Collection<ForumPost> posts;
+    private Set<ForumPost> posts;
 
     @ManyToOne
     @JoinColumn(name = "board_id")
@@ -49,8 +36,10 @@ public class ForumThread
     private Instant creationTime;
     private Instant lastUpdate;
 
+    private boolean moved;
+    private Long    moveIndex;
 
-    @SuppressWarnings("unused")
+
     ForumThread() {}
 
     public ForumThread(long index, String topic, ForumBoard board, ForumUser author)
@@ -64,12 +53,31 @@ public class ForumThread
         this.lastUpdate   = this.creationTime;
     }
 
+
+    public static ForumThread transferPostsToNewThread(long index, ForumThread other, ForumBoard board)
+    {
+        ForumThread thread = new ForumThread();
+
+        thread.index        = index;
+        thread.topic        = other.topic;
+        thread.board        = other.board;
+        thread.author       = other.author;
+        thread.posts        = new HashSet<>(other.posts);
+        thread.creationTime = other.creationTime;
+        thread.lastUpdate   = Instant.now();
+        thread.board        = board;
+
+        for (ForumPost p: thread.posts) { p.setThread(thread); }
+        other.posts.clear();
+
+        return thread;
+    }
+
+
     public Long getID()     { return id; }
     public long getIndex()  { return index; }
 
-    public Collection<ForumPost> getPosts()      { return posts; }
-    public void addPost(ForumPost post)          { posts.add(post); }
-    public void removePost(ForumPost post)       { posts.remove(post); }
+    public Collection<ForumPost> getPosts() { return posts; }
 
     public ForumBoard getBoard()                 { return board; }
     public void       setBoard(ForumBoard board) { this.board = board; }
@@ -85,4 +93,16 @@ public class ForumThread
 
     public Instant getLastUpdate()                       { return lastUpdate; }
     public void    setLastUpdate(Instant lastUpdate)     { this.lastUpdate = lastUpdate; }
+
+    public boolean wasMoved()       { return moved; }
+    public Long    getMoveIndex()   { return moveIndex; }
+
+
+    public void setThreadMoved(long moveIndex)
+    {
+        this.moved = true;
+        this.moveIndex = moveIndex;
+        this.lastUpdate = Instant.now();
+        this.topic = "[moved]";
+    }
 }

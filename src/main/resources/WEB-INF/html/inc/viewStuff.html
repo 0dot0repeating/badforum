@@ -20,18 +20,30 @@
             <h2>Threads</h2>
             <ul class="threads">
                 <li th:each="thread: ${boardViewData.threads}">
+                    <th:block th:if="${thread.wasMoved}">Moved:</th:block>
                     <a th:href="${'/thread/' + thread.index}" class="threadLink" th:text="${thread.topic}"></a>
-                    <span class="threadAuthor" th:if="${thread.author.username == null}">Posted by Anonymous</span>
-                    <span class="threadAuthor" th:if="${thread.author.username != null}">Posted by [[${thread.author.username}]]</span>
-                    <span class="threadBanned" th:if="${thread.author.isBanned}">(BANNED)</span>
-                    <span class="threadPostTime" th:if="${thread.getCreationTime() != null}">on [[${#temporals.format(thread.getCreationTime(), "yyyy-MM-dd HH:mm:ss")}]]</span>
-                    <span class="threadPostTime" th:if="${thread.getCreationTime() == null}">from the land before time</span>
-                    <span class="threadPostCount">([[${thread.getPostCount()}]] posts)</span>
 
-                    <form action="/thread/delete" method="post" th:if="${thread.canModerate}">
-                        <input type="hidden" name="threadIndex" th:value="${thread.index}">
-                        <input type="submit" value="Delete thread">
-                    </form>
+                    <div>
+                        <span class="threadAuthor" th:if="${thread.author.username == null}">Posted by Anonymous</span>
+                        <span class="threadAuthor" th:if="${thread.author.username != null}">Posted by [[${thread.author.username}]]</span>
+                        <span class="threadBanned" th:if="${thread.author.isBanned}">(BANNED)</span>
+
+                        <span class="threadPostTime" th:if="${thread.getCreationTime() != null}">on [[${#temporals.format(thread.getCreationTime(), "yyyy-MM-dd HH:mm:ss")}]]</span>
+                        <span class="threadPostTime" th:if="${thread.getCreationTime() == null}">from the land before time</span>
+
+                        <span class="threadPostCount">([[${thread.getPostCount()}]] posts)</span>
+                    </div>
+
+                    <div>
+                        <form th:action="${'/thread/' + thread.index + '/move'}" th:if="${thread.canModerate && !thread.wasMoved}">
+                            <input type="submit" value="Move thread">
+                        </form>
+
+                        <form action="/deletethread" method="post" th:if="${thread.canModerate && !thread.wasMoved}">
+                            <input type="hidden" name="threadIndex" th:value="${thread.index}">
+                            <input type="submit" value="Delete thread">
+                        </form>
+                    </div>
                 </li>
             </ul>
 
@@ -51,21 +63,46 @@
                 <span>on <time>[[${#temporals.format(post.postTime, "yyyy-MM-dd HH:mm:ss")}]]</time></span>
             </header>
 
-            <div class="text" th:utext="${post.text}"></div>
+            <div class="text" th:if="${post.splitIndex == null}" th:utext="${post.text}"></div>
+            <div class="text split" th:if="${post.splitIndex != null}">
+                <p><a th:href="${'/thread/' + post.splitIndex}">[moved]</a></p>
+            </div>
 
             <div class="banned" th:if="${post.userBanned}">
                 (USER WAS BANNED FOR THIS POST. Reason: [[${post.banReason == null ? "None specified." : '"' + post.banReason + '"'}]])
             </div>
 
-            <form action="/post/delete" method="post" th:if="${(post.canModerate || post.viewerIsAuthor) && !post.deleted}">
-                <input type="hidden" name="postIndex" th:value="${post.index}">
-                <input type="submit" value="Delete post">
-            </form>
+            <div th:if="${post.splitIndex == null}">
+                <form th:action="${'/post/' + post.index + '/split'}" th:if="${post.canModerate && !post.deleted}">
+                    <input type="submit" value="Split post">
+                </form>
 
-            <form th:action="${'/post/' + post.index + '/ban'}" method="get" th:if="${post.canBan && !post.deleted && !post.userBanned && !post.author.isBanned && post.author.username != null}">
-                <input type="submit" value="Ban poster">
-            </form>
+                <form action="/deletepost" method="post" th:if="${(post.canModerate || post.viewerIsAuthor) && !post.deleted}">
+                    <input type="hidden" name="postIndex" th:value="${post.index}">
+                    <input type="submit" value="Delete post">
+                </form>
+
+                <form th:action="${'/post/' + post.index + '/ban'}" method="get" th:if="${post.canBan && !post.deleted && !post.userBanned && !post.author.isBanned && post.author.username != null}">
+                    <input type="submit" value="Ban poster">
+                </form>
+            </div>
         </section>
     </article>
+
+
+    <ul class="boardTree" th:fragment="viewBoardTree(boardViewData, paramName, startingIndex)">
+        <li>
+            <input type="radio" th:id="${paramName + boardViewData.index}" th:name="${paramName}"
+                    th:value="${boardViewData.index}" th:disabled="${!boardViewData.canModerate}"
+                    th:class="${boardViewData.canModerate ? 'boardTreeChoice' : 'boardTreeChoice disabled'}"
+                    th:checked="${boardViewData.index == startingIndex}">
+            <label th:for="${paramName + boardViewData.index}" th:text="${boardViewData.name}"
+                   th:class="${boardViewData.canModerate ? 'boardTreeChoice' : 'boardTreeChoice disabled'}"></label>
+
+            <ul th:each="childData: ${boardViewData.childBoards}">
+                <th:block th:include=":: viewBoardTree(${childData}, ${paramName}, ${startingIndex})"></th:block>
+            </ul>
+        </li>
+    </ul>
 </body>
 </html>

@@ -19,7 +19,7 @@
     <section th:if="${threadViewData.canModerate}">
         <h2>Moderator Tools</h2>
 
-        <form method="post" action="/thread/rename">
+        <form method="post" action="/renamethread">
             <h3>Change thread topic</h3>
             <input type="hidden" name="threadIndex" th:value="${threadViewData.index}">
             <label for="threadName">New name: </label>
@@ -27,7 +27,7 @@
             <input type="submit" value="Submit new topic">
         </form>
 
-        <form method="post" action="/thread/delete">
+        <form method="post" action="/deletethread">
             <h3>Delete thread</h3>
             <input type="hidden" name="threadIndex" th:value="${threadViewData.index}">
             <input type="submit" value="Delete thread">

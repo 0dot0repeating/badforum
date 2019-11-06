@@ -15,9 +15,10 @@ public class PostViewData
     public String  banReason;
     public boolean canModerate;
     public boolean canBan;
+    public Long splitIndex;
 
 
-    public PostViewData(long index, String text, UserViewData author, Instant postTime, Instant lastEditTime, boolean deleted, boolean banned, String banReason)
+    public PostViewData(long index, String text, UserViewData author, Instant postTime, Instant lastEditTime, boolean deleted, boolean banned, String banReason, Long splitIndex)
     {
         this.index          = index;
         this.text           = text;
@@ -28,5 +29,6 @@ public class PostViewData
         this.userBanned     = banned;
         this.viewerIsAuthor = false;
         this.banReason      = banReason;
+        this.splitIndex     = splitIndex;
     }
 }

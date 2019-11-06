@@ -21,7 +21,7 @@
             <li><a th:href="${'/board/' + boardViewData.index + '/permissions'}">View permissions</a></li>
         </ul>
 
-        <form method="post" action="/board/new">
+        <form method="post" action="/newboard">
             <h3>Create sub-board</h3>
             <input type="hidden" name="parentIndex" th:value="${boardViewData.index}">
             <label for="boardName">Board name: </label>
@@ -29,7 +29,7 @@
             <input type="submit" value="Create board">
         </form>
 
-        <form method="post" action="/board/rename">
+        <form method="post" action="/renameboard">
             <h3>Rename board</h3>
             <input type="hidden" name="boardIndex" th:value="${boardViewData.index}">
             <label for="newName">New board name: </label>
@@ -37,7 +37,7 @@
             <input type="submit" value="Rename board">
         </form>
 
-        <form method="post" action="/board/delete" th:if="${!boardViewData.isRootBoard}">
+        <form method="post" action="/deleteboard" th:if="${!boardViewData.isRootBoard}">
             <h3>Delete board</h3>
             <input type="hidden" name="boardIndex" th:value="${boardViewData.index}">
             <input type="submit" value="Delete board">

@@ -5,10 +5,7 @@ import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.PermissionState;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 
 @Entity
@@ -25,10 +22,10 @@ public class ForumRole
     private String name;
 
     @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval = true, mappedBy = "role")
-    private Collection<UserToRoleLink> users;
+    private Set<UserToRoleLink> users;
 
     @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval = true, mappedBy = "role")
-    private Collection<RoleToBoardLink> accessBoards;
+    private Set<RoleToBoardLink> accessBoards;
 
     private int priority;
 
@@ -49,7 +46,7 @@ public class ForumRole
     {
         this.name = name;
         this.admin = false;
-        this.accessBoards = new ArrayList<>();
+        this.accessBoards = new HashSet<>();
         this.priority = priority;
     }
 

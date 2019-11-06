@@ -11,10 +11,10 @@
     <h1>Ban user for post</h1>
 
     <section class="ban">
-        <p th:if="${threadTopic != null}">You're about to ban "[[${banUsername}]]" for a post in "[[${threadTopic}]]".</p>
-        <p th:if="${threadTopic == null}">You're about to ban "[[${banUsername}]]" for a detached post".</p>
+        <p th:if="${threadIndex != null}">You're about to ban "[[${banUsername}]]" for a post in <a th:href="${'/thread/' + threadIndex}">"[[${threadTopic}]]"</a>.</p>
+        <p th:if="${threadIndex == null}">You're about to ban "[[${banUsername}]]" for a detached post".</p>
 
-        <h3>Post contents</h3>
+        <h3>Post text</h3>
         <div th:utext="${postText}"></div>
 
         <h3>Options</h3>

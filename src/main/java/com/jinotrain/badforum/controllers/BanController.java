@@ -248,6 +248,8 @@ public class BanController extends ForumController
         ModelAndView ret = new ModelAndView("banforpost.html");
         ret.addObject("banUsername", banUser.getUsername());
         ret.addObject("postIndex", postIndex);
+        ret.addObject("postText", formatPostText(banPost.getPostText()));
+        ret.addObject("threadIndex", thread == null ? null : thread.getIndex());
         ret.addObject("threadTopic", thread == null ? null : thread.getTopic());
         return ret;
     }

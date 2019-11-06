@@ -41,7 +41,7 @@ public class ForumUser
     private String  banReason   = null;
 
     @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval = true, mappedBy = "user")
-    private Collection<UserToRoleLink> roleLinks;
+    private Set<UserToRoleLink> roleLinks;
 
 
     public String getUsername() { return username; }

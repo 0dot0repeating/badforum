@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Move thread</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Move thread "[[${threadTopic}]]"</h1>
+
+    <p>You are about to move thread <a th:href="${'/thread/' + threadIndex}">"[[${threadTopic}]]"</a>.</p>
+
+    <form action="/movethread" method="post">
+        <h3>Move to board</h3>
+        <input type="hidden" name="threadIndex" th:value="${threadIndex}">
+        <th:block th:replace="inc/viewStuff :: viewBoardTree(${boardViewData}, 'boardIndex', ${startingIndex})" />
+        <input type="submit" value="Move thread">
+    </form>
+</body>
+</html>

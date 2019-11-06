@@ -36,6 +36,10 @@ public class ForumPost implements Comparable<ForumPost>
     private boolean bannedForThis = false;
     private String  banReason     = null;
 
+    private boolean split               = false;
+    private Long    postSplitIndex      = null;
+    private Long    threadSplitIndex    = null;
+
 
     @SuppressWarnings("unused")
     ForumPost() {}
@@ -53,6 +57,15 @@ public class ForumPost implements Comparable<ForumPost>
         this.author   = author;
     }
 
+    public ForumPost(long index, ForumPost other, ForumThread thread)
+    {
+        this.index        = index;
+        this.postText     = other.postText;
+        this.author       = other.author;
+        this.postTime     = Instant.now();
+        this.thread       = thread;
+    }
+
 
     public Long getID()     { return id; }
     public long getIndex()  { return index; }
@@ -64,18 +77,22 @@ public class ForumPost implements Comparable<ForumPost>
     public void    setPostTime(Instant t)     { postTime = t; }
 
     public Instant getlastEditTime()          { return lastEditTime; }
-    public void    setlastEditTime(Instant t) { lastEditTime = t; }
+    public void    setlastEditTime(Instant t)   { lastEditTime = t; }
 
-    public ForumUser getAuthor()              { return author; }
-    public void      setAuthor(ForumUser a)   { author = a; }
+    public ForumUser getAuthor()                { return author; }
+    public void      setAuthor(ForumUser a)     { author = a; }
 
-    public ForumThread getThread()            { return thread; }
+    public ForumThread getThread()              { return thread; }
     public void        setThread(ForumThread t) { thread = t; }
 
-    public boolean isDeleted() { return deleted; }
-    public boolean isUserBanned() { return bannedForThis; }
+    public boolean isDeleted()                  { return deleted; }
 
-    public String  getBanReason() { return banReason; }
+    public boolean isUserBanned()               { return bannedForThis; }
+    public String  getBanReason()               { return banReason; }
+
+    public boolean wasSplit()                   { return split; }
+    public Long    getPostSplitIndex()          { return postSplitIndex; }
+    public Long    getThreadSplitIndex()        { return threadSplitIndex; }
 
 
     @Override
@@ -121,5 +138,15 @@ public class ForumPost implements Comparable<ForumPost>
     {
         bannedForThis = true;
         banReason = reason;
+    }
+
+
+    public void setPostSplit(long post, long thread)
+    {
+        split = true;
+        postSplitIndex = post;
+        threadSplitIndex = thread;
+        lastEditTime = Instant.now();
+        postText = "[moved]";
     }
 }

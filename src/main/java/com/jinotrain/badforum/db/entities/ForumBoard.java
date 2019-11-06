@@ -9,11 +9,10 @@ import java.util.*;
 @Entity
 @Cacheable
 @Table(name="forum_boards")
-@NamedQuery(name="ForumBoard.getThreadCount",       query="SELECT COUNT(t) FROM ForumThread t WHERE t.board.id = :boardID")
-@NamedQuery(name="ForumBoard.multipleThreadCount",  query="SELECT COUNT(t) FROM ForumThread t WHERE t.board.id IN :boardIDs")
-@NamedQuery(name="ForumBoard.getPostCount",         query="SELECT COUNT(p) FROM ForumPost p WHERE p.thread.board.id = :boardID")
-@NamedQuery(name="ForumBoard.multiplePostCount",    query="SELECT COUNT(p) FROM ForumPost p WHERE p.thread.board.id IN :boardIDs")
-@NamedQuery(name="ForumBoard.threadsInUpdateOrder", query="SELECT t FROM ForumThread t WHERE t.board.id = :boardID ORDER BY t.lastUpdate DESC")
+@NamedQuery(name="ForumBoard.getThreadCount",       query="SELECT COUNT(t) FROM ForumThread t WHERE t.board.id = :boardID AND t.moved = false")
+@NamedQuery(name="ForumBoard.multipleThreadCount",  query="SELECT COUNT(t) FROM ForumThread t WHERE t.board.id IN :boardIDs AND t.moved = false")
+@NamedQuery(name="ForumBoard.getPostCount",         query="SELECT COUNT(p) FROM ForumPost p WHERE p.thread.board.id = :boardID AND p.split = false AND p.deleted = false")
+@NamedQuery(name="ForumBoard.multiplePostCount",    query="SELECT COUNT(p) FROM ForumPost p WHERE p.thread.board.id IN :boardIDs AND p.split = false AND p.deleted = false")
 public class ForumBoard
 {
     @Id
@@ -30,10 +29,10 @@ public class ForumBoard
     private Set<RoleToBoardLink> accessRoles;
 
     @OneToMany(cascade = CascadeType.PERSIST, fetch=FetchType.LAZY, mappedBy = "board")
-    private Collection<ForumThread> threads;
+    private Set<ForumThread> threads;
 
     @OneToMany(cascade = CascadeType.PERSIST, fetch=FetchType.LAZY, mappedBy = "parentBoard")
-    private Collection<ForumBoard> childBoards;
+    private Set<ForumBoard> childBoards;
 
     @ManyToOne
     @JoinColumn(name = "parentboard_id")

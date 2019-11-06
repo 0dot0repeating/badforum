@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Thread moved</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Thread moved</h1>
+
+    <p>Successfully split post into its own thread, "[[${newThreadTopic}]]".</p>
+
+    <ul>
+        <li><a th:href="${'/thread/' + newThreadIndex}">Go to thread</a></li>
+        <li th:if="${newBoardIndex != null}"><a th:href="${'/board/' + newBoardIndex}">Go to board "[[${newBoardName}]]"</a></li>
+        <li th:if="${oldBoardIndex != null}"><a th:href="${'/board/' + oldBoardIndex}">Return to board "[[${oldBoardName}]]"</a></li>
+        <li><a href="/">Return to home page</a></li>
+    </ul>
+</body>
+</html>
