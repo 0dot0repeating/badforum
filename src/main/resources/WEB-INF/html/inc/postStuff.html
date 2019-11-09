@@ -4,10 +4,13 @@
     <title>w   h   o   m   s   t</title>
 </head>
 <body>
-    <form class="post" method="post" action="/post" th:fragment="newThread(boardIndex, boardName, postError, postTopic, postText, canPost)">
+    <form class="post" method="post" th:action="${'/board/' + boardIndex + '/post'}" th:fragment="newThread(boardIndex, boardName, postError, postTopic, postText, canPost, viewRange)">
         <th:block th:if="${canPost}">
             <h2>Post new thread in "[[${boardName}]]"</h2>
             <div class="postError" th:if="${postError != null}">Error when posting: [[${postError}]]</div>
+
+            <input type="hidden" name="rangeStart" th:value="${viewRange[0]}">
+            <input type="hidden" name="rangeEnd"   th:value="${viewRange[1]}">
 
             <input type="hidden" name="boardIndex" th:value="${boardIndex}">
             <div class="topicField">
@@ -25,10 +28,13 @@
         </th:block>
     </form>
 
-    <form class="post reply" method="post" action="/post" th:fragment="reply(threadIndex, threadName, postError, postText, canPost)">
+    <form class="post reply" method="post" th:action="${'/thread/' + threadIndex + '/post'}" th:fragment="reply(threadIndex, threadName, postError, postText, canPost, viewRange)">
         <th:block th:if="${canPost}">
             <h2>Reply to thread "[[${threadName}]]"</h2>
-            <div class="postError" th:if="${postError != null}" th:text="Error when posting: ${postError}"></div>
+            <div class="postError" th:if="${postError != null}">Error when posting: [[${postError}]]</div>
+
+            <input type="hidden" name="rangeStart" th:value="${viewRange[0]}">
+            <input type="hidden" name="rangeEnd"   th:value="${viewRange[1]}">
 
             <input type="hidden" name="threadIndex" th:value="${threadIndex}">
             <div class="textField">

@@ -7,17 +7,18 @@ import java.util.List;
 
 public class ThreadViewData
 {
-    public long index;
-    public String topic;
-    public UserViewData author;
-    public BoardViewData board;
-    public boolean canModerate;
-    public boolean wasMoved;
+    public long   index         = -1;
+    public String topic         = null;
+    public UserViewData  author = null;
+    public BoardViewData board  = null;
+    public boolean canModerate  = false;
+    public boolean wasMoved     = false;
 
-    private int    postCount;
-    private List<PostViewData> posts = null;
-    private Instant creationTime     = null;
-    private Instant lastUpdate       = null;
+    public int   postCount = 0;
+    public int[] postRange = {0, 0};
+    public List<PostViewData> posts = null;
+    public Instant creationTime     = null;
+    public Instant lastUpdate       = null;
 
 
     // used when displaying boards - individual posts aren't needed then
@@ -26,7 +27,6 @@ public class ThreadViewData
         this.index        = index;
         this.topic        = topic;
         this.author       = author;
-        this.board        = null;
         this.wasMoved     = wasMoved;
 
         this.postCount    = postCount;
@@ -35,38 +35,14 @@ public class ThreadViewData
     }
 
     // used when displaying thread contents - the board's just needed for linking back
-    public ThreadViewData(long index, String topic, UserViewData author, BoardViewData board, List<PostViewData> posts)
+    public ThreadViewData(long index, String topic, UserViewData author, BoardViewData board, List<PostViewData> postData, int postCount, int[] postRange)
     {
         this.index        = index;
         this.topic        = topic;
         this.author       = author;
         this.board        = board;
-
-        setPosts(posts);
+        this.posts        = postData;
+        this.postCount    = postCount;
+        this.postRange    = postRange;
     }
-
-
-    public void setPosts(List<PostViewData> posts)
-    {
-        this.posts = new ArrayList<>(posts);
-        this.posts.sort(Comparator.comparing(p -> p.postTime));
-
-        this.postCount    = this.posts.size();
-
-        if (this.postCount == 0)
-        {
-            this.creationTime = null;
-            this.lastUpdate   = null;
-        }
-        else
-        {
-            this.creationTime = this.posts.get(0).postTime;
-            this.lastUpdate   = this.posts.get(postCount-1).postTime;
-        }
-    }
-
-    public int getPostCount() { return postCount; }
-    public List<PostViewData> getPosts() { return posts; }
-    public Instant getCreationTime() { return creationTime; }
-    public Instant getLastUpdate() { return lastUpdate; }
 }

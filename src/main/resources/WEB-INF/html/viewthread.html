@@ -12,9 +12,9 @@
     <h1>Viewing thread "[[${threadViewData.topic}]]"</h1>
     <p>from board "<a th:href="${'/board/' + threadViewData.board.index}">[[${threadViewData.board.name}]]</a>"</p>
 
-    <div th:replace="inc/viewStuff :: viewThread(${threadViewData})"></div>
+    <div th:replace="inc/viewStuff :: viewThread(${threadViewData}, ${viewRange}, ${pageLinks})"></div>
 
-    <form th:replace="inc/postStuff :: reply(${threadViewData.index}, ${threadViewData.topic}, ${postError}, ${postText}, ${canPost})"></form>
+    <form th:replace="inc/postStuff :: reply(${threadViewData.index}, ${threadViewData.topic}, ${postError}, ${postText}, ${canPost}, ${viewRange})"></form>
 
     <section th:if="${threadViewData.canModerate}">
         <h2>Moderator Tools</h2>

@@ -22,11 +22,11 @@ public class ForumThread
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "thread", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     private Set<ForumPost> posts;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     private ForumBoard board;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
     private ForumUser author;
 

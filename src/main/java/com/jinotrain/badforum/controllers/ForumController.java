@@ -11,11 +11,14 @@ import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.entities.*;
 import com.jinotrain.badforum.db.repositories.*;
 import com.jinotrain.badforum.util.DurationFormat;
+import com.jinotrain.badforum.util.MiscFuncs;
+import com.jinotrain.badforum.util.NotDumbPageRequest;
 import com.jinotrain.badforum.util.UserBannedException;
 import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -98,23 +101,9 @@ abstract class ForumController
     }
 
 
-    BoardViewData getBoardViewData(ForumBoard board, ForumUser viewer, EntityManager em)
+    private List<BoardViewData> getChildBoardViewData(Collection<ForumBoard> childBoards, ForumUser viewer, EntityManager em)
     {
-        if (!ForumUser.userHasBoardPermission(viewer, board, BoardPermission.VIEW))
-        {
-            throw new SecurityException("Viewer is not allowed to view board");
-        }
-
-        long boardID = board.getId();
-
-        // get thread and post count, including all child boards
-
-        Collection<ForumBoard> childBoards    = board.getChildBoards();
-        List<BoardViewData>    childBoardData = new ArrayList<>();
-
-        // gather forum threads, along with post count and thread authors
-        // TODO: implement time windows and subranges
-        List<ForumThread> threads = threadRepository.findAllByBoardOrderByLastUpdateDesc(board);
+        List<BoardViewData> ret = new ArrayList<>();
 
         for (ForumBoard cb: childBoards)
         {
@@ -143,22 +132,35 @@ abstract class ForumController
             }
 
             long childThreadCount = em.createNamedQuery("ForumBoard.multipleThreadCount", Long.class)
-                                      .setParameter("boardIDs", childBoardIDs)
-                                      .getSingleResult();
+                                            .setParameter("boardIDs", childBoardIDs)
+                                            .getSingleResult();
 
             long childPostCount = em.createNamedQuery("ForumBoard.multiplePostCount", Long.class)
-                                    .setParameter("boardIDs", childBoardIDs)
-                                    .getSingleResult();
+                                          .setParameter("boardIDs", childBoardIDs)
+                                          .getSingleResult();
 
             BoardViewData childData = new BoardViewData(cb.getIndex(), cb.getName(), childThreadCount, childPostCount);
-            childBoardData.add(childData);
+            ret.add(childData);
         }
 
-        // for display purposes
         // TODO: implement some way to set child board order
-        childBoardData.sort(Comparator.comparing(o -> o.index));
+        ret.sort(Comparator.comparing(o -> o.index));
+        return ret;
+    }
 
-        List<ThreadViewData> threadData = new ArrayList<>();
+
+    BoardViewData getBoardViewData(ForumBoard board, ForumUser viewer, int[] threadRange, EntityManager em)
+    {
+        if (!ForumUser.userHasBoardPermission(viewer, board, BoardPermission.VIEW))
+        {
+            throw new SecurityException("Viewer is not allowed to view board");
+        }
+
+        List<BoardViewData>  childBoardData = getChildBoardViewData(board.getChildBoards(), viewer, em);
+        List<ThreadViewData> threadData     = new ArrayList<>();
+
+        List<ForumThread> threads = threadRepository.findAllByBoardOrderByLastUpdateDesc(board,
+                                        new NotDumbPageRequest(threadRange[0], threadRange[1]));
 
         boolean hasModeratePrivilege = ForumUser.userHasBoardPermission(viewer, board, BoardPermission.MODERATE);
 
@@ -181,8 +183,7 @@ abstract class ForumController
                                    .setParameter("threadID", t.getID())
                                    .getSingleResult();
 
-            int postCount = postCountLong > Integer.MAX_VALUE ? Integer.MAX_VALUE
-                          : postCountLong < Integer.MIN_VALUE ? Integer.MIN_VALUE : (int)postCountLong;
+            int postCount = (int)MiscFuncs.clamp(postCountLong, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
             Instant creationTime = t.getCreationTime();
             Instant lastUpdate   = t.getLastUpdate();
@@ -196,12 +197,14 @@ abstract class ForumController
             threadData.add(td);
         }
 
-        long totalThreads = threads.size();
+        long totalThreads = threadRepository.countByBoard(board);
         long totalPosts   = em.createNamedQuery("ForumBoard.getPostCount", Long.class)
-                              .setParameter("boardID", boardID)
+                              .setParameter("boardID", board.getId())
                               .getSingleResult();
 
-        BoardViewData ret = new BoardViewData(board.getIndex(), board.getName(), totalThreads, totalPosts, board.isRootBoard());
+        int[] displayRange = {threadRange[0], threadRange[0] + Math.max(0, threads.size() - 1)};
+        BoardViewData ret = new BoardViewData(board.getIndex(), board.getName(), totalThreads, totalPosts,
+                                                board.isRootBoard(), displayRange);
 
         ret.canManage = ForumUser.userHasPermission(viewer, UserPermission.MANAGE_BOARDS)
                      && ForumUser.userOutranksOrIs(viewer, board.getCreator());
@@ -212,7 +215,7 @@ abstract class ForumController
     }
 
 
-    ThreadViewData getThreadViewData(ForumThread thread, ForumUser viewer)
+    ThreadViewData getThreadViewData(ForumThread thread, ForumUser viewer, int[] postRange, EntityManager em)
     {
         ForumBoard board = thread.getBoard();
 
@@ -221,8 +224,15 @@ abstract class ForumController
             throw new SecurityException("Viewer is not allowed to view thread's board");
         }
 
-        Collection<ForumPost> posts = thread.getPosts();
         List<PostViewData> postData = new ArrayList<>();
+        List<ForumPost> posts = postRepository.findAllByThreadOrderByPostTime(thread,
+                                    new NotDumbPageRequest(postRange[0], postRange[1]));
+
+        long postCountLong = em.createNamedQuery("ForumThread.getPostCount", Long.class)
+                                     .setParameter("threadID", thread.getID())
+                                     .getSingleResult();
+
+        int postCount = (int)MiscFuncs.clamp(postCountLong, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
         String viewerUsername = viewer == null ? null : viewer.getUsername();
 
@@ -258,9 +268,10 @@ abstract class ForumController
         UserViewData authorData = author == null ? new UserViewData()
                                                  : new UserViewData(author.getUsername(), author.isBanned());
 
-        ThreadViewData ret = new ThreadViewData(thread.getIndex(), thread.getTopic(), authorData, boardData, postData);
-
+        int[] displayRange = {postRange[0], postRange[0] + Math.max(postData.size() - 1, 0)};
+        ThreadViewData ret = new ThreadViewData(thread.getIndex(), thread.getTopic(), authorData, boardData, postData, postCount, displayRange);
         ret.canModerate = hasModeratePrivilege && ForumUser.userOutranksOrIs(viewer, author);
+
         return ret;
     }
 

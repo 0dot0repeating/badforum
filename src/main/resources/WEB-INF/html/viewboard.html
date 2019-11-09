@@ -10,9 +10,9 @@
 
     <h1>Viewing board "[[${boardViewData.name}]]"</h1>
 
-    <div th:replace="inc/viewStuff :: viewBoard(${boardViewData})"></div>
+    <div th:replace="inc/viewStuff :: viewBoard(${boardViewData}, ${viewRange}, ${pageLinks})"></div>
 
-    <form th:replace="inc/postStuff :: newThread(${boardViewData.index}, ${boardViewData.name}, ${postError}, ${postTopic}, ${postText}, ${canPost})"></form>
+    <form th:replace="inc/postStuff :: newThread(${boardViewData.index}, ${boardViewData.name}, ${postError}, ${postTopic}, ${postText}, ${canPost}, ${viewRange})"></form>
 
     <section th:if="${boardViewData.canManage}">
         <h2>Admin Tools</h2>

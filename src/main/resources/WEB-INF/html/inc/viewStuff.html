@@ -4,7 +4,7 @@
     <title>w h o m s t</title>
 </head>
 <body>
-    <section class="board" th:fragment="viewBoard(boardViewData)">
+    <section class="board" th:fragment="viewBoard(boardViewData, viewRange, pageLinks)">
         <th:block th:if="${boardViewData.childBoards.size() > 0}">
             <h2>Boards</h2>
             <ul class="childBoards">
@@ -28,10 +28,10 @@
                         <span class="threadAuthor" th:if="${thread.author.username != null}">Posted by [[${thread.author.username}]]</span>
                         <span class="threadBanned" th:if="${thread.author.isBanned}">(BANNED)</span>
 
-                        <span class="threadPostTime" th:if="${thread.getCreationTime() != null}">on [[${#temporals.format(thread.getCreationTime(), "yyyy-MM-dd HH:mm:ss")}]]</span>
-                        <span class="threadPostTime" th:if="${thread.getCreationTime() == null}">from the land before time</span>
+                        <span class="threadPostTime" th:if="${thread.creationTime != null}">on [[${#temporals.format(thread.creationTime, "yyyy-MM-dd HH:mm:ss")}]]</span>
+                        <span class="threadPostTime" th:if="${thread.creationTime == null}">from the land before time</span>
 
-                        <span class="threadPostCount">([[${thread.getPostCount()}]] posts)</span>
+                        <span class="threadPostCount">([[${thread.postCount}]] posts)</span>
                     </div>
 
                     <div>
@@ -46,15 +46,21 @@
                     </div>
                 </li>
             </ul>
-
-            <footer class="boardThreadCount">
-                Showing 1-[[${boardViewData.threadCount}]] of [[${boardViewData.threadCount}]] threads
-            </footer>
         </th:block>
+
+        <footer class="boardThreadCount">
+            Showing [[${viewRange[0]}]]-[[${viewRange[1]}]] of [[${boardViewData.threadCount}]] threads
+
+            <div class="boardNav nav">
+                Page:
+                <th:block th:each="pageData: ${pageLinks}"><a th:href="${pageData[0]}" th:text="${pageData[1]}"></a>
+                </th:block>
+            </div>
+        </footer>
     </section>
 
 
-    <article class="thread" th:fragment="viewThread(threadViewData)">
+    <article class="thread" th:fragment="viewThread(threadViewData, viewRange, pageLinks)">
         <section class="post" th:each="post: ${threadViewData.posts}">
             <header>
                 <span class="author" th:if="${post.author.username != null}">Posted by [[${post.author.username}]]</span>
@@ -87,6 +93,16 @@
                 </form>
             </div>
         </section>
+
+        <footer class="threadPostCount">
+            Showing [[${viewRange[0]}]]-[[${viewRange[1]}]] of [[${threadViewData.postCount}]] posts
+
+            <div class="threadNav nav">
+                Page:
+                <th:block th:each="pageData: ${pageLinks}"><a th:href="${pageData[0]}" th:text="${pageData[1]}"></a>
+                </th:block>
+            </div>
+        </footer>
     </article>
 
 
