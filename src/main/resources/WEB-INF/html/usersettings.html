@@ -29,6 +29,8 @@
         <input type="hidden" th:name="${setting.id}" th:value="${setting.value}">
         </th:block>
 
+        <h3>Protected settings</h3>
+
         <div class="settings protectedSettings" th:each="setting: ${protectedSettings}" th:unless="${setting.inputType == 'hidden'}">
         <th:block th:replace="inc/viewStuff :: viewSetting(${setting})" />
         </div>
@@ -42,6 +44,10 @@
                 Required if changing any of the above settings
             </div>
         </div>
+
+        <input type="submit" value="Submit">
+
+        <h3>Unprotected settings</h3>
 
         <th:block th:each="setting: ${normalSettings}" th:if="${setting.inputType == 'hidden'}">
         <input type="hidden" th:name="${setting.id}" th:value="${setting.value}">
@@ -64,7 +70,7 @@
                 <!--/* the checkbox must be before the hidden input, since the backend grabs the first value with a given name */-->
                 <li th:each="role: ${userRoles}">
                     <label th:for="${'role' + role.viewIndex}" th:text="${role.roleName}"></label>
-                    <input th:id="${'role' + role.viewIndex}" th:name="${'role:' + role.roleName}" value="1" type="checkbox" th:checked="${role.present}">
+                    <input th:id="${'role' + role.viewIndex}" th:name="${'role:' + role.roleName}" value="1" type="checkbox" th:disabled="${!role.canGrant}" th:checked="${role.present}">
                     <input th:name="${'role:' + role.roleName}" value="0" type="hidden">
                 </li>
             </ul>

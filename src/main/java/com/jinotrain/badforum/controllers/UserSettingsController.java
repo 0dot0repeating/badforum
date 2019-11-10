@@ -291,8 +291,8 @@ public class UserSettingsController extends ForumController
 
 
         List<Object[]> roleData = em.createQuery("SELECT role.name, role.id, role.admin, role.priority FROM ForumRole role"
-                                                         + " WHERE role.defaultRole = false ORDER BY role.priority DESC", Object[].class)
-                                          .getResultList();
+                                                  + " WHERE role.defaultRole = false ORDER BY role.priority DESC", Object[].class)
+                                    .getResultList();
 
         int i = 0;
         int maxPriority = user.getMaxPriority();
@@ -301,8 +301,8 @@ public class UserSettingsController extends ForumController
         {
             String  name     = (String)d[0];
             boolean present  = userRoleIDs.contains((Long)d[1]);
-            boolean outranks = (Integer)d[3] > maxPriority;
-            ret.add(new UserRoleStateData(name, present, (boolean)d[2], outranks, i++));
+            boolean canGrant = (Integer)d[3] < maxPriority;
+            ret.add(new UserRoleStateData(name, present, (boolean)d[2], canGrant, i++));
         }
 
         return ret;
