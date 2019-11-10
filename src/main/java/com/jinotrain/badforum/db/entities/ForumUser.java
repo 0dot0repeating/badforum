@@ -40,8 +40,11 @@ public class ForumUser
     private Instant bannedUntil = null;
     private String  banReason   = null;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch=FetchType.LAZY, orphanRemoval = true, mappedBy = "user")
+    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, mappedBy = "user")
     private Set<UserToRoleLink> roleLinks;
+
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, orphanRemoval = true, mappedBy = "user")
+    private ForumPreferences preferences;
 
 
     public Long   getId()       { return id; }
@@ -62,6 +65,8 @@ public class ForumUser
     public Instant getBannedUntil() { return bannedUntil; }
     public String  getBanReason()   { return banReason; }
 
+    public ForumPreferences getPreferences() { return preferences; }
+
 
     @SuppressWarnings("unused")
     ForumUser() {}
@@ -79,6 +84,7 @@ public class ForumUser
         this.roleLinks     = new HashSet<>();
         this.creationTime  = Instant.now();
         this.lastLoginTime = this.creationTime;
+        this.preferences   = new ForumPreferences(this);
     }
 
 
@@ -186,11 +192,16 @@ public class ForumUser
 
 
     @PostLoad
-    public void clearBanIfExpired()
+    public void postLoad()
     {
         if (bannedUntil != null && bannedUntil.isBefore(Instant.now()))
         {
             unban();
+        }
+
+        if (preferences == null)
+        {
+            preferences = new ForumPreferences(this);
         }
     }
 

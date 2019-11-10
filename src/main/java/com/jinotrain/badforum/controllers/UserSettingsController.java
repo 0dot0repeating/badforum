@@ -4,6 +4,7 @@ import com.jinotrain.badforum.components.passwords.ForumPasswordService;
 import com.jinotrain.badforum.data.UserRoleStateData;
 import com.jinotrain.badforum.data.UserSettingViewData;
 import com.jinotrain.badforum.db.UserPermission;
+import com.jinotrain.badforum.db.entities.ForumPreferences;
 import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumUser;
 import com.jinotrain.badforum.lambdas.UserSettingInterface;
@@ -103,14 +104,49 @@ public class UserSettingsController extends ForumController
             {
                 String newEmail = getParam(params, "email");
                 if (newEmail == null) { return false; }
+                if (user.getEmail().equals(newEmail)) { return false; }
 
-                if (!user.getEmail().equals(newEmail))
+                user.setEmail(newEmail);
+                return true;
+            }
+        });
+
+        settingInterfaces.add(new UserSettingInterface() {
+            private String[] choices = {"5", "10", "15", "20", "25", "30", "50", "100"};
+
+            public String name() { return "Default page size"; }
+            public String id() { return "pageSize"; }
+            public String inputType() { return "radio"; }
+            public String[] choices() { return choices; }
+
+            public String get(ForumUser user)
+            {
+                return Integer.toString(ForumPreferences.getPageSize(user.getPreferences()));
+            }
+
+            public boolean set(ForumUser user, Map<String, String[]> params)
+            {
+                String rawPageSize = getParam(params, "pageSize");
+                int newPageSize;
+
+                if (rawPageSize == null) { return false; }
+
+                try
                 {
-                    user.setEmail(newEmail);
-                    return true;
+                    newPageSize = Integer.valueOf(rawPageSize);
+                }
+                catch (NumberFormatException e)
+                {
+                    throw new IllegalArgumentException("Page size wasn't an integer");
                 }
 
-                return false;
+                ForumPreferences prefs = user.getPreferences();
+
+                if (newPageSize < 5) { throw new IllegalArgumentException("Page size too small"); }
+                if (newPageSize == ForumPreferences.getPageSize(prefs)) { return false; }
+
+                prefs.setPageSize(newPageSize);
+                return true;
             }
         });
     }
@@ -160,6 +196,7 @@ public class UserSettingsController extends ForumController
             viewData.readonly     = i.readonly();
             viewData.needsConfirm = i.needsConfirm();
             viewData.description  = i.description();
+            viewData.choices      = i.choices();
 
             ret.add(viewData);
         }

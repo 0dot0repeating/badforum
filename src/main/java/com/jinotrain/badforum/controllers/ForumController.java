@@ -18,7 +18,6 @@ import org.commonmark.node.Node;
 import org.commonmark.parser.Parser;
 import org.commonmark.renderer.html.HtmlRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -39,6 +38,9 @@ abstract class ForumController
 
     @Autowired
     ForumUserRepository userRepository;
+
+    @Autowired
+    ForumPreferencesRepository prefsRepository;
 
     @Autowired
     ForumRoleRepository roleRepository;

@@ -3,6 +3,7 @@ package com.jinotrain.badforum.lambdas;
 import com.jinotrain.badforum.components.passwords.ForumPasswordService;
 import com.jinotrain.badforum.db.entities.ForumUser;
 
+import java.util.List;
 import java.util.Map;
 
 public interface UserSettingInterface
@@ -15,6 +16,7 @@ public interface UserSettingInterface
     default String  description()  { return ""; }
     default boolean readonly()     { return false; }
     default boolean needsConfirm() { return false; }
+    default String[] choices()     { return null; }
 
     default boolean needsPasswordHasher()  { return false; }
 

@@ -120,5 +120,19 @@
             </ul>
         </li>
     </ul>
+
+    <div class="usersetting" th:fragment="viewSetting(setting)">
+        <label class="settingLabel" th:text="${setting.name}" th:for="${setting.id}"></label>
+
+        <input class="settingValue" th:if="${setting.inputType == 'text' || setting.inputType == 'password'}" th:id="${setting.id}" th:name="${setting.id}" th:type="${setting.inputType}" th:value="${setting.value}" th:readonly="${setting.readonly}">
+        <th:block th:if="${setting.inputType == 'radio'}" th:each="choice: ${setting.choices}">
+            <input th:id="${setting.id + ':' + choice}" type="radio" th:name="${setting.id}" th:value="${choice}" th:checked="${choice.equals(setting.value)}"><label th:for="${setting.id + ':' + choice}" th:name="${setting.id}">[[${choice}]]</label>
+        </th:block>
+        <span th:class="${setting.error ? 'settingError' : 'settingMessage'}" th:if="${setting.message != null && setting.message.length() > 0}" th:text="${setting.message}"></span>
+
+        <textarea class="settingValue" th:if="${setting.inputType == 'textarea'}" th:id="${setting.id}" th:readonly="${setting.readonly}" th:name="${setting.id}" th:text="${setting.value}"></textarea>
+
+        <div class="settingDescription" th:if="${setting.description != null && setting.description.length() > 0}" th:text="${setting.description}"></div>
+    </div>
 </body>
 </html>

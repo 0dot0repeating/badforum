@@ -7,7 +7,6 @@ import com.jinotrain.badforum.db.PermissionState;
 import javax.persistence.*;
 import java.util.*;
 
-
 @Entity
 @Cacheable
 @Table(name="forum_roles")
