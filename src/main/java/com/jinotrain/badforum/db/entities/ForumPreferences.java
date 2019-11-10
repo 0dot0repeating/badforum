@@ -15,7 +15,8 @@ public class ForumPreferences
     @JoinColumn(name = "user_id")
     private ForumUser user;
 
-    private Integer pageSize = null;
+    private Integer threadPageSize = null;
+    private Integer boardPageSize  = null;
 
 
     @SuppressWarnings("unused")
@@ -29,14 +30,25 @@ public class ForumPreferences
     public Long      getId()   { return id; }
     public ForumUser getUser() { return user; }
 
-    public static int getPageSize(ForumPreferences pref)
+    public static int getBoardPageSize(ForumPreferences pref)
     {
-        if (pref == null || pref.pageSize == null) { return 30; }
-        return pref.pageSize;
+        if (pref == null || pref.boardPageSize == null) { return 30; }
+        return pref.boardPageSize;
     }
 
-    public void setPageSize(int pageSize)
+    public static int getThreadPageSize(ForumPreferences pref)
     {
-        this.pageSize = pageSize;
+        if (pref == null || pref.threadPageSize == null) { return 30; }
+        return pref.threadPageSize;
+    }
+
+    public void setBoardPageSize(int pageSize)
+    {
+        this.boardPageSize = pageSize;
+    }
+
+    public void setThreadPageSize(int pageSize)
+    {
+        this.threadPageSize = pageSize;
     }
 }

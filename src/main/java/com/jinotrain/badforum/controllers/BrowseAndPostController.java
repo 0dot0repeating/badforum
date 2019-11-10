@@ -22,10 +22,12 @@ import java.util.List;
 @Controller
 public class BrowseAndPostController extends ForumController
 {
-    private int[] defaultRange(ForumUser user)
+    private int[] defaultRange(ForumUser user, boolean isThread)
     {
         ForumPreferences prefs = user == null ? null : user.getPreferences();
-        return new int[]{0, ForumPreferences.getPageSize(prefs)};
+
+        if (isThread) { return new int[]{0, ForumPreferences.getThreadPageSize(prefs)}; }
+        return new int[]{0, ForumPreferences.getBoardPageSize(prefs)};
     }
 
 
@@ -53,7 +55,7 @@ public class BrowseAndPostController extends ForumController
     }
 
 
-    private int[] rangeFromRequest(HttpServletRequest request, ForumUser user)
+    private int[] rangeFromRequest(HttpServletRequest request, ForumUser user, boolean isThread)
     {
         String rangeStartRaw = request.getParameter("rangeStart");
         String rangeEndRaw   = request.getParameter("rangeEnd");
@@ -70,11 +72,11 @@ public class BrowseAndPostController extends ForumController
             }
             catch (NumberFormatException ignore)
             {
-                return defaultRange(user);
+                return defaultRange(user, isThread);
             }
         }
 
-        return defaultRange(user);
+        return defaultRange(user, isThread);
     }
 
 
@@ -166,7 +168,7 @@ public class BrowseAndPostController extends ForumController
 
         ForumBoard rootBoard = boardRepository.findRootBoard();
 
-        return getBoard(rootBoard, user, defaultRange(user));
+        return getBoard(rootBoard, user, defaultRange(user, false));
     }
 
 
@@ -196,7 +198,7 @@ public class BrowseAndPostController extends ForumController
             return errorPage("viewboard_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
         }
 
-        int[] threadRange = defaultRange(user);
+        int[] threadRange = defaultRange(user, false);
 
         if (urlParts.length == 4)
         {
@@ -257,7 +259,7 @@ public class BrowseAndPostController extends ForumController
             return errorPage("viewthread_error.html", "THREAD_DELETED", HttpStatus.GONE);
         }
 
-        int[] threadRange = defaultRange(user);
+        int[] threadRange = defaultRange(user, true);
 
         if (urlParts.length == 4)
         {
@@ -316,7 +318,7 @@ public class BrowseAndPostController extends ForumController
 
         if (!ForumUser.userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
         {
-            ModelAndView mav = getBoard(targetBoard, poster, rangeFromRequest(request, poster));
+            ModelAndView mav = getBoard(targetBoard, poster, rangeFromRequest(request, poster, false));
             mav.setStatus(HttpStatus.UNAUTHORIZED);
             mav.addObject("postError", "You aren't allowed to post on this board");
             mav.addObject("postText", postText);
@@ -328,7 +330,7 @@ public class BrowseAndPostController extends ForumController
 
         if (noTopic || noText)
         {
-            ModelAndView mav = getBoard(targetBoard, poster, rangeFromRequest(request, poster));
+            ModelAndView mav = getBoard(targetBoard, poster, rangeFromRequest(request, poster, false));
             mav.setStatus(HttpStatus.BAD_REQUEST);
 
             if (noTopic && noText)
@@ -423,7 +425,7 @@ public class BrowseAndPostController extends ForumController
 
         if (!ForumUser.userHasBoardPermission(poster, targetBoard, BoardPermission.POST))
         {
-            ModelAndView mav = getThread(targetThread, poster, rangeFromRequest(request, poster));
+            ModelAndView mav = getThread(targetThread, poster, rangeFromRequest(request, poster, true));
             mav.setStatus(HttpStatus.UNAUTHORIZED);
             mav.addObject("postError", "You aren't allowed to post on this board");
             mav.addObject("postText", postText);
@@ -433,7 +435,7 @@ public class BrowseAndPostController extends ForumController
 
         if (postText == null || postText.isEmpty())
         {
-            ModelAndView mav = getThread(targetThread, poster, rangeFromRequest(request, poster));
+            ModelAndView mav = getThread(targetThread, poster, rangeFromRequest(request, poster, true));
             mav.setStatus(HttpStatus.BAD_REQUEST);
             mav.addObject("postError", "Post is empty");
             return mav;
@@ -445,7 +447,7 @@ public class BrowseAndPostController extends ForumController
                               .setParameter("threadID", targetThread.getID())
                               .getSingleResult() + 1;
 
-        int[] viewRange = rangeFromRequest(request, poster);
+        int[] viewRange = rangeFromRequest(request, poster, true);
         int   rangeSize = viewRange[1] - viewRange[0];
 
         long newRangeEnd   = ((newPostCount + rangeSize - 1) / rangeSize) * rangeSize;
