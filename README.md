@@ -4,6 +4,11 @@ It's a forum. It does all the things a forum needs to do. It's raw HTML, with th
 bare minimum of JavaScript in the login and registration pages, and the logo was
 made in 30 seconds in Inkscape.
 
+This thing was made to learn how some stuff in the Java ecosystem (Spring, Hibernate,
+Thymeleaf, JPA) works. This may end up being a not-bad forum at some point, but the
+most likely outcome is that, well... it won't. There's already plenty of forums out
+there, after all, and they work just fine.
+
 
 ## Getting it running
 
