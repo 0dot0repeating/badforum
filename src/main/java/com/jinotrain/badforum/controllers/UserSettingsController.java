@@ -94,23 +94,6 @@ public class UserSettingsController extends ForumController
             }
         });
 
-
-        settingInterfaces.add(new UserSettingInterface() {
-            public String name() { return "Email address"; }
-            public String id() { return "email"; }
-            public String get(ForumUser user) { return user.getEmail(); }
-
-            public boolean set(ForumUser user, Map<String, String[]> params)
-            {
-                String newEmail = getParam(params, "email");
-                if (newEmail == null) { return false; }
-                if (user.getEmail().equals(newEmail)) { return false; }
-
-                user.setEmail(newEmail);
-                return true;
-            }
-        });
-
         settingInterfaces.add(new UserSettingInterface() {
             private String[] choices = {"5", "10", "15", "20", "25", "30", "50", "100"};
 

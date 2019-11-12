@@ -38,12 +38,11 @@ public class LoginAndRegisterController extends ForumController
     private PreAdminKey preAdminKey;
 
 
-    private Map<String, Object> registerUser(String username, String email, String password, String pwConfirm)
+    private Map<String, Object> registerUser(String username, String password, String pwConfirm)
     {
         Map<String, Object> ret = new HashMap<>();
 
         username  = username  != null ? username  : "";
-        email     = email     != null ? email     : "";
         password  = password  != null ? password  : "";
         pwConfirm = pwConfirm != null ? pwConfirm : "";
 
@@ -110,7 +109,7 @@ public class LoginAndRegisterController extends ForumController
         try
         {
             String passhash = passwordService.hashPassword(password);
-            ForumUser user = new ForumUser(username, passhash, email);
+            ForumUser user = new ForumUser(username, passhash);
 
             ForumRole defaultRole = roleRepository.findDefaultRole();
             user.addRole(defaultRole);
@@ -245,7 +244,6 @@ public class LoginAndRegisterController extends ForumController
     public String registerUserViaJSON(HttpServletRequest request)
     {
         String username  = request.getParameter("username");
-        String email     = request.getParameter("email");
         String password  = request.getParameter("password");
         String pwConfirm = request.getParameter("confirm");
         String address   = request.getRemoteAddr();
@@ -254,7 +252,7 @@ public class LoginAndRegisterController extends ForumController
 
         if (notFlooding)
         {
-            Map<String, Object> retMap = registerUser(username, email, password, pwConfirm);
+            Map<String, Object> retMap = registerUser(username, password, pwConfirm);
             retMap.remove("session");
 
             return new JSONObject(retMap).toString();
@@ -272,7 +270,6 @@ public class LoginAndRegisterController extends ForumController
     public ModelAndView registerUserViaPOST(HttpServletRequest request, HttpServletResponse response)
     {
         String username  = request.getParameter("username");
-        String email     = request.getParameter("email");
         String password  = request.getParameter("password");
         String pwConfirm = request.getParameter("confirm");
         String address   = request.getRemoteAddr();
@@ -280,7 +277,7 @@ public class LoginAndRegisterController extends ForumController
         boolean flooding = !floodProtectionService.updateIfNotFlooding(FloodCategory.REGISTER, address);
         if (flooding) { return floodingPage(FloodCategory.REGISTER); }
 
-        Map<String, Object> result = registerUser(username, email, password, pwConfirm);
+        Map<String, Object> result = registerUser(username, password, pwConfirm);
         ModelAndView mav;
 
         if ((boolean)result.get("registered"))
@@ -300,7 +297,6 @@ public class LoginAndRegisterController extends ForumController
             mav.addObject("errorCode",  result.get("errorCode"));
             mav.addObject("errorExtra", result.getOrDefault("errorExtra", null));
             mav.addObject("username", username);
-            mav.addObject("email", email);
         }
 
         return mav;
