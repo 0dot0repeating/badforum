@@ -11,7 +11,8 @@ When you start up the forum, there will be one board - the root board - and a te
 thread. There will be no users, not even an administrator, but if you look in the
 server's console output, you will see something that looks like this:
 
-```-------------------------------------
+```text
+-------------------------------------
 
 You currently have no administrators.
    To fix this, create a new user
@@ -19,7 +20,8 @@ You currently have no administrators.
 
   bB2@qjQ@z^tP&aL(BdSROaxMb@AWc9oO
 
--------------------------------------```
+-------------------------------------
+```
 
 The message should be self-explanatory. Once you do this, you'll have an account
 with the "Global administrator" role. It is *heavily* recommended to change your
