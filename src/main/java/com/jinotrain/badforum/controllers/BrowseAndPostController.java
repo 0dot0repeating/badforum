@@ -127,6 +127,7 @@ public class BrowseAndPostController extends ForumController
         ret.addObject("canPost", ForumUser.userHasBoardPermission(viewer, board, BoardPermission.POST));
         ret.addObject("viewRange", new int[]{threadRange[0] + 1, threadRange[1]});
         ret.addObject("pageLinks", createViewRange(threadRange, viewData.threadCount, prefix));
+        ret.addObject("forumPath", getForumPath(board, viewer));
         return ret;
     }
 
@@ -155,6 +156,7 @@ public class BrowseAndPostController extends ForumController
         ret.addObject("canPost", canPost);
         ret.addObject("viewRange", new int[]{postRange[0] + 1, postRange[1]});
         ret.addObject("pageLinks", createViewRange(postRange, viewData.postCount, prefix));
+        ret.addObject("forumPath", getForumPath(thread, viewer));
         return ret;
     }
 
@@ -194,21 +196,10 @@ public class BrowseAndPostController extends ForumController
         ModelAndView ret = new ModelAndView("viewpost.html");
         ret.addObject("postViewData", postData);
         ret.addObject("canModerate", ForumUser.userHasPermission(viewer, UserPermission.MANAGE_DETACHED));
+        ret.addObject("forumPath", getForumPath(post, viewer));
 
         // relevant with /singlepost
-        if (thread != null)
-        {
-            ret.addObject("threadTopic", thread.getTopic());
-            ret.addObject("threadLink", returnThreadLink);
-
-            ForumBoard board = thread.getBoard();
-
-            if (board != null)
-            {
-                ret.addObject("boardIndex", board.getIndex());
-                ret.addObject("boardName", board.getName());
-            }
-        }
+        if (thread != null) { ret.addObject("threadLink", returnThreadLink); }
 
         return ret;
     }

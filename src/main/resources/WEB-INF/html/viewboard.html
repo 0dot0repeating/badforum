@@ -8,7 +8,9 @@
 
     </div>
 
-    <h1>Viewing board "[[${boardViewData.name}]]"</h1>
+    <header th:replace="inc/viewStuff :: viewForumPath(${forumPath})"></header>
+
+    <h1>[[${boardViewData.name}]]</h1>
 
     <div th:replace="inc/viewStuff :: viewBoard(${boardViewData}, ${viewRange}, ${pageLinks})"></div>
 

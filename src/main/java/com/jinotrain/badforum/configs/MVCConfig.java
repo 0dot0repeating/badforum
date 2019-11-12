@@ -83,6 +83,7 @@ public class MVCConfig implements WebMvcConfigurer
         resolver.setApplicationContext(webContext);
         resolver.setPrefix("classpath:/WEB-INF/" + extension + "/");
         resolver.setSuffix("." + extension);
+        resolver.setCharacterEncoding("UTF-8");
         resolver.setTemplateMode(tmode);
 
         boolean cacheTemplates = Boolean.parseBoolean(environment.getProperty("badforum.cachetemplates", "true"));

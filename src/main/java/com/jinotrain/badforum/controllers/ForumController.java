@@ -2,10 +2,7 @@ package com.jinotrain.badforum.controllers;
 
 import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.components.flooding.FloodProtectionService;
-import com.jinotrain.badforum.data.BoardViewData;
-import com.jinotrain.badforum.data.PostViewData;
-import com.jinotrain.badforum.data.ThreadViewData;
-import com.jinotrain.badforum.data.UserViewData;
+import com.jinotrain.badforum.data.*;
 import com.jinotrain.badforum.db.BoardPermission;
 import com.jinotrain.badforum.db.UserPermission;
 import com.jinotrain.badforum.db.entities.*;
@@ -334,5 +331,59 @@ abstract class ForumController
         mav.addObject("floodType", category.niceName);
         mav.addObject("floodWindow", DurationFormat.format(floodWindow));
         return mav;
+    }
+
+
+    List<LinkViewData> getForumPath(ForumBoard board, ForumUser viewer)
+    {
+        List<ForumBoard> boards = new ArrayList<>();
+        ForumBoard currentBoard = board;
+
+        while (currentBoard != null)
+        {
+            if (ForumUser.userHasBoardPermission(viewer, currentBoard, BoardPermission.VIEW))
+            {
+                boards.add(currentBoard);
+            }
+
+            currentBoard = currentBoard.getParentBoard();
+        }
+
+        ListIterator<ForumBoard> it = boards.listIterator(boards.size());
+        List<LinkViewData> boardLinks = new ArrayList<>();
+
+        while (it.hasPrevious())
+        {
+            ForumBoard nextBoard = it.previous();
+            LinkViewData boardLink = new LinkViewData("/board/" + nextBoard.getIndex(), nextBoard.getName());
+            boardLinks.add(boardLink);
+        }
+
+        return boardLinks;
+    }
+
+
+    List<LinkViewData> getForumPath(ForumThread thread, ForumUser viewer)
+    {
+        if (thread == null) { return new ArrayList<>(); }
+
+        LinkViewData threadLink = new LinkViewData("/thread/" + thread.getIndex(), thread.getTopic());
+
+        List<LinkViewData> boardLinks = getForumPath(thread.getBoard(), viewer);
+        boardLinks.add(threadLink);
+        return boardLinks;
+    }
+
+
+    List<LinkViewData> getForumPath(ForumPost post, ForumUser viewer)
+    {
+        if (post == null) { return new ArrayList<>(); }
+
+        long postIndex = post.getIndex();
+        LinkViewData postLink = new LinkViewData("/singlepost/" + postIndex, "Post #" + postIndex);
+
+        List<LinkViewData> threadLinks = getForumPath(post.getThread(), viewer);
+        threadLinks.add(postLink);
+        return threadLinks;
     }
 }
