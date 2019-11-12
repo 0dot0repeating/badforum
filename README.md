@@ -60,9 +60,7 @@ through any links.
 - `/roles` - create, delete, and modify roles
 
 
-## Stuff I should probably write up
-
-### Roles and permissions
+## Roles and permissions
 
 A role is composed of a name, a priority between -1000 and 1000 (with two exceptions),
 and a collection of forum-level permissions. Each user has a list containing the roles
@@ -154,3 +152,57 @@ There is one exception to the outranking rule: if both users' highest ranked rol
 is the "All users" role, or if both users are anonymous, they count as outranking
 each other. Enabling the relevant permissions on all users is guaranteed to be chaos,
 but hey, it is what you asked for.
+
+
+## Permission types
+
+### Forum-level
+
+- **Manage users:** A user with this permission can modify the settings of and assign
+    roles to users that they outrank. A user with this permission can only assign roles
+    with a priority lower than their highest priority.
+
+- **Manage roles:** A user with this permission can modify the name, priority, and
+    forum-level permissions of any role with a priority lower than their highest
+    priority, or delete them if they so choose. They can also create roles. They
+    cannot elevate any roles to or above their highest priority, or create roles
+    of equal or higher priority than their highest.
+
+- **Manage boards:** A user with this permission can create boards, delete boards,
+    rename boards, and modify board-level permissions on boards. They can only do
+    this on boards whose creators they outrank. The root board is considered created
+    by no one, and so everyone with this permission can manage it.
+
+- **Manage detached threads/posts:** In the case of a post or thread not attached
+    to a board, this permission takes the place of the "moderate" board-level permission.
+
+- **Ban users:** A user with this permission can ban users for any number of hours,
+    or permanently. They can also undo bans on users. They can only ban users they
+    outrank, and they can only revoke bans from users they outrank.
+
+
+### Board-level
+
+- **View:** A user with this permission can view the board, and the threads and
+    posts on it.
+
+- **Post:** A user with this permission can post new threads and reply to threads
+    on the board.
+
+- **Moderate:** A user with this permission can rename threads, delete threads and
+    posts, move threads, and split post on the board. They must outrank the user
+    whose thread/post they're interacting with, and they can only move threads
+    or split posts to boards they moderate.
+
+
+## Flood protection
+
+There is a flood protection system implemented, although right now it only applies
+to login and registration attempts. It's rather simple - make too many requests in
+a given period of time, and the flood protection service kicks in before any
+potentially costly database operations occur.
+
+A given IP is limited to 100 login attempts per minute, and 100 registration
+attempts per hour. The limits are rather high to account for multiple users
+potentially being behind the same IP address, but should still be low enough to
+prevent database thrashing.
