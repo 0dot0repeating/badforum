@@ -21,6 +21,7 @@ repositories {
 dependencies {
     compile("javax.servlet:javax.servlet-api:3.1.0",
             "javax.validation:validation-api:2.0.1.Final",
+            "com.sun.activation:javax.activation:1.2.0",    // missing in java 9+, above package requires it
 
             "org.hsqldb:hsqldb:2.4.0",                      // SQL database drivers
             "org.hibernate:hibernate-core:5.4.3.Final",     // JPA implementation
