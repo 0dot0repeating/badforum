@@ -40,7 +40,7 @@ public class ForumUser
     private Instant bannedUntil = null;
     private String  banReason   = null;
 
-    @OneToMany(fetch = FetchType.LAZY, orphanRemoval = true, mappedBy = "user")
+    @OneToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true, mappedBy = "user")
     private Set<UserToRoleLink> roleLinks;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, orphanRemoval = true, mappedBy = "user")
@@ -220,6 +220,26 @@ public class ForumUser
     }
 
 
+    public ForumRole getMaxPriorityRole()
+    {
+        int maxPriority = -1;
+        ForumRole highest = null;
+
+        for (ForumRole role: getRoles())
+        {
+            int p = role.getPriority();
+
+            if (highest == null || p > maxPriority)
+            {
+                highest = role;
+                maxPriority = p;
+            }
+        }
+
+        return highest;
+    }
+
+
     public static boolean userHasBoardPermission(ForumUser user, ForumBoard board, BoardPermission permission)
     {
         if (user == null) { return board.getGlobalPermission(permission); }
@@ -238,7 +258,16 @@ public class ForumUser
     {
         if (other == null) { return true; }
         if (user  == null) { return false; }
-        return user.getMaxPriority() > other.getMaxPriority();
+
+        ForumRole userHighest  = user.getMaxPriorityRole();
+        ForumRole otherHighest = user.getMaxPriorityRole();
+
+        // allow users with only the default role to mess with each other
+        if (otherHighest == null) { return true; }
+        if (userHighest  == null) { return false; }
+        if (userHighest.isDefaultRole() && otherHighest.isDefaultRole()) { return true; }
+
+        return userHighest.getPriority() > otherHighest.getPriority();
     }
 
 
@@ -246,11 +275,17 @@ public class ForumUser
     {
         if (other == null) { return true; }
         if (user  == null) { return false; }
+        if (sameUser(user, other)) { return true; }
 
-        // for some reason, direct property access can be null even if calling its
-        // respective getter returns the expected value. I have no fucking idea why.
-        if (user.getId().equals(other.getId())) { return true; }
-        return user.getMaxPriority() > other.getMaxPriority();
+        ForumRole userHighest  = user.getMaxPriorityRole();
+        ForumRole otherHighest = other.getMaxPriorityRole();
+
+        // allow users with only the default role to mess with each other
+        if (otherHighest == null) { return true; }
+        if (userHighest  == null) { return false; }
+        if (userHighest.isDefaultRole() && otherHighest.isDefaultRole()) { return true; }
+
+        return userHighest.getPriority() > otherHighest.getPriority();
     }
 
 

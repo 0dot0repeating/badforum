@@ -76,7 +76,7 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
             preAdminKey.setKey(key);
             preAdminKey.setAdminRoleID(adminRoles.get(0).getId());
 
-            logger.warn("----------------------------------------");
+            logger.warn("-------------------------------------");
             logger.warn("");
             logger.warn("You currently have no administrators.");
             logger.warn("   To fix this, create a new user");
@@ -84,7 +84,7 @@ public class RequiredEntityInitializer implements ApplicationListener<ContextRef
             logger.warn("");
             logger.warn("  " + key);
             logger.warn("");
-            logger.warn("----------------------------------------");
+            logger.warn("-------------------------------------");
         }
     }
 
