@@ -19,6 +19,8 @@ public interface ForumPostRepository extends JpaRepository<ForumPost, Long>
 
     ForumPost findByIndex(long index);
 
+    long countByThread(ForumThread thread);
+
     @Query("SELECT COALESCE(MAX(e.index), 0) from ForumPost e")
     long getHighestIndex();
 }

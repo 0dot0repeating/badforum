@@ -9,10 +9,9 @@ import java.util.*;
 @Entity
 @Cacheable
 @Table(name="forum_boards")
-@NamedQuery(name="ForumBoard.getThreadCount",       query="SELECT COUNT(t) FROM ForumThread t WHERE t.board.id = :boardID AND t.moved = false")
-@NamedQuery(name="ForumBoard.multipleThreadCount",  query="SELECT COUNT(t) FROM ForumThread t WHERE t.board.id IN :boardIDs AND t.moved = false")
-@NamedQuery(name="ForumBoard.getPostCount",         query="SELECT COUNT(p) FROM ForumPost p WHERE p.thread.board.id = :boardID AND p.split = false AND p.deleted = false")
-@NamedQuery(name="ForumBoard.multiplePostCount",    query="SELECT COUNT(p) FROM ForumPost p WHERE p.thread.board.id IN :boardIDs AND p.split = false AND p.deleted = false")
+@NamedQuery(name="ForumBoard.getPostCount",         query="SELECT COUNT(p) FROM ForumPost p WHERE p.thread.board.id = :boardID")
+@NamedQuery(name="ForumBoard.multiplePostCount",    query="SELECT COUNT(p) FROM ForumPost p WHERE p.thread.board.id IN :boardIDs")
+@NamedQuery(name="ForumBoard.multipleThreadCount",  query="SELECT COUNT(t) FROM ForumThread t WHERE t.board.id IN :boardIDs")
 public class ForumBoard
 {
     @Id

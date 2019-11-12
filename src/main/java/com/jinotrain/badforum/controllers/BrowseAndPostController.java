@@ -138,7 +138,7 @@ public class BrowseAndPostController extends ForumController
 
         try
         {
-            viewData = getThreadViewData(thread, viewer, postRange, em);
+            viewData = getThreadViewData(thread, viewer, postRange);
         }
         catch (SecurityException e)
         {

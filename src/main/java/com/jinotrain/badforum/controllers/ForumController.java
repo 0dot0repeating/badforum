@@ -131,12 +131,12 @@ abstract class ForumController
             }
 
             long childThreadCount = em.createNamedQuery("ForumBoard.multipleThreadCount", Long.class)
-                                            .setParameter("boardIDs", childBoardIDs)
-                                            .getSingleResult();
+                                      .setParameter("boardIDs", childBoardIDs)
+                                      .getSingleResult();
 
             long childPostCount = em.createNamedQuery("ForumBoard.multiplePostCount", Long.class)
-                                          .setParameter("boardIDs", childBoardIDs)
-                                          .getSingleResult();
+                                    .setParameter("boardIDs", childBoardIDs)
+                                    .getSingleResult();
 
             BoardViewData childData = new BoardViewData(cb.getIndex(), cb.getName(), childThreadCount, childPostCount);
             ret.add(childData);
@@ -178,11 +178,8 @@ abstract class ForumController
 
             if (t == null || t.isDeleted()) { continue; }
 
-            long postCountLong = em.createNamedQuery("ForumThread.getPostCount", Long.class)
-                                   .setParameter("threadID", t.getID())
-                                   .getSingleResult();
-
-            int postCount = (int)MiscFuncs.clamp(postCountLong, Integer.MIN_VALUE, Integer.MAX_VALUE);
+            long postCountLong = postRepository.countByThread(t);
+            int  postCount     = (int)MiscFuncs.clamp(postCountLong, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
             Instant creationTime = t.getCreationTime();
             Instant lastUpdate   = t.getLastUpdate();
@@ -214,7 +211,7 @@ abstract class ForumController
     }
 
 
-    ThreadViewData getThreadViewData(ForumThread thread, ForumUser viewer, int[] postRange, EntityManager em)
+    ThreadViewData getThreadViewData(ForumThread thread, ForumUser viewer, int[] postRange)
     {
         ForumBoard board = thread.getBoard();
 
@@ -227,10 +224,7 @@ abstract class ForumController
         List<ForumPost>    posts    = postRepository.findAllByThreadOrderByPostTime(thread,
                                           new NotDumbPageRequest(postRange[0], postRange[1]));
 
-        long postCountLong = em.createNamedQuery("ForumThread.getPostCount", Long.class)
-                                     .setParameter("threadID", thread.getID())
-                                     .getSingleResult();
-
+        long postCountLong = postRepository.countByThread(thread);
         int postCount = (int)MiscFuncs.clamp(postCountLong, Integer.MIN_VALUE, Integer.MAX_VALUE);
 
         boolean canBan      = ForumUser.userHasPermission(viewer, UserPermission.BAN_USERS);
