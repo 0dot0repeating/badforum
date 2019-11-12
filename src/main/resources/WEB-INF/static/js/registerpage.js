@@ -86,7 +86,7 @@ function checkUsername(username, notifyElement)
 
         if      (jsonResponse.tooShort)   { notifyElement.innerHTML = "Username too short"; }
         else if (jsonResponse.tooLong)    { notifyElement.innerHTML = "Username too long"; }
-        else if (!jsonResponse.valid)     { notifyElement.innerHTML = "Illegal characters"; }
+        else if (!jsonResponse.valid)     { notifyElement.innerHTML = "Only A-Z, a-z, 0-9, _, and - allowed"; }
         else if (!jsonResponse.available) { notifyElement.innerHTML = "Already taken"; }
         else                              { notifyElement.innerHTML = "Available"; }
     };

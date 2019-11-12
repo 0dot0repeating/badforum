@@ -95,11 +95,7 @@ public class LoginAndRegisterController extends ForumController
             return ret;
         }
 
-        long existingCount = em.createQuery("SELECT COUNT(u) FROM ForumUser u WHERE LOWER(u.username) = LOWER(:username)", Long.class)
-                               .setParameter("username", username)
-                               .getSingleResult();
-
-        if (existingCount > 0)
+        if (userRepository.countByUsernameIgnoreCase(username) > 0)
         {
             ret.put("registered", false);
             ret.put("errorCode", "USERNAME_TAKEN");
@@ -422,15 +418,11 @@ public class LoginAndRegisterController extends ForumController
     @RequestMapping(value = "/api/checkUsername", method = RequestMethod.GET, produces = "application/json")
     public String validateUsername(String username)
     {
-        long existingCount = em.createQuery("SELECT COUNT(u) FROM ForumUser u WHERE LOWER(u.username) = LOWER(:username)", Long.class)
-                                     .setParameter("username", username)
-                                     .getSingleResult();
-
         JSONObject ret = new JSONObject();
         ret.put("tooLong",   username.length() > ForumUser.MAX_USERNAME_LENGTH);
         ret.put("tooShort",  username.length() < ForumUser.MIN_USERNAME_LENGTH);
         ret.put("valid",     username.matches(ForumUser.VALID_USERNAME_REGEX));
-        ret.put("available", existingCount == 0);
+        ret.put("available", userRepository.countByUsernameIgnoreCase(username) == 0);
         return ret.toString();
     }
 }

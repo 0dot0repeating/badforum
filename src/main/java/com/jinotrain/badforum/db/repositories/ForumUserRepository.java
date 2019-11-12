@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface ForumUserRepository extends JpaRepository<ForumUser, Long>
 {
     ForumUser findByUsernameIgnoreCase(String username);
+    long countByUsernameIgnoreCase(String username);
 }
