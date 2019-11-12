@@ -8,8 +8,6 @@ import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumUser;
 import com.jinotrain.badforum.util.RandomIDGenerator;
 import com.jinotrain.badforum.util.UserBannedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - Error - [[#{error.viewpost.__${errorCode}__.title}]]</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>View post - Error - [[#{error.viewpost.__${errorCode}__.title}]]</h1>
+
+    <p class="error" th:text="#{error.viewpost.__${errorCode}__}"></p>
+</body>
+</html>

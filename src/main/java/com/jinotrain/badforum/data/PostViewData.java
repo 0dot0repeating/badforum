@@ -18,7 +18,8 @@ public class PostViewData
     public Long splitIndex;
 
 
-    public PostViewData(long index, String text, UserViewData author, Instant postTime, Instant lastEditTime, boolean deleted, boolean banned, String banReason, Long splitIndex)
+    public PostViewData(long index, String text, UserViewData author, Instant postTime, Instant lastEditTime,
+                        boolean deleted, boolean banned, String banReason, Long splitIndex)
     {
         this.index          = index;
         this.text           = text;

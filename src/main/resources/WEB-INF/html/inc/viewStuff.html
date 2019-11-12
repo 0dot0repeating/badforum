@@ -61,38 +61,8 @@
 
 
     <article class="thread" th:fragment="viewThread(threadViewData, viewRange, pageLinks)">
-        <section class="post" th:each="post: ${threadViewData.posts}">
-            <header>
-                <span class="author" th:if="${post.author.username != null}">Posted by [[${post.author.username}]]</span>
-                <span class="author" th:if="${post.author.username == null}">Posted anonymously</span>
-                <span class="banned" th:if="${post.author.isBanned}">(BANNED)</span>
-                <span>on <time>[[${#temporals.format(post.postTime, "yyyy-MM-dd HH:mm:ss")}]]</time></span>
-            </header>
-
-            <div class="text" th:if="${post.splitIndex == null}" th:utext="${post.text}"></div>
-            <div class="text split" th:if="${post.splitIndex != null}">
-                <p><a th:href="${'/thread/' + post.splitIndex}">[moved]</a></p>
-            </div>
-
-            <div class="banned" th:if="${post.userBanned}">
-                (USER WAS BANNED FOR THIS POST. Reason: [[${post.banReason == null ? "None specified." : '"' + post.banReason + '"'}]])
-            </div>
-
-            <div th:if="${post.splitIndex == null}">
-                <form th:action="${'/post/' + post.index + '/split'}" th:if="${post.canModerate && !post.deleted}">
-                    <input type="submit" value="Split post">
-                </form>
-
-                <form action="/deletepost" method="post" th:if="${(post.canModerate || post.viewerIsAuthor) && !post.deleted}">
-                    <input type="hidden" name="postIndex" th:value="${post.index}">
-                    <input type="submit" value="Delete post">
-                </form>
-
-                <form th:action="${'/post/' + post.index + '/ban'}" method="get" th:if="${post.canBan && !post.deleted && !post.userBanned && !post.author.isBanned && post.author.username != null}">
-                    <input type="submit" value="Ban poster">
-                </form>
-            </div>
-        </section>
+        <th:block class="post" th:each="post: ${threadViewData.posts}" th:insert=":: viewPost(${post})">
+        </th:block>
 
         <footer class="threadPostCount">
             Showing [[${viewRange[0]}]]-[[${viewRange[1]}]] of [[${threadViewData.postCount}]] posts
@@ -104,6 +74,40 @@
             </div>
         </footer>
     </article>
+
+    <section class="post" th:id="${'p' + post.index}" th:fragment="viewPost(post)">
+        <header>
+            <a class="postLink" th:href="${'/singlepost/' + post.index}">[[${'[#' + post.index + ']'}]]</a>
+            <span class="author" th:if="${post.author.username != null}">Posted by [[${post.author.username}]]</span>
+            <span class="author" th:if="${post.author.username == null}">Posted anonymously</span>
+            <span class="banned" th:if="${post.author.isBanned}">(BANNED)</span>
+            <span>on <time>[[${#temporals.format(post.postTime, "yyyy-MM-dd HH:mm:ss")}]]</time></span>
+        </header>
+
+        <div class="text" th:if="${post.splitIndex == null}" th:utext="${post.text}"></div>
+        <div class="text split" th:if="${post.splitIndex != null}">
+            <p><a th:href="${'/thread/' + post.splitIndex}">[moved]</a></p>
+        </div>
+
+        <div class="banned" th:if="${post.userBanned}">
+            (USER WAS BANNED FOR THIS POST. Reason: [[${post.banReason == null ? "None specified." : '"' + post.banReason + '"'}]])
+        </div>
+
+        <div class="postTools" th:if="${post.splitIndex == null}">
+            <form th:action="${'/post/' + post.index + '/split'}" th:if="${post.canModerate && !post.deleted}">
+                <input type="submit" value="Split post">
+            </form>
+
+            <form action="/deletepost" method="post" th:if="${(post.canModerate || post.viewerIsAuthor) && !post.deleted}">
+                <input type="hidden" name="postIndex" th:value="${post.index}">
+                <input type="submit" value="Delete post">
+            </form>
+
+            <form th:action="${'/post/' + post.index + '/ban'}" method="get" th:if="${post.canBan && !post.deleted && !post.userBanned && !post.author.isBanned && post.author.username != null}">
+                <input type="submit" value="Ban poster">
+            </form>
+        </div>
+    </section>
 
 
     <ul class="boardTree" th:fragment="viewBoardTree(boardViewData, paramName, startingIndex)">

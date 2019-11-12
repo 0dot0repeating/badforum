@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>[[#{badforum.name}]] - aeiou</title>
+</head>
+<body>
+    <div th:replace="inc/header :: header">
+
+    </div>
+
+    <h1>Viewing <th:block th:if="${threadTopic == null}">standalone</th:block> post <th:block th:if="${threadTopic != null}">from "[[${threadTopic}]]"</th:block></h1>
+
+    <div th:replace="inc/viewStuff :: viewPost(${postViewData})"></div>
+
+    <ul th:if="${threadLink != null}">
+        <li><a th:href="${threadLink}">Return to thread "[[${threadTopic}]]"</a></li>
+        <li th:if="${boardIndex != null}"><a th:href="${'/board/' + boardIndex}">Return to board "[[${boardName}]]"</a></li>
+    </ul>
+</body>
+</html>

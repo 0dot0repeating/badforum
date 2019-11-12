@@ -1,6 +1,7 @@
 package com.jinotrain.badforum.controllers;
 
 import com.jinotrain.badforum.data.BoardViewData;
+import com.jinotrain.badforum.data.PostViewData;
 import com.jinotrain.badforum.data.ThreadViewData;
 import com.jinotrain.badforum.db.BoardPermission;
 import com.jinotrain.badforum.db.UserPermission;
@@ -158,6 +159,61 @@ public class BrowseAndPostController extends ForumController
     }
 
 
+    private ModelAndView getPost(ForumPost post, ForumUser viewer, boolean singlePost)
+    {
+        ForumThread thread = post.getThread();
+        long postIndex = post.getIndex();
+
+        String returnThreadLink = null;
+
+        if (thread != null)
+        {
+            ForumBoard viewBoard = thread.getBoard();
+
+            if (viewBoard != null && !ForumUser.userHasBoardPermission(viewer, viewBoard, BoardPermission.VIEW))
+            {
+                return errorPage("viewpost_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
+            }
+
+            List<Long> postIndexes = em.createQuery("SELECT p.index FROM ForumPost p WHERE p.thread.id = :threadID ORDER BY p.index", Long.class)
+                                             .setParameter("threadID", thread.getID())
+                                             .getResultList();
+
+            int pageSize = defaultRange(viewer, true)[1];
+            int postPosition = postIndexes.indexOf(postIndex);
+
+            int  postPage      = postPosition / pageSize;
+            long postPageStart = (postPage * pageSize) + 1;
+            long postPageEnd   = (postPage + 1) * pageSize;
+
+            returnThreadLink = "/thread/" + thread.getIndex() + "/" + postPageStart + "-" + postPageEnd + "#p" + postIndex;
+            if (!singlePost) { return new ModelAndView("redirect:" + returnThreadLink); }
+        }
+
+        PostViewData postData = getPostViewData(post, viewer);
+        ModelAndView ret = new ModelAndView("viewpost.html");
+        ret.addObject("postViewData", postData);
+        ret.addObject("canModerate", ForumUser.userHasPermission(viewer, UserPermission.MANAGE_DETACHED));
+
+        // relevant with /singlepost
+        if (thread != null)
+        {
+            ret.addObject("threadTopic", thread.getTopic());
+            ret.addObject("threadLink", returnThreadLink);
+
+            ForumBoard board = thread.getBoard();
+
+            if (board != null)
+            {
+                ret.addObject("boardIndex", board.getIndex());
+                ret.addObject("boardName", board.getName());
+            }
+        }
+
+        return ret;
+    }
+
+
     @Transactional
     @RequestMapping(value = "/")
     public ModelAndView viewTopLevelBoard(HttpServletRequest request, HttpServletResponse response)
@@ -181,17 +237,14 @@ public class BrowseAndPostController extends ForumController
         catch (UserBannedException e) { return bannedPage(e); }
 
         String[] urlParts = request.getServletPath().split("/");
-        ForumBoard viewBoard;
+        ForumBoard viewBoard = null;
 
         try
         {
             long boardID = Long.valueOf(urlParts[2]);
             viewBoard = boardRepository.findByIndex(boardID);
         }
-        catch (NumberFormatException e)
-        {
-            return errorPage("viewboard_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
-        }
+        catch (NumberFormatException ignore) {}
 
         if (viewBoard == null)
         {
@@ -219,17 +272,14 @@ public class BrowseAndPostController extends ForumController
         catch (UserBannedException e) { return bannedPage(e); }
 
         String[] urlParts = request.getServletPath().split("/");
-        ForumThread viewThread;
+        ForumThread viewThread = null;
 
         try
         {
             long threadID = Long.valueOf(urlParts[2]);
             viewThread = threadRepository.findByIndex(threadID);
         }
-        catch (NumberFormatException e)
-        {
-            return errorPage("viewthread_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
-        }
+        catch (NumberFormatException ignore) {}
 
         if (viewThread == null)
         {
@@ -268,6 +318,34 @@ public class BrowseAndPostController extends ForumController
         }
 
         return getThread(viewThread, user, threadRange);
+    }
+
+
+    @Transactional
+    @RequestMapping(value = {"/post/*", "/singlepost/*"})
+    public ModelAndView viewRequestedPost(HttpServletRequest request, HttpServletResponse response)
+    {
+        ForumUser user;
+        try { user = getUserFromRequest(request); }
+        catch (UserBannedException e) { return bannedPage(e); }
+
+        String[] urlParts = request.getServletPath().split("/");
+
+        ForumPost viewPost  = null;
+
+        try
+        {
+            long postIndex = Long.valueOf(urlParts[2]);
+            viewPost = postRepository.findByIndex(postIndex);
+        }
+        catch (NumberFormatException ignore) {}
+
+        if (viewPost == null)
+        {
+            return errorPage("viewpost_error.html", "NOT_FOUND", HttpStatus.NOT_FOUND);
+        }
+
+        return getPost(viewPost, user, urlParts[1].equals("singlepost"));
     }
 
 
