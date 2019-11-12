@@ -6,10 +6,7 @@
 <body>
     <nav th:fragment="header">
         <img class="forumlogo" src="/static/img/logo.svg" height="64">
-        <div class="forumname">[[#{badforum.name}]]</div>
-        <ul>
-            <li><a href="/">Home</a></li>
-        </ul>
+        <a href="/"><h1 class="forumname">[[#{badforum.name}]]</h1></a>
 
         <div class="userinfo">
             <span th:if="${forumSession != null}">
@@ -22,6 +19,8 @@
                 <a href="/login">Login</a> / <a href="/register">Register</a>
             </span>
         </div>
+
+        <div th:replace="inc/viewStuff :: viewForumPath(${forumPath})"></div>
     </nav>
 </body>
 </html>

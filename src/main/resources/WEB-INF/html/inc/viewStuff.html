@@ -139,12 +139,12 @@
         <div class="settingDescription" th:if="${setting.description != null && setting.description.length() > 0}" th:text="${setting.description}"></div>
     </div>
 
-    <header class="forumPath" th:fragment="viewForumPath(forumPath)">
-        <p>
+    <div class="forumPath" th:fragment="viewForumPath(forumPath)">
+        <p th:if="${forumPath != null}">
             <strong>Path:</strong>
             <th:block th:each="link, iter: ${forumPath}"><a th:href="${link.link}" th:text="${link.text}"></a> <th:block th:if="${!iter.last}">→
             </th:block></th:block>
         </p>
-    </header>
+    </div>
 </body>
 </html>
