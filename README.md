@@ -5,7 +5,26 @@ bare minimum of JavaScript in the login and registration pages, and the logo was
 made in 30 seconds in Inkscape.
 
 
+## Getting it running
+
+- Run `gradle copydependencies`. This will take every dependency JAR the forum needs,
+  and put it into the `dependencies/` folder.
+- Run `gradle assemble`. This builds the JAR file, as usual.
+- Run `./run.sh`. This will run the JAR file with the necessary classpath adjustment.
+
+If everything works, you'll see some startup logs, finished off with a line looking
+like `DispatcherServlet - Completed initialization in 2654 ms`.
+
+
 ## Setup
+
+By default, the forum runs on port 8081. To change this, create a file called
+`badforum.properties`, put it in either the folder the JAR is in or the folder
+you're running the JAR in, and put the following in the file:
+
+```text
+badforum.port = <port>
+```
 
 When you start up the forum, there will be one board - the root board - and a test
 thread. There will be no users, not even an administrator, but if you look in the
