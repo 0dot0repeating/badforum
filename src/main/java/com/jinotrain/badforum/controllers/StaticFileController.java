@@ -25,8 +25,6 @@ import java.util.TimeZone;
 @Controller
 public class StaticFileController
 {
-    private static Logger logger = LoggerFactory.getLogger(StaticFileController.class);
-
     private static final int CHUNKSIZE = 8192;
 
     private static final String[] INLINE_MIMES =

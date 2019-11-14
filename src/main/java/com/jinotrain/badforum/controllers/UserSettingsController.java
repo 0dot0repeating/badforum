@@ -1,5 +1,6 @@
 package com.jinotrain.badforum.controllers;
 
+import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.components.passwords.ForumPasswordService;
 import com.jinotrain.badforum.data.UserRoleStateData;
 import com.jinotrain.badforum.data.UserSettingViewData;
@@ -349,6 +350,8 @@ public class UserSettingsController extends ForumController
     public ModelAndView viewOwnSettings(HttpServletRequest  request,
                                         HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser viewUser;
         try { viewUser = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -372,6 +375,8 @@ public class UserSettingsController extends ForumController
     public ModelAndView viewOtherSettings(HttpServletRequest  request,
                                           HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser viewUser;
         try { viewUser = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -399,6 +404,8 @@ public class UserSettingsController extends ForumController
     @RequestMapping(value = "/savesettings")
     public ModelAndView saveSettings(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("usersettings_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
@@ -502,6 +509,8 @@ public class UserSettingsController extends ForumController
     @RequestMapping(value = "/saveuserroles")
     public ModelAndView saveUserRoles(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("userroles_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);

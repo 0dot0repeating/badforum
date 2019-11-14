@@ -1,5 +1,7 @@
 package com.jinotrain.badforum.controllers;
 
+import com.jinotrain.badforum.components.flooding.FloodCategory;
+import com.jinotrain.badforum.components.flooding.FloodProtectionService;
 import com.jinotrain.badforum.db.entities.ForumSession;
 import com.jinotrain.badforum.db.entities.ForumUser;
 import com.jinotrain.badforum.db.repositories.ForumSessionRepository;
@@ -23,11 +25,22 @@ public class ForumSessionInjector extends HandlerInterceptorAdapter
     @Autowired
     private ForumSessionRepository sessionRepository;
 
+    @Autowired
+    FloodProtectionService floodProtectionService;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
     {
         try { request.setCharacterEncoding("UTF-8"); }
         catch (Exception ignore) {}
+
+        boolean flooding = !floodProtectionService.updateIfNotFlooding(FloodCategory.ANY, request.getRemoteAddr());
+
+        if (flooding)
+        {
+            request.setAttribute("flooding", true);
+            return true;
+        }
 
         Cookie[] cookies = request.getCookies();
         if (cookies == null) { return true; }

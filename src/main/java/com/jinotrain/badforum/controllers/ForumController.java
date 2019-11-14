@@ -316,7 +316,20 @@ abstract class ForumController
     }
 
 
+    boolean isFlooding(HttpServletRequest request)
+    {
+        Object flooding = request.getAttribute("flooding");
+        return flooding != null && flooding.equals(true);
+    }
+
+
     ModelAndView floodingPage(FloodCategory category)
+    {
+        return floodingPage(category, false);
+    }
+
+
+    ModelAndView floodingPage(FloodCategory category, boolean isLoggedIn)
     {
         ModelAndView mav = new ModelAndView("flooding.html");
         Duration floodWindow = floodProtectionService.getFloodWindow(category);
@@ -324,6 +337,7 @@ abstract class ForumController
         mav.setStatus(HttpStatus.TOO_MANY_REQUESTS);
         mav.addObject("floodType", category.niceName);
         mav.addObject("floodWindow", DurationFormat.format(floodWindow));
+        mav.addObject("isLoggedIn", isLoggedIn);
         return mav;
     }
 

@@ -10,6 +10,7 @@
 
     <h1>You have been rate limited</h1>
 
-    <p>[[#{error.flooding(${floodType.toLowerCase()}, ${floodWindow})}]]</p>
+    <p th:if="${!isLoggedIn}">[[#{error.flooding.ip(${floodType.toLowerCase()}, ${floodWindow})}]]</p>
+    <p th:if="${isLoggedIn}">[[#{error.flooding.user(${floodType.toLowerCase()}, ${floodWindow})}]]</p>
 </body>
 </html>

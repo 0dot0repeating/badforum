@@ -1,5 +1,6 @@
 package com.jinotrain.badforum.controllers;
 
+import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.data.BoardViewData;
 import com.jinotrain.badforum.data.PostViewData;
 import com.jinotrain.badforum.data.ThreadViewData;
@@ -209,6 +210,8 @@ public class BrowseAndPostController extends ForumController
     @RequestMapping(value = "/")
     public ModelAndView viewTopLevelBoard(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser user;
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -223,6 +226,8 @@ public class BrowseAndPostController extends ForumController
     @RequestMapping(value = {"/board/*", "/board/*/*-*"})
     public ModelAndView viewRequestedBoard(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser user;
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -258,6 +263,8 @@ public class BrowseAndPostController extends ForumController
     @RequestMapping(value = {"/thread/*", "/thread/*/*-*"})
     public ModelAndView viewRequestedThread(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser user;
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -316,6 +323,8 @@ public class BrowseAndPostController extends ForumController
     @RequestMapping(value = {"/post/*", "/singlepost/*"})
     public ModelAndView viewRequestedPost(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser user;
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -344,6 +353,8 @@ public class BrowseAndPostController extends ForumController
     @RequestMapping(value = "/board/*/post")
     public ModelAndView postNewTopic(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser poster;
         try { poster = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -446,6 +457,9 @@ public class BrowseAndPostController extends ForumController
             return mav;
         }
 
+        boolean flooding = !floodProtectionService.updateIfNotFlooding(FloodCategory.POST_TOPIC, poster == null ? request.getRemoteAddr() : poster);
+        if (flooding) { return floodingPage(FloodCategory.POST_TOPIC, poster != null); }
+
         long threadIndex = threadRepository.getHighestIndex() + 1;
 
         ForumPost   firstPost = new ForumPost(postRepository.getHighestIndex() + 1, postText, poster);
@@ -463,6 +477,8 @@ public class BrowseAndPostController extends ForumController
     @RequestMapping(value = "/thread/*/post")
     public ModelAndView postReply(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser poster;
         try { poster = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -544,6 +560,9 @@ public class BrowseAndPostController extends ForumController
             mav.addObject("postText",  postText);
             return mav;
         }
+
+        boolean flooding = !floodProtectionService.updateIfNotFlooding(FloodCategory.REPLY, poster == null ? request.getRemoteAddr() : poster);
+        if (flooding) { return floodingPage(FloodCategory.REPLY, poster != null); }
 
         ForumPost reply = new ForumPost(postRepository.getHighestIndex() + 1, postText, poster);
 

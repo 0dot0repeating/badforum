@@ -233,38 +233,12 @@ public class LoginAndRegisterController extends ForumController
 
 
 
-
-    @ResponseBody
-    @Transactional
-    @RequestMapping(value = "/api/register", produces = "application/json")
-    public String registerUserViaJSON(HttpServletRequest request)
-    {
-        String username  = request.getParameter("username");
-        String password  = request.getParameter("password");
-        String pwConfirm = request.getParameter("confirm");
-        String address   = request.getRemoteAddr();
-
-        boolean notFlooding = floodProtectionService.updateIfNotFlooding(FloodCategory.REGISTER, address);
-
-        if (notFlooding)
-        {
-            Map<String, Object> retMap = registerUser(username, password, pwConfirm);
-            retMap.remove("session");
-
-            return new JSONObject(retMap).toString();
-        }
-
-        JSONObject ret = new JSONObject();
-        ret.put("registered", false);
-        ret.put("flooding", true);
-        return ret.toString();
-    }
-
-
     @Transactional
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public ModelAndView registerUserViaPOST(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         String username  = request.getParameter("username");
         String password  = request.getParameter("password");
         String pwConfirm = request.getParameter("confirm");
@@ -300,38 +274,11 @@ public class LoginAndRegisterController extends ForumController
 
 
     @RequestMapping(value = "/register", method = RequestMethod.GET)
-    public ModelAndView getRegisterPage()
+    public ModelAndView getRegisterPage(HttpServletRequest request)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         return new ModelAndView("register.html");
-    }
-
-
-
-
-    @ResponseBody
-    @Transactional
-    @RequestMapping(value = "/api/login", produces = "application/json")
-    public String loginViaJSON(HttpServletRequest request)
-    {
-        String username   = request.getParameter("username");
-        String password   = request.getParameter("password");
-        String rememberMe = request.getParameter("rememberMe");
-        String address    = request.getRemoteAddr();
-
-        boolean notFlooding = floodProtectionService.updateIfNotFlooding(FloodCategory.LOGIN, address);
-
-        if (notFlooding)
-        {
-            Map<String, Object> retMap = loginUser(username, password, Boolean.parseBoolean(rememberMe));
-            retMap.remove("session");
-
-            return new JSONObject(retMap).toString();
-        }
-
-        JSONObject ret = new JSONObject();
-        ret.put("loggedIn", false);
-        ret.put("flooding", true);
-        return ret.toString();
     }
 
 
@@ -339,6 +286,8 @@ public class LoginAndRegisterController extends ForumController
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ModelAndView loginViaPOST(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         String username    = request.getParameter("username");
         String password    = request.getParameter("password");
         boolean rememberMe = Boolean.parseBoolean(request.getParameter("rememberMe"));
@@ -381,41 +330,32 @@ public class LoginAndRegisterController extends ForumController
     public ModelAndView getLoginPage(HttpServletRequest request,
                                      HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         return new ModelAndView("login.html");
     }
 
 
-
-
-    @ResponseBody
     @Transactional
-    @RequestMapping(value = "/api/logout", produces = "application/json")
-    public String logoutViaJSON(String sessionID)
+    @RequestMapping(value = "/logout", produces = "text/plain")
+    public ModelAndView logoutViaPOST(HttpServletRequest request, HttpServletResponse response)
     {
-        ForumSession session = sessionRepository.findById(sessionID).orElse(null);
-        Map<String, Object> retMap = logout(session);
-        return new JSONObject(retMap).toString();
-    }
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
 
-
-    @Transactional
-    @RequestMapping(value = "/logout", method = {RequestMethod.GET, RequestMethod.POST}, produces = "text/plain")
-    public String logoutViaPOST(HttpServletRequest request, HttpServletResponse response)
-    {
         ForumSession session = getForumSession(request, true);
         if (session != null) { logout(session); }
 
         String referer = request.getHeader("Referer");
         if (referer == null) { referer = ""; }
 
-        return "redirect:" + referer;
+        return new ModelAndView("redirect:" + referer);
     }
 
 
 
 
     @ResponseBody
-    @RequestMapping(value = "/api/checkUsername", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/api/checkUsername", produces = "application/json")
     public String validateUsername(String username)
     {
         JSONObject ret = new JSONObject();

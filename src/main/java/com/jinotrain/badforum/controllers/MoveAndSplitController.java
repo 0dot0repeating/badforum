@@ -1,5 +1,6 @@
 package com.jinotrain.badforum.controllers;
 
+import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.data.BoardViewData;
 import com.jinotrain.badforum.db.BoardPermission;
 import com.jinotrain.badforum.db.UserPermission;
@@ -72,6 +73,8 @@ public class MoveAndSplitController extends ForumController
     @RequestMapping(value = "/thread/*/move")
     public ModelAndView beginMovingThread(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser viewer;
         try { viewer = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -120,6 +123,8 @@ public class MoveAndSplitController extends ForumController
     @RequestMapping(value = "/post/*/split")
     public ModelAndView beginSplittingPost(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser viewer;
         try { viewer = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -172,6 +177,8 @@ public class MoveAndSplitController extends ForumController
     @RequestMapping(value = "/movethread")
     public ModelAndView moveThread(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("movethread_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
@@ -274,6 +281,8 @@ public class MoveAndSplitController extends ForumController
     @RequestMapping(value = "/splitpost")
     public ModelAndView splitPost(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("splitpost_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);

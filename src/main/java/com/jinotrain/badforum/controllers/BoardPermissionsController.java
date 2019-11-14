@@ -1,5 +1,6 @@
 package com.jinotrain.badforum.controllers;
 
+import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.data.BoardRoleData;
 import com.jinotrain.badforum.data.BoardPermissionStateData;
 import com.jinotrain.badforum.db.BoardPermission;
@@ -129,6 +130,8 @@ public class BoardPermissionsController extends ForumController
     @RequestMapping(value="/board/*/permissions")
     public ModelAndView viewBoardPermissions(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser user;
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -230,6 +233,8 @@ public class BoardPermissionsController extends ForumController
     @RequestMapping(value="/board/savepermissions", method=RequestMethod.POST)
     public ModelAndView saveBoardPermissions(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser user;
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }

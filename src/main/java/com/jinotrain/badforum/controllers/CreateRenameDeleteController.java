@@ -1,5 +1,6 @@
 package com.jinotrain.badforum.controllers;
 
+import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.db.BoardPermission;
 import com.jinotrain.badforum.db.PermissionState;
 import com.jinotrain.badforum.db.UserPermission;
@@ -22,6 +23,8 @@ public class CreateRenameDeleteController extends ForumController
     @RequestMapping(value = "/newboard")
     public ModelAndView createNewBoard(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("newboard_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
@@ -83,6 +86,8 @@ public class CreateRenameDeleteController extends ForumController
     @RequestMapping(value = "/deleteboard")
     public ModelAndView deleteBoard(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("deleteboard_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
@@ -153,6 +158,8 @@ public class CreateRenameDeleteController extends ForumController
     @RequestMapping(value = "/deletethread")
     public ModelAndView deleteThread(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("deletethread_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
@@ -220,6 +227,8 @@ public class CreateRenameDeleteController extends ForumController
     @RequestMapping(value = "/deletepost")
     public ModelAndView deletePost(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("deletepost_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
@@ -310,6 +319,8 @@ public class CreateRenameDeleteController extends ForumController
     @RequestMapping(value = "/renameboard")
     public ModelAndView renameBoard(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("renameboard_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
@@ -375,6 +386,8 @@ public class CreateRenameDeleteController extends ForumController
     @RequestMapping(value = "/renamethread")
     public ModelAndView renameThread(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("renamethread_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);

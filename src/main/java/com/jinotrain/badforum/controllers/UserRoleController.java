@@ -1,5 +1,6 @@
 package com.jinotrain.badforum.controllers;
 
+import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.data.UserPermissionStateData;
 import com.jinotrain.badforum.data.UserRoleData;
 import com.jinotrain.badforum.db.PermissionState;
@@ -260,6 +261,8 @@ public class UserRoleController extends ForumController
     @RequestMapping("/roles")
     public ModelAndView viewRoles(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         ForumUser user;
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
@@ -390,6 +393,8 @@ public class UserRoleController extends ForumController
     @RequestMapping(value = "/saveroles")
     public ModelAndView saveRoleSettings(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("roles_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
@@ -447,6 +452,8 @@ public class UserRoleController extends ForumController
     @RequestMapping(value = "/newrole")
     public ModelAndView createNewRole(HttpServletRequest request, HttpServletResponse response)
     {
+        if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
+
         if (!request.getMethod().equals("POST"))
         {
             return errorPage("newrole_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
