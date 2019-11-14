@@ -59,7 +59,7 @@ public class FloodProtectionService
 
         for (FloodCategory f: FloodCategory.values())
         {
-            String propname = "badforum.flood." + f.name().toLowerCase();
+            String propname = "badforum.flood." + f.propertyName;
 
             String limitStr  = environment.getProperty(propname + ".limit", "");
             String windowStr = environment.getProperty(propname + ".window", "");

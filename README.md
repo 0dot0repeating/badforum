@@ -24,8 +24,7 @@ like `DispatcherServlet - Completed initialization in 2654 ms`.
 ## Setup
 
 By default, the forum runs on port 8081. To change this, create a file called
-`badforum.properties`, put it in either the folder the JAR is in or the folder
-you're running the JAR in, and put the following in the file:
+`badforum.properties` in in the folder the JAR is in, and insert the following:
 
 ```text
 badforum.port = <port>
@@ -197,12 +196,33 @@ but hey, it is what you asked for.
 
 ## Flood protection
 
-There is a flood protection system implemented, although right now it only applies
-to login and registration attempts. It's rather simple - make too many requests in
-a given period of time, and the flood protection service kicks in before any
-potentially costly database operations occur.
+There is a flood protection system implemented. It's rather simple - make too many
+requests in a given period of time, and the flood protection service kicks in
+before any potentially costly database operations occur.
 
-A given IP is limited to 100 login attempts per minute, and 100 registration
-attempts per hour. The limits are rather high to account for multiple users
-potentially being behind the same IP address, but should still be low enough to
-prevent database thrashing.
+As of right now, the limits are:
+
+- Page views (`any`): 10 per IP per second
+- Login (`login`): 100 per IP per minute
+- Registration (`register`): 100 per IP per hour
+- Creating topics (`posttopic`): 2 per user (IP if anonymous) per minute
+- Replying (`reply`): 4 per user (IP if anonymous) per minute
+
+These settings can be modified. To do so, create a file named `badforum.properties`
+in the folder the JAR is in if there isn't already one there, and use the following
+lines as a reference point:
+
+```text
+badforum.flood.any.limit=10
+badforum.flood.any.window=1
+badforum.flood.login.limit=100
+badforum.flood.login.window=60
+badforum.flood.register.limit=100
+badforum.flood.register.window=3600
+badforum.flood.posttopic.limit=2
+badforum.flood.posttopic.window=60
+badforum.flood.reply.limit=4
+badforum.flood.reply.window=60
+```
+
+The flood windows are in seconds.
