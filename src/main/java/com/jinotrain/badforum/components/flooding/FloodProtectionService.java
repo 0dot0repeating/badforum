@@ -3,6 +3,7 @@ package com.jinotrain.badforum.components.flooding;
 import com.jinotrain.badforum.db.entities.ForumUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -10,7 +11,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Component
 public class FloodProtectionService
@@ -26,7 +26,6 @@ public class FloodProtectionService
             this.window   = window;
         }
     }
-
 
     @Autowired
     private Environment environment;
@@ -89,12 +88,21 @@ public class FloodProtectionService
 
     private boolean isFlooding(FloodTimeTracker tracker)
     {
-        Optional<Instant> maybeOldest = tracker.getOldest();
-        if (!maybeOldest.isPresent()) { return false; }
+        Instant oldest = tracker.getOldest();
+        if (oldest == null) { return false; }
 
         Instant checkMoment = Instant.now().minus(tracker.getFloodWindow());
+        return checkMoment.isBefore(oldest);
+    }
 
-        return checkMoment.isBefore(maybeOldest.get());
+
+    private boolean isIdle(FloodTimeTracker tracker, Instant now)
+    {
+        Instant newest = tracker.getNewest();
+        if (newest == null) { return true; }
+
+        Instant checkMoment = now.minus(tracker.getFloodWindow());
+        return !checkMoment.isBefore(newest);
     }
 
 
@@ -139,5 +147,22 @@ public class FloodProtectionService
 
         tracker.addCurrentTime();
         return true;
+    }
+
+
+    @Scheduled(initialDelay = (1000 * 60), fixedRate = (1000 * 60))
+    public void pruneIdleTrackers()
+    {
+        Instant now = Instant.now();
+
+        for (Map<String, FloodTimeTracker> trackers: accessTimes.values())
+        {
+            for (Map.Entry<String, FloodTimeTracker> e: trackers.entrySet())
+            {
+                String id = e.getKey();
+                FloodTimeTracker tracker = e.getValue();
+                if (isIdle(tracker, now)) { trackers.remove(id); }
+            }
+        }
     }
 }

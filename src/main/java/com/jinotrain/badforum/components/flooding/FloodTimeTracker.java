@@ -5,40 +5,46 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 class FloodTimeTracker
 {
     private List<Instant> accessTimes;
     private Duration floodWindow;
-    private int currentIndex;
-    private int itemCount;
     private int maxCount;
+
+    private int itemCount    =  0;
+    private int lastIndex    = -1;
+    private int currentIndex =  0;
 
     FloodTimeTracker(int size, Duration window)
     {
         accessTimes  = new ArrayList<>(size);
-        accessTimes.addAll(Collections.nCopies(300, Instant.MIN));
-        currentIndex = 0;
-        itemCount    = 0;
-        maxCount     = size;
+        accessTimes.addAll(Collections.nCopies(size, Instant.MIN));
         floodWindow  = window;
+        maxCount     = size;
     }
 
 
     Duration getFloodWindow() { return floodWindow; }
 
 
-    Optional<Instant> getOldest()
+    Instant getOldest()
     {
-        if (itemCount == 0) { return Optional.empty(); }
+        if (itemCount == 0) { return null; }
 
         if (itemCount != maxCount)
         {
-            return Optional.of(Instant.MIN);
+            return Instant.MIN;
         }
 
-        return Optional.of(accessTimes.get(currentIndex));
+        return accessTimes.get(currentIndex);
+    }
+
+
+    Instant getNewest()
+    {
+        if (itemCount == 0) { return null; }
+        return accessTimes.get(lastIndex);
     }
 
 
@@ -47,6 +53,7 @@ class FloodTimeTracker
         Instant now = Instant.now();
         accessTimes.set(currentIndex, now);
 
+        lastIndex    = currentIndex;
         currentIndex = (currentIndex + 1) % maxCount;
         if (itemCount < maxCount) { itemCount++; }
     }

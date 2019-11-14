@@ -10,6 +10,9 @@ import org.springframework.context.annotation.*;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.core.env.Environment;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.ViewResolver;
@@ -29,6 +32,7 @@ import java.util.Locale;
 
 @Configuration
 @EnableWebMvc
+@EnableScheduling
 @ForumPropertySources
 @EnableJpaRepositories(basePackageClasses = {
     com.jinotrain.badforum.db.repositories.ForumPostRepository.class
@@ -140,5 +144,11 @@ public class MVCConfig implements WebMvcConfigurer
     public void addInterceptors(InterceptorRegistry registry)
     {
         registry.addInterceptor(forumRequestInterceptor());
+    }
+
+
+    @Bean
+    public TaskScheduler taskScheduler() {
+        return new ConcurrentTaskScheduler();
     }
 }
