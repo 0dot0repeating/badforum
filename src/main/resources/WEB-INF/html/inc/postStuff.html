@@ -18,7 +18,7 @@
                 <input id="postTopic" type="text" name="topic" th:value="${postTopic}" placeholder="Insert topic here">
             </div>
             <div class="textField">
-                <textarea name="text" th:value="${postText}" placeholder="Type your post here"></textarea>
+                <textarea name="text" th:text="${postText}" placeholder="Type your post here"></textarea>
             </div>
             <input type="submit" value="Create topic">
         </th:block>
@@ -38,7 +38,7 @@
 
             <input type="hidden" name="threadIndex" th:value="${threadIndex}">
             <div class="textField">
-                <textarea name="text" th:value="${postText}" placeholder="Type your reply here"></textarea>
+                <textarea name="text" th:text="${postText}" placeholder="Type your reply here"></textarea>
             </div>
             <input type="submit" value="Reply">
         </th:block>

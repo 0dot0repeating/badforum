@@ -8,6 +8,8 @@ import java.time.Instant;
 @Table(name="forum_posts")
 public class ForumPost implements Comparable<ForumPost>
 {
+    public static final int MAX_POST_LENGTH = 2000;
+
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
     private Long id;

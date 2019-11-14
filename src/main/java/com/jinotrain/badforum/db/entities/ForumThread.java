@@ -12,6 +12,8 @@ import java.util.Set;
 @NamedQuery(name="ForumThread.getPostCount", query="SELECT COUNT(p) FROM ForumPost p WHERE p.thread.id = :threadID AND p.split = false AND p.deleted = false")
 public class ForumThread
 {
+    public static final int MAX_TOPIC_LENGTH = 100;
+
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
     private Long id;
@@ -30,7 +32,7 @@ public class ForumThread
     @JoinColumn(name = "author_id")
     private ForumUser author;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 128)
     private String topic;
 
     private Instant creationTime;

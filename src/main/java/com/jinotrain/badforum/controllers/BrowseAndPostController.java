@@ -394,8 +394,8 @@ public class BrowseAndPostController extends ForumController
             return mav;
         }
 
-        Boolean noTopic = postTopic == null || postTopic.isEmpty();
-        Boolean noText  = postText  == null || postText.isEmpty();
+        boolean noTopic = postTopic == null || postTopic.isEmpty();
+        boolean noText  = postText  == null || postText.isEmpty();
 
         if (noTopic || noText)
         {
@@ -415,6 +415,32 @@ public class BrowseAndPostController extends ForumController
             {
                 mav.addObject("postError", "Post text is missing");
                 mav.addObject("postTopic", postTopic);
+            }
+
+            return mav;
+        }
+
+        boolean topicTooLong = postTopic.length() > ForumThread.MAX_TOPIC_LENGTH;
+        boolean textTooLong  = postText.length() > ForumPost.MAX_POST_LENGTH;
+
+        if (topicTooLong || textTooLong)
+        {
+            ModelAndView mav = getBoard(targetBoard, poster, rangeFromRequest(request, poster, false));
+            mav.setStatus(HttpStatus.BAD_REQUEST);
+            mav.addObject("postTopic", postTopic);
+            mav.addObject("postText",  postText);
+
+            if (topicTooLong && textTooLong)
+            {
+                mav.addObject("postError", "Topic and post text too long");
+            }
+            else if (topicTooLong)
+            {
+                mav.addObject("postError", "Topic too long");
+            }
+            else
+            {
+                mav.addObject("postError", "Post text too long");
             }
 
             return mav;
@@ -507,6 +533,15 @@ public class BrowseAndPostController extends ForumController
             ModelAndView mav = getThread(targetThread, poster, rangeFromRequest(request, poster, true));
             mav.setStatus(HttpStatus.BAD_REQUEST);
             mav.addObject("postError", "Post is empty");
+            return mav;
+        }
+
+        if (postText.length() > ForumPost.MAX_POST_LENGTH)
+        {
+            ModelAndView mav = getBoard(targetBoard, poster, rangeFromRequest(request, poster, false));
+            mav.setStatus(HttpStatus.BAD_REQUEST);
+            mav.addObject("postError", "Post text too long");
+            mav.addObject("postText",  postText);
             return mav;
         }
 
