@@ -213,8 +213,8 @@ in the folder the JAR is in if there isn't already one there, and use the follow
 lines as a reference point:
 
 ```text
-badforum.flood.any.limit=10
-badforum.flood.any.window=1
+badforum.flood.view.limit=10
+badforum.flood.view.window=1
 badforum.flood.login.limit=100
 badforum.flood.login.window=60
 badforum.flood.register.limit=100
