@@ -1,19 +1,19 @@
 package com.jinotrain.badforum.components.flooding;
 
 import com.jinotrain.badforum.db.entities.ForumUser;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class FloodProtectionService
+public class FloodProtectionService implements InitializingBean
 {
     private class FloodWindow
     {
@@ -46,8 +46,8 @@ public class FloodProtectionService
     }
 
 
-    @PostConstruct
-    public void postConstruct()
+    @Override
+    public void afterPropertiesSet()
     {
         buildAccessLimits();
     }

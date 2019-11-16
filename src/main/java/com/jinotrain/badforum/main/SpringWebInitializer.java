@@ -2,7 +2,7 @@ package com.jinotrain.badforum.main;
 
 import com.jinotrain.badforum.configs.JPAConfig;
 import com.jinotrain.badforum.configs.MVCConfig;
-import com.jinotrain.badforum.configs.ServerConfig;
+import com.jinotrain.badforum.configs.BootstrapConfig;
 
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
@@ -19,7 +19,7 @@ public class SpringWebInitializer implements WebApplicationInitializer
     {
         // boy i sure love java class names
         AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
-        rootContext.register(ServerConfig.class);
+        rootContext.register(BootstrapConfig.class);
 
         container.addListener(new ContextLoaderListener(rootContext));
 

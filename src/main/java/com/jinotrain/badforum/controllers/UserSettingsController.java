@@ -381,7 +381,7 @@ public class UserSettingsController extends ForumController
         try { viewUser = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        String settingsUsername = request.getServletPath().substring("/settings/".length());
+        String settingsUsername = request.getPathInfo().substring("/settings/".length());
         ForumUser settingsUser = userRepository.findByUsernameIgnoreCase(settingsUsername);
 
         ModelAndView errorMAV = checkPermission(viewUser, settingsUser);

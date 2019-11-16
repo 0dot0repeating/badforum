@@ -212,7 +212,7 @@ public class BanController extends ForumController
             return errorPage("banuser_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
-        String requestURL   = request.getServletPath();
+        String requestURL   = request.getPathInfo();
         String postIndexRaw = requestURL.substring("/post/".length(), requestURL.length() - "/ban".length());
         long   postIndex;
 

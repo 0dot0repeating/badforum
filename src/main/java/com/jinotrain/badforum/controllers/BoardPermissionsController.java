@@ -141,7 +141,7 @@ public class BoardPermissionsController extends ForumController
             return errorPage("boardpermissions_error.html", "NOT_ALLOWED", HttpStatus.UNAUTHORIZED);
         }
 
-        String requestURL = request.getServletPath();
+        String requestURL = request.getPathInfo();
         int boardNumStart = "/board/".length();
         int boardNumEnd   = requestURL.length() - "/permissions".length();
 

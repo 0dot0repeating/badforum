@@ -232,7 +232,7 @@ public class BrowseAndPostController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        String[] urlParts = request.getServletPath().split("/");
+        String[] urlParts = request.getPathInfo().split("/");
         ForumBoard viewBoard = null;
 
         try
@@ -269,7 +269,7 @@ public class BrowseAndPostController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        String[] urlParts = request.getServletPath().split("/");
+        String[] urlParts = request.getPathInfo().split("/");
         ForumThread viewThread = null;
 
         try
@@ -329,7 +329,7 @@ public class BrowseAndPostController extends ForumController
         try { user = getUserFromRequest(request); }
         catch (UserBannedException e) { return bannedPage(e); }
 
-        String[] urlParts = request.getServletPath().split("/");
+        String[] urlParts = request.getPathInfo().split("/");
 
         ForumPost viewPost  = null;
 
@@ -364,7 +364,7 @@ public class BrowseAndPostController extends ForumController
             return errorPage("post_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
         }
 
-        String[] urlParts = request.getServletPath().split("/");
+        String[] urlParts = request.getPathInfo().split("/");
         ForumBoard targetBoard;
 
         try
@@ -488,7 +488,7 @@ public class BrowseAndPostController extends ForumController
             return errorPage("post_error.html", "POST_ONLY", HttpStatus.METHOD_NOT_ALLOWED);
         }
 
-        String[] urlParts = request.getServletPath().split("/");
+        String[] urlParts = request.getPathInfo().split("/");
         ForumThread targetThread;
 
         try

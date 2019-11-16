@@ -30,11 +30,12 @@ dependencies {
             "org.json:json:20180813",                       // curly lists
 
             "org.springframework:spring-webmvc:5.1.1.RELEASE",                  // web framework
-            "org.springframework:spring-orm:5.1.1.RELEASE",                     // JPA framework (middleman between database and... ???)
-            "org.springframework.data:spring-data-jpa:2.1.9.RELEASE",           // seriously why do I need so much stuff for this basic shit
+            "org.springframework:spring-orm:5.1.1.RELEASE",                     // JPA framework (middleman between database and...
+            "org.springframework.data:spring-data-jpa:2.1.9.RELEASE",           // ... I guess this?)
 
-            "org.apache.tomcat.embed:tomcat-embed-jasper:8.5.42",   // web server
-            
+            "org.eclipse.jetty:jetty-server:9.4.22.v20191022",                  // the actual server
+            "org.eclipse.jetty:jetty-servlet:9.4.22.v20191022",                 // aaaaaaaaaaaaaaaaaaaaaaaaaaa
+
             "org.thymeleaf:thymeleaf:3.0.11.RELEASE",                           // view templates
             "org.thymeleaf:thymeleaf-spring5:3.0.11.RELEASE",                   // integration with spring
             "org.thymeleaf.extras:thymeleaf-extras-java8time:3.0.4.RELEASE",   // format times within templates

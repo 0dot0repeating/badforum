@@ -83,7 +83,7 @@ public class MoveAndSplitController extends ForumController
 
         try
         {
-            String path = request.getServletPath();
+            String path = request.getPathInfo();
             String rawIndex = path.substring("/thread/".length(), path.length() - "/move".length());
             threadIndex = Long.valueOf(rawIndex);
         }
@@ -133,7 +133,7 @@ public class MoveAndSplitController extends ForumController
 
         try
         {
-            String path = request.getServletPath();
+            String path = request.getPathInfo();
             String rawIndex = path.substring("/post/".length(), path.length() - "/split".length());
             postIndex = Long.valueOf(rawIndex);
         }

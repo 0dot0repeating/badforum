@@ -42,7 +42,7 @@ public class StaticFileController
     public void getStaticFile(HttpServletRequest request,
                               HttpServletResponse response) throws IOException
     {
-        String requestUrl = request.getServletPath();
+        String requestUrl = request.getPathInfo();
         respondWithFile(requestUrl, response, null, false);
     }
 
@@ -51,7 +51,7 @@ public class StaticFileController
     public void getStaticFileHead(HttpServletRequest request,
                                   HttpServletResponse response) throws IOException
     {
-        String requestUrl = request.getServletPath();
+        String requestUrl = request.getPathInfo();
         respondWithFile(requestUrl, response, null, true);
     }
 

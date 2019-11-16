@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ForumPropertySources
-public class ServerConfig
+public class BootstrapConfig
 {
     @Bean
     public ServerData serverData()
