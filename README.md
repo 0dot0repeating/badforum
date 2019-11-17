@@ -24,7 +24,7 @@ like `DispatcherServlet - Completed initialization in 2654 ms`.
 ## Setup
 
 By default, the forum runs on port 8081. To change this, create a file called
-`badforum.properties` in in the folder the JAR is in, and insert the following:
+`badforum.properties` in the folder the JAR is in, and insert the following:
 
 ```text
 badforum.port = <port>
@@ -144,8 +144,8 @@ of the same rank can do, and nothing can overrule the global administrator. This
 has the side effect of there only being one global administrator, as you can't grant
 roles with priority equal to your own.
 
-This does mean that the "Manage roles" on "All users" only allows users to see
-permissions, not modify them.
+This does mean that the "Manage roles" permission on "All users" only allows users
+to see permissions, not modify them.
 
 There is one exception to the outranking rule: if both users' highest ranked role
 is the "All users" role, or if both users are anonymous, they count as outranking
@@ -202,7 +202,7 @@ before any potentially costly database operations occur.
 
 As of right now, the limits are:
 
-- Page views (`any`): 10 per IP per second
+- Page views (`view`): 10 per IP per second
 - Login (`login`): 100 per IP per minute
 - Registration (`register`): 100 per IP per hour
 - Creating topics (`posttopic`): 2 per user (IP if anonymous) per minute
