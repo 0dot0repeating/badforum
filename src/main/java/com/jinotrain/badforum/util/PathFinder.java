@@ -5,29 +5,29 @@ import java.net.URISyntaxException;
 
 public final class PathFinder
 {
-    private final static String exePath;
+    private final static String jarPath;
 
     static
     {
         File f;
-        String jarPath;
+        String _jarPath;
 
         try
         {
             f = new File(PathFinder.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            jarPath = f.getAbsoluteFile().getParent();
+            _jarPath = f.getAbsoluteFile().getParent();
         }
         catch (URISyntaxException e)
         {
             f = new File(".");
-            jarPath = f.getAbsolutePath();
+            _jarPath = f.getAbsolutePath();
         }
 
-        exePath = jarPath;
+        jarPath = _jarPath;
     }
 
-    public static String getExecutablePath()
+    public static String getJarPath()
     {
-        return exePath;
+        return jarPath;
     }
 }

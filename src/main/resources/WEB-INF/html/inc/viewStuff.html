@@ -53,7 +53,7 @@
 
             <div class="boardNav nav">
                 Page:
-                <th:block th:each="pageData: ${pageLinks}"><a th:href="${pageData[0]}" th:text="${pageData[1]}"></a>
+                <th:block th:each="link: ${pageLinks}"><a th:href="${link.link}" th:text="${link.text}"></a>
                 </th:block>
             </div>
         </footer>
@@ -69,7 +69,7 @@
 
             <div class="threadNav nav">
                 Page:
-                <th:block th:each="pageData: ${pageLinks}"><a th:href="${pageData[0]}" th:text="${pageData[1]}"></a>
+                <th:block th:each="link: ${pageLinks}"><a th:href="${link.link}" th:text="${link.text}"></a>
                 </th:block>
             </div>
         </footer>
@@ -120,7 +120,7 @@
                    th:class="${boardViewData.canModerate ? 'boardTreeChoice' : 'boardTreeChoice disabled'}"></label>
 
             <ul th:each="childData: ${boardViewData.childBoards}">
-                <th:block th:include=":: viewBoardTree(${childData}, ${paramName}, ${startingIndex})"></th:block>
+                <th:block th:include=":: viewBoardTree(${childData}, ${paramName}, ${startingIndex})" />
             </ul>
         </li>
     </ul>

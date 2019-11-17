@@ -2,6 +2,7 @@ package com.jinotrain.badforum.controllers;
 
 import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.data.BoardViewData;
+import com.jinotrain.badforum.data.PageLink;
 import com.jinotrain.badforum.data.PostViewData;
 import com.jinotrain.badforum.data.ThreadViewData;
 import com.jinotrain.badforum.db.BoardPermission;
@@ -82,15 +83,13 @@ public class BrowseAndPostController extends ForumController
     }
 
 
-    private List<String[]> createViewRange(int[] pageRange, long totalCount, String prefix)
+    private List<PageLink> createPageLinks(int[] pageRange, long totalCount, String prefix)
     {
         int rangeStart = pageRange[0];
         int rangeEnd   = pageRange[1];
         int rangeSize  = rangeEnd - rangeStart;
 
-
-
-        List<String[]> ret = new ArrayList<>();
+        List<PageLink> ret = new ArrayList<>();
 
         for (long i = 0; i < Math.max(rangeSize, totalCount); i += rangeSize)
         {
@@ -102,7 +101,7 @@ public class BrowseAndPostController extends ForumController
             String  path        = prefix + (prefix.endsWith("/") ? "" : "/") + viewRangeStart + "-" + viewRangeEnd;
             String  linkText    = String.format(currentPage ? "[%s]" : "%s", pageIndex);
 
-            ret.add(new String[]{path, linkText});
+            ret.add(new PageLink(path, linkText));
         }
 
         return ret;
@@ -127,7 +126,7 @@ public class BrowseAndPostController extends ForumController
         ret.addObject("boardViewData", viewData);
         ret.addObject("canPost", ForumUser.userHasBoardPermission(viewer, board, BoardPermission.POST));
         ret.addObject("viewRange", new int[]{threadRange[0] + 1, threadRange[1]});
-        ret.addObject("pageLinks", createViewRange(threadRange, viewData.threadCount, prefix));
+        ret.addObject("pageLinks", createPageLinks(threadRange, viewData.threadCount, prefix));
         ret.addObject("forumPath", getForumPath(board, viewer));
         return ret;
     }
@@ -156,7 +155,7 @@ public class BrowseAndPostController extends ForumController
         ret.addObject("threadViewData", viewData);
         ret.addObject("canPost", canPost);
         ret.addObject("viewRange", new int[]{postRange[0] + 1, postRange[1]});
-        ret.addObject("pageLinks", createViewRange(postRange, viewData.postCount, prefix));
+        ret.addObject("pageLinks", createPageLinks(postRange, viewData.postCount, prefix));
         ret.addObject("forumPath", getForumPath(thread, viewer));
         return ret;
     }

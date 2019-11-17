@@ -1,8 +1,6 @@
 package com.jinotrain.badforum.controllers;
 
 import com.jinotrain.badforum.util.PathFinder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -74,7 +72,7 @@ public class StaticFileController
 
         if (!inFile.isFile())
         {
-            inFile = new File(PathFinder.getExecutablePath() + "/external/" + requestUrl);
+            inFile = new File(PathFinder.getJarPath() + "/external/" + requestUrl);
         }
 
         URL inUrl;
