@@ -23,11 +23,24 @@ like `DispatcherServlet - Completed initialization in 2654 ms`.
 
 ## Setup
 
-By default, the forum runs on port 8081. To change this, create a file called
-`badforum.properties` in the folder the JAR is in, and insert the following:
+By default, the forum listens for HTTP connections on port 8081, and HTTPS connections
+on port 4443 (if it's set up). To change this, create a file called `badforum.properties`
+in the folder the JAR is in, and insert the following:
 
 ```text
-badforum.port = <port>
+badforum.port=<port>
+badforum.ssl.port=<port>
+```
+
+If SSL support isn't set up, you'll see instructions for setting it up when starting
+up the server. But for people already familiar with Jetty SSL support, the forum
+looks for the keystore at `badforum_key.jks`, either in the directory the JAR file
+is in or the directory you're running from (JAR directory preferred). To set the
+password and key alias used, the following properties need to be set:
+
+```text
+badforum.ssl.password=<password>
+badforum.ssl.alias=<alias>
 ```
 
 When you start up the forum, there will be one board - the root board - and a test
