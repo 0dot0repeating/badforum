@@ -72,7 +72,7 @@ public class StaticFileController
 
         if (!inFile.isFile())
         {
-            inFile = new File(PathFinder.getJarPath() + "/external/" + requestUrl);
+            inFile = new File(PathFinder.getJarDirectory() + "/external/" + requestUrl);
         }
 
         URL inUrl;

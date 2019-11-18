@@ -43,7 +43,6 @@ dependencies {
             "com.atlassian.commonmark:commonmark:0.13.0",   // markdown to HTML
 
             "org.slf4j:slf4j-simple:1.7.26",    // logger
-            "org.slf4j:jul-to-slf4j:1.7.26",    // to get tomcat to use said logger
             )
     testCompile("junit:junit")
 }

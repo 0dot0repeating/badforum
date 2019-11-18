@@ -5,29 +5,43 @@ import java.net.URISyntaxException;
 
 public final class PathFinder
 {
-    private final static String jarPath;
+    private final static String jarDirectory;
+    private final static String keyPath;
 
     static
     {
-        File f;
-        String _jarPath;
+        File jar, key;
+        String _jarPath, _keyPath;
 
         try
         {
-            f = new File(PathFinder.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-            _jarPath = f.getAbsoluteFile().getParent();
+            jar = new File(PathFinder.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            _jarPath = jar.getAbsoluteFile().getParent();
         }
         catch (URISyntaxException e)
         {
-            f = new File(".");
-            _jarPath = f.getAbsolutePath();
+            jar = new File(".");
+            _jarPath = jar.getAbsolutePath();
         }
 
-        jarPath = _jarPath;
+        key = new File(jar, "badforum_key.jks");
+
+        if (!key.isFile())
+        {
+            key = new File("badforum_key.jks");
+        }
+
+        jarDirectory = _jarPath;
+        keyPath      = key.isFile() ? key.getAbsolutePath() : null;
     }
 
-    public static String getJarPath()
+    public static String getJarDirectory()
     {
-        return jarPath;
+        return jarDirectory;
+    }
+
+    public static String getKeyPath()
+    {
+        return keyPath;
     }
 }
