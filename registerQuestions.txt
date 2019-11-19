@@ -1,0 +1,31 @@
+# Format:
+#  - First line: question
+#  - Any amount of non-blank answers afterward: acceptable answers
+#  - Blank lines: Question/answer delimiters
+#
+# Answers are case-insensitive, and have everything but letters, numbers, and whitespace stripped out
+# Whitespace is further compressed into a single space, and leading/trailing whitespace is discarded
+#
+# Lines starting with # are ignored
+
+What do you get if you replace the word "question" in "sample question" with "answer"?
+sample answer
+
+What is a number between 1 and 5?
+1
+2
+3
+4
+5
+
+What is a number between 6 and 10?
+6
+7
+8
+9
+10
+
+Why do you have a deagle?
+because it's thursday
+cause it's thursday
+it's thursday

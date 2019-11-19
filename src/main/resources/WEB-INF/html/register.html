@@ -41,6 +41,17 @@
             <input id="confirmInput" type="password" oninput="onPasswordInput()" name="confirm" placeholder="Confirm">
         </div>
 
+        <th:block th:if="${triviaIndex != null}">
+            <h3>Anti-spam question</h3>
+            <p th:text="${triviaQuestion}"></p>
+            <input name="triviaIndex" type="hidden" th:value="${triviaIndex}">
+
+            <div>
+                <label for="triviaAnswer">Answer:</label>
+                <input id="triviaAnswer" name="triviaAnswer" placeholder="Answer">
+            </div>
+        </th:block>
+
         <input type="submit" value="Register">
     </form>
 </body>

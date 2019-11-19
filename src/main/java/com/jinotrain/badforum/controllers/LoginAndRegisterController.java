@@ -2,6 +2,7 @@ package com.jinotrain.badforum.controllers;
 
 import com.jinotrain.badforum.components.flooding.FloodCategory;
 import com.jinotrain.badforum.components.passwords.ForumPasswordService;
+import com.jinotrain.badforum.components.RegistrationTriviaService;
 import com.jinotrain.badforum.data.PreAdminKey;
 import com.jinotrain.badforum.db.entities.ForumRole;
 import com.jinotrain.badforum.db.entities.ForumSession;
@@ -37,10 +38,30 @@ public class LoginAndRegisterController extends ForumController
     @Autowired
     private PreAdminKey preAdminKey;
 
+    @Autowired
+    private RegistrationTriviaService triviaService;
 
-    private Map<String, Object> registerUser(String username, String password, String pwConfirm)
+
+    // for anyone wondering, this exists because I thought I'd have a JSON interface at some point
+    // that didn't happen, but the evidence for it remains (like this method, whoa)
+    private Map<String, Object> registerUser(String username, String password, String pwConfirm, String triviaIndexStr, String triviaAnswer)
     {
         Map<String, Object> ret = new HashMap<>();
+
+        if (triviaService.questionCount() > -1)
+        {
+            int triviaIndex;
+
+            try { triviaIndex = Integer.valueOf(triviaIndexStr); }
+            catch (NumberFormatException e) { triviaIndex = -1; }
+
+            if (!triviaService.validAnswerForQuestion(triviaIndex, triviaAnswer))
+            {
+                ret.put("registered", false);
+                ret.put("errorCode", "INCORRECT_ANSWER");
+                return ret;
+            }
+        }
 
         username  = username  != null ? username  : "";
         password  = password  != null ? password  : "";
@@ -239,15 +260,18 @@ public class LoginAndRegisterController extends ForumController
     {
         if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
 
+        String address   = request.getRemoteAddr();
         String username  = request.getParameter("username");
         String password  = request.getParameter("password");
         String pwConfirm = request.getParameter("confirm");
-        String address   = request.getRemoteAddr();
+
+        String triviaIndex  = request.getParameter("triviaIndex");
+        String triviaAnswer = request.getParameter("triviaAnswer");
 
         boolean flooding = !floodProtectionService.updateIfNotFlooding(FloodCategory.REGISTER, address);
         if (flooding) { return floodingPage(FloodCategory.REGISTER); }
 
-        Map<String, Object> result = registerUser(username, password, pwConfirm);
+        Map<String, Object> result = registerUser(username, password, pwConfirm, triviaIndex, triviaAnswer);
         ModelAndView mav;
 
         if ((boolean)result.get("registered"))
@@ -262,7 +286,7 @@ public class LoginAndRegisterController extends ForumController
         }
         else
         {
-            mav = new ModelAndView("register.html");
+            mav = getRegisterPage(request);
 
             mav.addObject("errorCode",  result.get("errorCode"));
             mav.addObject("errorExtra", result.getOrDefault("errorExtra", null));
@@ -278,7 +302,20 @@ public class LoginAndRegisterController extends ForumController
     {
         if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
 
-        return new ModelAndView("register.html");
+        ModelAndView ret = new ModelAndView("register.html");
+
+        int questionCount = triviaService.questionCount();
+
+        if (questionCount > -1)
+        {
+            int triviaIndex = new Random().nextInt(questionCount);
+            String triviaQuestion = triviaService.getQuestion(triviaIndex);
+
+            ret.addObject("triviaQuestion", triviaQuestion);
+            ret.addObject("triviaIndex", triviaIndex);
+        }
+
+        return ret;
     }
 
 
@@ -314,7 +351,7 @@ public class LoginAndRegisterController extends ForumController
         }
         else
         {
-            mav = new ModelAndView("login.html");
+            mav = getLoginPage(request);
 
             mav.addObject("errorCode",  result.get("errorCode"));
             mav.addObject("errorExtra", result.getOrDefault("errorExtra", null));
@@ -327,8 +364,7 @@ public class LoginAndRegisterController extends ForumController
 
 
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public ModelAndView getLoginPage(HttpServletRequest request,
-                                     HttpServletResponse response)
+    public ModelAndView getLoginPage(HttpServletRequest request)
     {
         if (isFlooding(request)) { return floodingPage(FloodCategory.ANY); }
 

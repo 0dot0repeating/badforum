@@ -18,7 +18,7 @@ there, after all, and they work just fine.
 - Run `./run.sh`. This will run the JAR file with the necessary classpath adjustment.
 
 If everything works, you'll see some startup logs, finished off with a line looking
-like `DispatcherServlet - Completed initialization in 2654 ms`.
+like `Server - Started @3394ms`.
 
 
 ## Setup
@@ -205,6 +205,29 @@ but hey, it is what you asked for.
     posts, move threads, and split post on the board. They must outrank the user
     whose thread/post they're interacting with, and they can only move threads
     or split posts to boards they moderate.
+
+
+## Registration questions
+
+If you try to register, you'll see a question appear at the bottom of the form.
+These questions are loaded from the `triviaQuestions.txt` file by default, in either
+the directory the JAR is in or the directory you're running from (JAR directory
+preferred). If for some reason you want to change the filename the forum checks,
+you can use the property `badforum.triviafilename` for that.
+
+The `triviaQuestions.txt` file explains the file format, but just in case you lost it:
+
+```text
+# Format:
+#  - First line: question
+#  - Any amount of non-blank answers afterward: acceptable answers
+#  - Blank lines: Question/answer delimiters
+#
+# Answers are case-insensitive, and have everything but letters, numbers, and whitespace stripped out
+# Whitespace is further compressed into a single space, and leading/trailing whitespace is discarded
+#
+# Lines starting with # are ignored
+```
 
 
 ## Flood protection
